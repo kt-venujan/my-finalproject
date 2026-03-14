@@ -7,12 +7,16 @@ import {
   LoginInput,
   RegisterInput,
   User,
+  ForgotPasswordInput,
+  ResetPasswordInput,
 } from "@/types/auth";
 
 type AuthContextType = {
   user: User | null;
   login: (data: LoginInput) => Promise<User>;
   register: (data: RegisterInput) => Promise<User>;
+  forgotPassword: (data: ForgotPasswordInput) => Promise<{ message: string }>;
+  resetPassword: (data: ResetPasswordInput) => Promise<{ message: string }>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,8 +40,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return response.data.user;
   };
 
+  const forgotPassword = async (
+    data: ForgotPasswordInput
+  ): Promise<{ message: string }> => {
+    const response = await api.post("/auth/forgot-password", data);
+    return response.data;
+  };
+
+  const resetPassword = async (
+    data: ResetPasswordInput
+  ): Promise<{ message: string }> => {
+    const response = await api.post("/auth/reset-password", data);
+    return response.data;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register }}>
+    <AuthContext.Provider
+      value={{ user, login, register, forgotPassword, resetPassword }}
+    >
       {children}
     </AuthContext.Provider>
   );

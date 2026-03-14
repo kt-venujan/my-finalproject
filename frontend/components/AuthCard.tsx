@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -155,7 +156,7 @@ export default function AuthCard() {
             required
           />
 
-          <a href="#">Forgot Password?</a>
+          <Link href="/forgot-password">Forgot Password?</Link>
 
           {errorMessage && !isActive && (
             <p className="error-text">{errorMessage}</p>
