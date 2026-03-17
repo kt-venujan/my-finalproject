@@ -1,88 +1,125 @@
 "use client";
 
 import { useState } from "react";
+import Navbar from "@/components/Navbar";
+import "./contact.css";
 
 export default function ContactPage() {
-  const [open, setOpen] = useState(false);
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+
+  const sendMessage = async () => {
+
+    try {
+
+      const res = await fetch("http://localhost:5000/api/contact/send",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          name,
+          email,
+          message
+        })
+      });
+
+      const data = await res.json();
+
+      if(data.success){
+        alert("Message sent successfully!");
+
+        setName("");
+        setEmail("");
+        setMessage("");
+      }
+
+    } catch (error) {
+      console.log(error);
+      alert("Something went wrong");
+    }
+
+  };
 
   return (
-    <main className="contact-page">
-      <section className="contact-header">
-        <h1>Contact Us</h1>
-        <p>Get in touch with Dietara</p>
-      </section>
+    <>
+      <Navbar />
 
-      {/* 3 line button */}
+      <div className="contact-page">
 
-      <div style={{ textAlign: "center", marginBottom: "30px" }}>
-        <button
-          onClick={() => setOpen(!open)}
-          style={{
-            fontSize: "28px",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          ☰
-        </button>
-      </div>
+        <div className="contact-container">
 
-      {open && (
-        <>
-          {/* CONTACT DETAILS */}
-
-          <div
-            className="contact-card"
-            style={{ maxWidth: "800px", margin: "auto", marginBottom: "40px" }}
-          >
-            <h2>Contact Details</h2>
+          {/* LEFT SIDE */}
+          <div className="contact-left">
+            <h1>Contact Us</h1>
 
             <p>
-              <strong>Email:</strong> Dietara@gmail.com
+              We would love to hear from you. Feel free to complete the contact
+              form or use the details below:
             </p>
-            <p>
-              <strong>Phone:</strong> +94 77 123 4567
-            </p>
-            <p>
-              <strong>Address:</strong> Jaffna, Sri Lanka
-            </p>
-            <p>
-              <strong>Working Hours:</strong> Monday - Saturday 9AM - 8PM
-            </p>
+
+            <div className="contact-details">
+              <div>
+                <span>Email</span>
+                <p>support@smartdiethub.com</p>
+              </div>
+
+              <div>
+                <span>Phone</span>
+                <p>+94 77 123 4567</p>
+              </div>
+
+              <div>
+                <span>Location</span>
+                <p>Colombo, Sri Lanka</p>
+              </div>
+            </div>
           </div>
 
-          {/* FORM + MAP */}
+          {/* FORM */}
+          <div className="contact-right">
 
-          <section className="contact-grid">
-            {/* FORM */}
+            <div className="form-row">
+              <input
+                type="text"
+                placeholder="Name"
+                value={name}
+                onChange={(e)=>setName(e.target.value)}
+              />
 
-            <div className="contact-card">
-              <h2>Send Message</h2>
-
-              <form>
-                <input type="text" placeholder="Full Name" />
-                <input type="email" placeholder="Email Address" />
-                <input type="text" placeholder="Subject" />
-                <textarea placeholder="Your Message..." />
-                <button type="submit">Send Message</button>
-              </form>
-            </div>
-
-            {/* MAP */}
-
-            <div className="contact-card">
-              <h2>Our Location</h2>
-
-              <iframe
-                className="contact-map"
-                src="https://www.google.com/maps?q=Colombo,Sri%20Lanka&output=embed"
-                loading="lazy"
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e)=>setEmail(e.target.value)}
               />
             </div>
-          </section>
-        </>
-      )}
-    </main>
+
+            <textarea
+              placeholder="Message"
+              value={message}
+              onChange={(e)=>setMessage(e.target.value)}
+            ></textarea>
+
+            <button className="send-btn" onClick={sendMessage}>
+              Send Message
+            </button>
+
+          </div>
+
+        </div>
+
+        {/* FOOD IMAGES */}
+        <div className="food-gallery">
+          <img src="/food1.jpg" />
+          <img src="/food2.jpg" />
+          <img src="/food3.jpg" />
+          <img src="/food4.jpg" />
+        </div>
+
+      </div>
+    </>
   );
 }

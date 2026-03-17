@@ -2,7 +2,6 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: Arial, Helvetica, sans-serif;
 }
 
 body {
@@ -543,36 +542,6 @@ body {
   margin-bottom: 18px;
 }
 
-/* ================= CONTACT PAGE ================= */
-
-.contact-page {
-  padding: 120px 20px;
-  background: #f5faf7;
-}
-
-.contact-header {
-  text-align: center;
-  margin-bottom: 50px;
-}
-
-.contact-header h1 {
-  font-size: 40px;
-}
-
-.contact-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
-  max-width: 1100px;
-  margin: auto;
-}
-
-.contact-card {
-  background: #ffffff;
-  padding: 30px;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-}
 
 /* ================= MOBILE ================= */
 
@@ -753,3 +722,5 @@ body {
   margin-bottom:16px;
   color:#8b0c2e;   /* dark maroon */
 }
+
+
