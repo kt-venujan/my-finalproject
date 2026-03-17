@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect } from "react";
+import BMICalculator from "@/components/BMICalculator";
 
 export default function HomePage() {
   useEffect(() => {
@@ -34,7 +36,6 @@ export default function HomePage() {
 
   return (
     <main className="fitness-home">
-      {/* HERO SECTION */}
       <section className="hero-section">
         <div className="hero-overlay">
           <div className="hero-content">
@@ -51,8 +52,9 @@ export default function HomePage() {
               </p>
 
               <div className="hero-buttons">
-                <button className="primary-btn">Get Started</button>
-                <button className="secondary-btn">Free Trial</button>
+                <Link href="/register" className="primary-btn">
+                  Get Started
+                </Link>
               </div>
 
               <div className="hero-stats">
@@ -76,12 +78,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* WHY CHOOSE US SECTION */}
       <section className="why-section">
         <div className="why-title">
           <h2>Why Choose Us</h2>
           <p>
-            SmartDiet Hub helps you build healthier eating habits with expert
+            Dietara helps you build healthier eating habits with expert
             guidance, smart tracking, and quality meal support.
           </p>
         </div>
@@ -90,7 +91,7 @@ export default function HomePage() {
           <div className="why-left">
             <div className="why-card">
               <div className="why-icon">🥗</div>
-              <h3>Personalized Plans</h3>
+              <h3>Customized Plans</h3>
               <p>
                 Customized meal plans based on your health goals and daily
                 routine.
@@ -134,10 +135,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SCROLL CONTENT SECTION */}
+      <BMICalculator />
+
       <section className="landing-sections">
         <div className="content-grid">
-          {/* LEFT - DANGEROUS EATING VIDEO */}
           <div className="content-card large-card">
             <h2>⚠ Dangers of Unhealthy Eating</h2>
 
@@ -153,7 +154,6 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* RIGHT - DIETARY KITCHEN */}
           <div className="content-card side-card">
             <h2>Dietary Kitchen Food Videos</h2>
             <p className="orange-text">Instagram Post</p>
@@ -177,7 +177,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* ORDER HEALTHY MEALS */}
         <div className="content-card order-card">
           <div className="order-text">
             <h2>🍽 Order Healthy Meals</h2>

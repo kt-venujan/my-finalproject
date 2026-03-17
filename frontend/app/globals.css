@@ -236,85 +236,6 @@ body {
   text-align: center;
 }
 
-@media (max-width: 768px) {
-  .container {
-    min-height: 800px;
-  }
-
-  .form-container,
-  .toggle-container {
-    width: 100%;
-    height: 50%;
-  }
-
-  .sign-in {
-    top: 50%;
-    left: 0;
-  }
-
-  .sign-up {
-    top: 50%;
-    left: 0;
-  }
-
-  .container.active .sign-in {
-    transform: translateY(100%);
-  }
-
-  .container.active .sign-up {
-    transform: translateY(-100%);
-  }
-
-  .toggle-container {
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 50%;
-    border-radius: 0 0 100px 100px;
-  }
-
-  .container.active .toggle-container {
-    transform: translateY(100%);
-    border-radius: 100px 100px 0 0;
-  }
-
-  .toggle {
-    left: 0;
-    top: -100%;
-    width: 100%;
-    height: 200%;
-  }
-
-  .container.active .toggle {
-    transform: translateY(50%);
-  }
-
-  .toggle-left,
-  .toggle-right {
-    width: 100%;
-    height: 50%;
-  }
-
-  .toggle-left {
-    top: 0;
-    transform: translateY(-200%);
-  }
-
-  .container.active .toggle-left {
-    transform: translateY(0);
-  }
-
-  .toggle-right {
-    bottom: 0;
-    right: auto;
-    transform: translateY(0);
-  }
-
-  .container.active .toggle-right {
-    transform: translateY(200%);
-  }
-}
-
 .simple-auth-card {
   width: 100%;
   max-width: 430px;
@@ -395,18 +316,13 @@ body {
 .site-header {
   width: 100%;
   padding: 18px 24px 0;
-}
-
-/* ================= NAVBAR ================= */
-
-.site-header {
-  width: 100%;
-  padding: 18px 24px 0;
   position: fixed;
   top: 0;
   left: 0;
   z-index: 1000;
 }
+
+/* ================= NAVBAR ================= */
 
 .navbar {
   width: 100%;
@@ -530,6 +446,7 @@ body {
   background: #f8f4f6;
   color: #8b0c2e;
 }
+
 /* ================= LANDING PAGE ================= */
 
 .landing-page {
@@ -537,8 +454,6 @@ body {
   background: linear-gradient(180deg, #e0e7e3 0%, #eef6f2 100%);
   padding: 140px 24px 40px;
 }
-
-/* HERO IMAGE */
 
 .hero-image {
   width: 520px;
@@ -553,61 +468,6 @@ body {
   object-fit: cover;
 }
 
-/* ================= CONTENT GRID ================= */
-
-.content-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 18px;
-}
-
-.card {
-  background: #f9fbf9;
-  border: 1px solid #dde4dd;
-  border-radius: 22px;
-  padding: 20px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
-}
-
-.card h2 {
-  font-size: 28px;
-  color: #444844;
-  margin-bottom: 18px;
-}
-
-
-/* ================= MOBILE ================= */
-
-@media (max-width: 1100px) {
-  .hero-text h1 {
-    font-size: 52px;
-  }
-
-  .content-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .landing-page {
-    padding: 120px 16px 30px;
-  }
-
-  .hero-banner {
-    flex-direction: column;
-  }
-
-  .hero-text h1 {
-    font-size: 38px;
-  }
-
-  .hero-text p {
-    font-size: 18px;
-  }
-}
-
-/* ===== HOME HERO SECTION FIX ===== */
-
 .fitness-home {
   width: 100%;
   min-height: 100vh;
@@ -617,20 +477,17 @@ body {
 
 .hero-section {
   min-height: 100vh;
-
   background-image:
     linear-gradient(
       to right,
-      rgba(0, 0, 0, 0.45) 0%,
-      rgba(0, 0, 0, 0.25) 40%,
-      rgba(0, 0, 0, 0.15) 100%
+      rgba(0, 0, 0, 0.65) 0%,
+      rgba(0, 0, 0, 0.55) 40%,
+      rgba(0, 0, 0, 0.45) 100%
     ),
     url("/diet-hero.jpg");
-
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-
   display: flex;
 }
 
@@ -715,20 +572,218 @@ body {
   margin: 0;
 }
 
-/* video */
-/* VIDEO BOX */
+/* ================= WHY CHOOSE US ================= */
+
+.why-section {
+  width: 100%;
+  padding: 100px 60px;
+  background: #f3f7f5;
+}
+
+.why-title {
+  text-align: center;
+  margin-bottom: 70px;
+}
+
+.why-title h2 {
+  font-size: 54px;
+  color: #8b0c2e;
+  margin-bottom: 14px;
+  font-weight: 800;
+}
+
+.why-title p {
+  font-size: 20px;
+  color: #5f6672;
+  max-width: 760px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.why-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 320px 1fr;
+  gap: 50px;
+  align-items: center;
+}
+
+.why-left,
+.why-right {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.why-card {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  min-height: 260px;
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 30px 24px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.35s ease;
+}
+
+.why-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.why-icon {
+  font-size: 34px;
+  margin-bottom: 16px;
+}
+
+.why-card h3 {
+  font-size: 34px;
+  color: #1f2937;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.why-card p {
+  font-size: 20px;
+  color: #667085;
+  line-height: 1.7;
+  max-width: 340px;
+}
+
+.why-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.why-logo {
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.15);
+}
+
+.why-logo img {
+  width: 580px;
+  height: auto;
+  object-fit: contain;
+}
+
+.why-card::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0%;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    #e4047f,
+    #4d0127,
+    #ff0066
+  );
+  transition: 0.4s ease;
+  transform: translateX(-50%);
+}
+
+.why-card:hover::after {
+  width: 100%;
+}
+
+.why-card::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  transform: rotate(25deg);
+  opacity: 0;
+  transition: 0.6s;
+}
+
+.why-card:hover::before {
+  animation: shine 0.8s ease forwards;
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) rotate(25deg);
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: translateX(100%) rotate(25deg);
+    opacity: 0;
+  }
+}
+
+/* ================= VIDEO + INSTA SECTION ================= */
+
+.landing-sections {
+  width: 100%;
+  padding: 40px 60px 70px;
+  background: #edf3ef;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  align-items: stretch;
+}
+
+.content-card {
+  background: transparent;
+  border-radius: 22px;
+}
+
+.content-card h2 {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #8b0c2e;
+  margin-left: 100px;
+}
+
+.large-card,
+.side-card {
+  min-height: 650px;
+  display: flex;
+  flex-direction: column;
+}
 
 .video-box {
   width: 100%;
-  height: 420px;
+  height: 520px;
   border-radius: 22px;
   overflow: hidden;
   background: #000;
   margin-top: 14px;
   margin-bottom: 18px;
 }
-
-/* VIDEO */
 
 .danger-video {
   width: 100%;
@@ -739,93 +794,460 @@ body {
   border-radius: 22px;
 }
 
-/* GRID LAYOUT FIX (video width balance) */
-
-.content-grid{
-  display:grid;
-  grid-template-columns:1.6fr 1fr;
-  gap:18px;
+.insta-card {
+  width: 70%;
+  overflow: hidden;
+  border-radius: 16px;
+  background: transparent;
+  margin-left:100px;
 }
 
-/* HEADING COLOR */
-
-.content-card h2{
-  font-size:26px;
-  font-weight:700;
-  margin-bottom:16px;
-  color:#8b0c2e;   /* dark maroon */
+.orange-text {
+  color: #d97706;
+  font-weight: 600;
+  margin-bottom: 10px;
+  margin-left: 100px;
 }
 
-/* ================= WHY CHOOSE US ================= */
-
-.why-section{
-  padding:120px 80px;
-  background:#f6f9f7;
-  text-align:center;
+.large-card,
+.side-card {
+  display: flex;
+  flex-direction: column;
 }
 
-.why-title h2{
-  font-size:42px;
-  font-weight:800;
-  color:#8b0c2e;
-  margin-bottom:10px;
+.order-card {
+  margin-top: 30px;
+  background: #fff;
+  border-radius: 24px;
+  padding: 30px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
 }
 
-.why-title p{
-  color:#555;
-  max-width:650px;
-  margin:auto;
-  margin-bottom:70px;
+.order-text h2 {
+  font-size: 30px;
+  color: #8b0c2e;
+  margin-bottom: 12px;
 }
 
-.why-container{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:70px;
+.order-text h3 {
+  font-size: 22px;
+  color: #1f2937;
+  margin-bottom: 10px;
 }
 
-.why-left,
-.why-right{
-  display:flex;
-  flex-direction:column;
-  gap:40px;
+.order-text p {
+  font-size: 16px;
+  color: #667085;
+  line-height: 1.7;
 }
 
-.why-card{
-  background:white;
-  padding:24px;
-  border-radius:20px;
-  width:260px;
-  box-shadow:0 10px 25px rgba(0,0,0,0.08);
+.order-btn {
+  margin-top: 18px;
+  background: #8b0c2e;
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
-.why-icon{
-  font-size:30px;
-  margin-bottom:10px;
+.order-illustration {
+  font-size: 80px;
+  line-height: 1;
 }
 
-.why-card h3{
-  font-size:20px;
-  color:#333;
-  margin-bottom:6px;
+/* ================= MOBILE ================= */
+
+@media (max-width: 1200px) {
+  .why-section {
+    padding: 90px 30px;
+  }
+
+  .why-container {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .why-left,
+  .why-right {
+    gap: 24px;
+  }
+
+  .why-logo {
+    width: 220px;
+    height: 220px;
+  }
+
+  .why-logo img {
+    width: 230px;
+    height: 130px;
+  }
+
+  .landing-sections {
+    padding: 30px 30px 50px;
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .large-card,
+  .side-card {
+    min-height: auto;
+  }
 }
 
-.why-card p{
-  font-size:14px;
-  color:#666;
+@media (max-width: 768px) {
+  .container {
+    min-height: 800px;
+  }
+
+  .form-container,
+  .toggle-container {
+    width: 100%;
+    height: 50%;
+  }
+
+  .sign-in {
+    top: 50%;
+    left: 0;
+  }
+
+  .sign-up {
+    top: 50%;
+    left: 0;
+  }
+
+  .container.active .sign-in {
+    transform: translateY(100%);
+  }
+
+  .container.active .sign-up {
+    transform: translateY(-100%);
+  }
+
+  .toggle-container {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    border-radius: 0 0 100px 100px;
+  }
+
+  .container.active .toggle-container {
+    transform: translateY(100%);
+    border-radius: 100px 100px 0 0;
+  }
+
+  .toggle {
+    left: 0;
+    top: -100%;
+    width: 100%;
+    height: 200%;
+  }
+
+  .container.active .toggle {
+    transform: translateY(50%);
+  }
+
+  .toggle-left,
+  .toggle-right {
+    width: 100%;
+    height: 50%;
+  }
+
+  .toggle-left {
+    top: 0;
+    transform: translateY(-200%);
+  }
+
+  .container.active .toggle-left {
+    transform: translateY(0);
+  }
+
+  .toggle-right {
+    bottom: 0;
+    right: auto;
+    transform: translateY(0);
+  }
+
+  .container.active .toggle-right {
+    transform: translateY(200%);
+  }
+
+  .landing-page {
+    padding: 120px 16px 30px;
+  }
+
+  .hero-overlay {
+    padding: 120px 20px 40px;
+  }
+
+  .hero-text h1 {
+    font-size: 42px;
+  }
+
+  .hero-text p {
+    font-size: 18px;
+  }
+
+  .hero-stats {
+    gap: 30px;
+  }
+
+  .stat-box h2 {
+    font-size: 34px;
+  }
+
+  .stat-box p {
+    font-size: 16px;
+  }
+
+  .why-section {
+    padding: 70px 16px;
+  }
+
+  .why-title h2 {
+    font-size: 38px;
+  }
+
+  .why-title p {
+    font-size: 16px;
+  }
+
+  .why-card {
+    min-height: 220px;
+    border-radius: 22px;
+  }
+
+  .why-card h3 {
+    font-size: 26px;
+  }
+
+  .why-card p {
+    font-size: 16px;
+  }
+
+  .why-logo {
+    width: 180px;
+    height: 180px;
+  }
+
+  .why-logo img {
+    width: 100px;
+    height: 100px;
+  }
+
+  .landing-sections {
+    padding: 24px 16px 40px;
+  }
+
+  .video-box,
+  .insta-card {
+    height: 320px;
+  }
+
+  .order-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .order-illustration {
+    font-size: 58px;
+  }
 }
 
-.why-logo{
-  width:200px;
-  height:200px;
-  border-radius:50%;
-  overflow:hidden;
-  box-shadow:0 15px 40px rgba(0,0,0,0.2);
+/* ================= BMI CALCULATOR ================= */
+
+.bmi-section {
+  width: 100%;
+  padding: 90px 60px;
+  background: #f7faf8;
 }
 
-.why-logo img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
+.bmi-wrapper {
+  max-width: 1300px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.2fr 0.9fr;
+  gap: 32px;
+  align-items: stretch;
+}
+
+.bmi-left,
+.bmi-right {
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 34px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.08);
+}
+
+.bmi-tag {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #fbe9ee;
+  color: #8b0c2e;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.bmi-left h2 {
+  font-size: 44px;
+  color: #8b0c2e;
+  margin-bottom: 14px;
+}
+
+.bmi-desc {
+  color: #667085;
+  font-size: 17px;
+  line-height: 1.8;
+  max-width: 620px;
+  margin-bottom: 28px;
+}
+
+.bmi-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.bmi-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bmi-field label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #344054;
+}
+
+.bmi-field input {
+  width: 100%;
+  height: 54px;
+  border: 1px solid #d7dde2;
+  border-radius: 14px;
+  padding: 0 16px;
+  font-size: 15px;
+  outline: none;
+  background: #fff;
+}
+
+.bmi-field input:focus {
+  border-color: #8b0c2e;
+}
+
+.bmi-actions {
+  margin-top: 8px;
+}
+
+.bmi-btn {
+  background: #8b0c2e;
+  color: #fff;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.bmi-result-card {
+  background: linear-gradient(135deg, #8b0c2e, #b50d3d);
+  color: #fff;
+  border-radius: 24px;
+  padding: 28px;
+  margin-bottom: 22px;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.bmi-result-card h3 {
+  font-size: 24px;
+  margin-bottom: 18px;
+}
+
+.bmi-score {
+  font-size: 64px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 14px;
+}
+
+.bmi-empty {
+  opacity: 0.7;
+}
+
+.bmi-status {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.bmi-advice {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #fbe9ee;
+}
+
+.bmi-scale-card {
+  background: #f8fafc;
+  border-radius: 24px;
+  padding: 24px;
+}
+
+.bmi-scale-card h4 {
+  font-size: 22px;
+  color: #1f2937;
+  margin-bottom: 16px;
+}
+
+.bmi-scale-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e7eb;
+  color: #475467;
+}
+
+.bmi-scale-item:last-child {
+  border-bottom: none;
+}
+
+.bmi-scale-item strong {
+  color: #8b0c2e;
+}
+
+@media (max-width: 900px) {
+  .bmi-section {
+    padding: 70px 16px;
+  }
+
+  .bmi-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .bmi-left h2 {
+    font-size: 34px;
+  }
+
+  .bmi-score {
+    font-size: 52px;
+  }
+
+  .bmi-status {
+    font-size: 20px;
+  }
 }

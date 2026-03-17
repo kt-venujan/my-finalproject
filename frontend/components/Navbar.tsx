@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 const services = [
-  { name: "AI Diet Assistant", href: "/services#ai" },
+  { name: "AI Diet Assistant", href: "/ai-assistant" },
   { name: "Dietician Consultation", href: "/services#dietician" },
   { name: "Dietary Kitchen", href: "/services#kitchen" },
   { name: "Meal Tracking", href: "/services#tracking" },
