@@ -14,7 +14,6 @@ export default function HomePage() {
       script.async = true;
       document.body.appendChild(script);
     } else {
-      // already script iruntha refresh pannum
       // @ts-ignore
       if (window.instgrm) {
         // @ts-ignore
@@ -77,6 +76,64 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* WHY CHOOSE US SECTION */}
+      <section className="why-section">
+        <div className="why-title">
+          <h2>Why Choose Us</h2>
+          <p>
+            SmartDiet Hub helps you build healthier eating habits with expert
+            guidance, smart tracking, and quality meal support.
+          </p>
+        </div>
+
+        <div className="why-container">
+          <div className="why-left">
+            <div className="why-card">
+              <div className="why-icon">🥗</div>
+              <h3>Personalized Plans</h3>
+              <p>
+                Customized meal plans based on your health goals and daily
+                routine.
+              </p>
+            </div>
+
+            <div className="why-card">
+              <div className="why-icon">👩‍⚕️</div>
+              <h3>Expert Dieticians</h3>
+              <p>
+                Get trusted advice and guidance from certified nutrition
+                professionals.
+              </p>
+            </div>
+          </div>
+
+          <div className="why-center">
+            <div className="why-logo">
+              <img src="/logo.png" alt="Dietara Logo" />
+            </div>
+          </div>
+
+          <div className="why-right">
+            <div className="why-card">
+              <div className="why-icon">📊</div>
+              <h3>Smart Tracking</h3>
+              <p>
+                Monitor your meals, habits, and progress with an easy system.
+              </p>
+            </div>
+
+            <div className="why-card">
+              <div className="why-icon">🍲</div>
+              <h3>Healthy Kitchen</h3>
+              <p>
+                Enjoy balanced meals prepared with care for a healthier
+                lifestyle.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* SCROLL CONTENT SECTION */}
       <section className="landing-sections">
         <div className="content-grid">
@@ -84,12 +141,12 @@ export default function HomePage() {
           <div className="content-card large-card">
             <h2>⚠ Dangers of Unhealthy Eating</h2>
 
-           <div className="video-box">
-  <video className="danger-video" controls playsInline>
-    <source src="/junk-food.mp4" type="video/mp4" />
-    Your browser does not support the video tag.
-  </video>
-</div>
+            <div className="video-box">
+              <video className="danger-video" controls playsInline>
+                <source src="/junk-food.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
 
             <p>
               Learn how unhealthy food affects your body and long-term health.

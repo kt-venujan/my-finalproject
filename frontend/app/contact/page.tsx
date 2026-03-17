@@ -63,7 +63,7 @@ export default function ContactPage() {
             <div className="contact-details">
               <div>
                 <span>Email</span>
-                <p>support@smartdiethub.com</p>
+                <p>Dietara@gmail.com</p>
               </div>
 
               <div>
@@ -73,7 +73,7 @@ export default function ContactPage() {
 
               <div>
                 <span>Location</span>
-                <p>Colombo, Sri Lanka</p>
+                <p>jaffna, Sri Lanka</p>
               </div>
             </div>
           </div>

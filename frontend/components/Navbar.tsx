@@ -20,7 +20,6 @@ const dashboards = [
 ];
 
 export default function Navbar() {
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [showServices, setShowServices] = useState(false);
   const [showDashboards, setShowDashboards] = useState(false);
 
@@ -41,59 +40,59 @@ export default function Navbar() {
         <nav className="navbar-links">
           <Link href="/">Home</Link>
 
-         <div className="nav-dropdown">
-  <button
-    className="nav-dropdown-btn"
-    type="button"
-    onClick={() => {
-      setShowServices(!showServices);
-      setShowDashboards(false);
-    }}
-  >
-    Services
-  </button>
+          <div className="nav-dropdown">
+            <button
+              className="nav-dropdown-btn"
+              type="button"
+              onClick={() => {
+                setShowServices(!showServices);
+                setShowDashboards(false);
+              }}
+            >
+              Services
+            </button>
 
-  {showServices && (
-    <div className="dropdown-menu">
-      {services.map((item) => (
-        <Link
-          key={item.name}
-          href={item.href}
-          onClick={() => setShowServices(false)}
-        >
-          {item.name}
-        </Link>
-      ))}
-    </div>
-  )}
-</div>
+            {showServices && (
+              <div className="dropdown-menu">
+                {services.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setShowServices(false)}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div className="nav-dropdown">
-  <button
-    className="nav-dropdown-btn"
-    type="button"
-    onClick={() => {
-      setShowDashboards(!showDashboards);
-      setShowServices(false);
-    }}
-  >
-    Dashboards
-  </button>
+            <button
+              className="nav-dropdown-btn"
+              type="button"
+              onClick={() => {
+                setShowDashboards(!showDashboards);
+                setShowServices(false);
+              }}
+            >
+              Dashboards
+            </button>
 
-  {showDashboards && (
-    <div className="dropdown-menu">
-      {dashboards.map((item) => (
-        <Link
-          key={item.name}
-          href={item.href}
-          onClick={() => setShowDashboards(false)}
-        >
-          {item.name}
-        </Link>
-      ))}
-    </div>
-  )}
-</div>
+            {showDashboards && (
+              <div className="dropdown-menu">
+                {dashboards.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setShowDashboards(false)}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
 
           <Link href="/pricing">Pricing</Link>
           <Link href="/about">About</Link>
@@ -104,30 +103,8 @@ export default function Navbar() {
           <Link href="/login" className="login-btn">
             Login
           </Link>
-      
         </div>
-
-        <button
-          className="mobile-menu-btn"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          type="button"
-        >
-          ☰
-        </button>
       </div>
-
-      {mobileOpen && (
-        <div className="mobile-menu">
-          <Link href="/">Home</Link>
-          <Link href="/services">Services</Link>
-          <Link href="/dashboard">Dashboards</Link>
-          <Link href="/pricing">Pricing</Link>
-          <Link href="/about">About</Link>
-          <Link href="/contact">Contact</Link>
-          <Link href="/login">Login</Link>
-          <Link href="/register">Get Started</Link>
-        </div>
-      )}
     </header>
   );
 }
