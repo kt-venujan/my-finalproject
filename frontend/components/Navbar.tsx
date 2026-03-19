@@ -1,8 +1,9 @@
 "use client";
 
-import Image from "next/image";
+import Image from "next/image"; // ✅ IMPORTANT
 import Link from "next/link";
 import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 const services = [
   { name: "AI Diet Assistant", href: "/ai-assistant" },
@@ -19,17 +20,16 @@ const dashboards = [
   { name: "Admin Dashboard", href: "/dashboard#admin" },
 ];
 
-type NavbarProps = {
-  onLoginClick: () => void;
-};
-
-export default function Navbar({ onLoginClick }: NavbarProps) {
+export default function Navbar() {
   const [showServices, setShowServices] = useState(false);
   const [showDashboards, setShowDashboards] = useState(false);
+
+  const { openLogin } = useAuth();
 
   return (
     <header className="site-header">
       <div className="navbar">
+        {/* LOGO */}
         <Link href="/" className="navbar-brand">
           <Image
             src="/logo.png"
@@ -41,13 +41,15 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
           <span>Dietara</span>
         </Link>
 
+        {/* NAV LINKS */}
         <nav className="navbar-links">
           <Link href="/">Home</Link>
 
+          {/* SERVICES */}
           <div className="nav-dropdown">
             <button
-              className="nav-dropdown-btn"
               type="button"
+              className="nav-dropdown-btn"
               onClick={() => {
                 setShowServices(!showServices);
                 setShowDashboards(false);
@@ -71,10 +73,11 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
             )}
           </div>
 
+          {/* DASHBOARDS */}
           <div className="nav-dropdown">
             <button
-              className="nav-dropdown-btn"
               type="button"
+              className="nav-dropdown-btn"
               onClick={() => {
                 setShowDashboards(!showDashboards);
                 setShowServices(false);
@@ -103,8 +106,13 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
           <Link href="/contact">Contact</Link>
         </nav>
 
+        {/* LOGIN BUTTON */}
         <div className="navbar-actions">
-          <button type="button" className="login-btn" onClick={onLoginClick}>
+          <button
+            type="button"
+            className="login-btn"
+            onClick={openLogin}
+          >
             Login
           </button>
         </div>

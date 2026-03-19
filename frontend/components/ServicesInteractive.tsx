@@ -10,9 +10,9 @@ export default function ServicesInteractive() {
   const services = [
     { title: "AI Diet Assistant", desc: "Generate personalized diet plans using AI.", image: "/ai.jpg", link: "/ai-assistant" },
     { title: "Dietician Consultation", desc: "Connect with certified nutrition experts.", image: "/dietician.jpg", link: "/dietician" },
-    { title: "Dietary Kitchen", desc: "Order healthy meals.", image: "/food1.jpg", link: "/kitchen" },
-    { title: "Meal Tracking & Analytics", desc: "Track nutrition progress.", image: "/food2.jpg", link: "/tracking" },
-    { title: "Smart Reminders", desc: "Get reminders.", image: "/food3.jpg", link: "/reminders" },
+    { title: "Dietary Kitchen", desc: "Order healthy meals.", image: "/kitchen.jpg", link: "/kitchen" },
+    { title: "Meal Tracking & Analytics", desc: "Track nutrition progress.", image: "/track.jpg", link: "/tracking" },
+    { title: "Smart Reminders", desc: "Get reminders.", image: "/reminder.jpg", link: "/reminders" },
   ];
 
   const handleProtectedOpen = (path: string) => {

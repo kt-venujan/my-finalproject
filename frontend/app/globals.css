@@ -22,8 +22,8 @@ body {
   position: fixed;
   inset: 0;
   background: rgba(10, 10, 10, 0.4);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -101,7 +101,7 @@ body {
 }
 
 .container button {
-  background-color: #57051c;
+  background-color: #8b0c2e;
   color: #fff;
   font-size: 14px;
   padding: 12px 45px;
@@ -114,7 +114,7 @@ body {
 }
 
 .container button:hover {
-  background-color: #720924;
+  background-color: #8b0c2e;
 }
 
 .container button.hidden {
@@ -229,7 +229,7 @@ body {
 }
 
 .toggle {
-  background: linear-gradient(135deg, #7a0019, #a30f33);
+  background: linear-gradient(135deg, #8b0c2e, #8b0c2e);
   height: 100%;
   color: #fff;
   position: relative;
@@ -241,6 +241,51 @@ body {
 
 .container.active .toggle {
   transform: translateX(50%);
+}
+
+/* ===== REGISTER SIDE BUTTON UPDATED ===== */
+
+.toggle-panel button {
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+  border: 1.5px solid #fff;
+  color: #fff;
+  padding: 12px 40px;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.35s ease;
+}
+
+.toggle-panel button:hover {
+  background: #ffffff;
+  color: #a53860;
+  box-shadow: 0 8px 24px rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.toggle-panel button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.45),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.toggle-panel button:hover::before {
+  left: 120%;
+}
+
+.toggle-panel button:active {
+  transform: scale(0.97);
 }
 
 .toggle-panel {
@@ -337,7 +382,7 @@ body {
 }
 
 .simple-auth-card button {
-  background: #a4002c;
+  background: #8b0c2e;
   color: #fff;
   height: 46px;
   border: none;
@@ -369,7 +414,7 @@ body {
 }
 
 .back-link-wrap a {
-  color: #a4002c;
+  color: #8b0c2e;
   font-size: 14px;
   font-weight: 500;
 }
@@ -593,7 +638,7 @@ body {
 }
 
 .primary-btn {
-  background: #33030a;
+  background: #8b0c2e;
   color: white;
   border: none;
   padding: 16px 36px;
@@ -637,7 +682,7 @@ body {
 
 .why-section {
   width: 100%;
-  padding: 100px 60px;
+  padding: 60px 60px;
   background: #f3f7f5;
 }
 
@@ -1327,8 +1372,9 @@ body {
   }
 }
 
+/* services */
 .services-section {
-  padding: 100px 8%;
+  padding: 40px 8%;
   background: #f7f7f7;
 }
 
@@ -1337,13 +1383,13 @@ body {
   font-weight: 700;
   text-align: center;
   color: #1f2937;
-  margin-bottom: 60px;
+  margin-bottom: 30px;
 }
 
 .services-container {
   display: flex;
   gap: 60px;
-  align-items: center;
+  align-items:stretch;
 }
 
 .services-list {
@@ -1366,7 +1412,7 @@ body {
 }
 
 .service-item.active {
-  background: #a53860;
+  background: #8b0c2e;
 }
 
 .service-row {
@@ -1438,6 +1484,7 @@ body {
 
 .services-image img {
   width: 100%;
+  height: 100%;
   max-width: 520px;
   border-radius: 16px;
   object-fit: cover;
