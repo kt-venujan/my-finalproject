@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { LoginInput, RegisterInput } from "@/types/auth";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 export default function AuthCard() {
   const [isActive, setIsActive] = useState(false);
@@ -63,11 +64,13 @@ export default function AuthCard() {
 
     if (!loginData.email.trim()) {
       setErrorMessage("Please enter your email");
+      toast.error("Please enter your email");
       return;
     }
 
     if (!loginData.password.trim()) {
       setErrorMessage("Please enter your password");
+      toast.error("Please enter your password");
       return;
     }
 
@@ -77,6 +80,7 @@ export default function AuthCard() {
       await login(loginData);
 
       setSuccessMessage("Login successful ✅");
+      toast.success("Login successful ✅");
       goDashboard();
     } catch (error: any) {
       const backendMessage =
@@ -88,14 +92,18 @@ export default function AuthCard() {
         backendMessage.includes("user not found")
       ) {
         setErrorMessage("Wrong email");
+        toast.error("Wrong email");
       } else if (
         error?.response?.status === 401 ||
         backendMessage.includes("password") ||
         backendMessage.includes("invalid")
       ) {
         setErrorMessage("Invalid password");
+        toast.error("Invalid password");
       } else {
-        setErrorMessage(error?.response?.data?.message || "Login failed");
+        const message = error?.response?.data?.message || "Login failed";
+        setErrorMessage(message);
+        toast.error(message);
       }
     } finally {
       setLoading(false);
@@ -110,12 +118,15 @@ export default function AuthCard() {
     const passwordRegex = /^(?=.*[0-9]).{8,}$/;
 
     if (!passwordRegex.test(registerData.password)) {
-      setErrorMessage("Password must contain at least 8 characters and a number");
+      const message = "Password must contain at least 8 characters and a number";
+      setErrorMessage(message);
+      toast.error(message);
       return;
     }
 
     if (registerData.password !== registerData.confirmPassword) {
       setErrorMessage("Passwords do not match");
+      toast.error("Passwords do not match");
       return;
     }
 
@@ -125,11 +136,13 @@ export default function AuthCard() {
       await register(registerData);
 
       setSuccessMessage("Registration successful ✅");
+      toast.success("Registration successful ✅");
       goDashboard();
     } catch (error: any) {
-      setErrorMessage(
-        error?.response?.data?.message || "Registration failed"
-      );
+      const message =
+        error?.response?.data?.message || "Registration failed";
+      setErrorMessage(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
