@@ -33,13 +33,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     return () => window.removeEventListener("keydown", handleEsc);
   }, [isOpen, onClose]);
 
+  // 🔥 IMPORTANT
   if (!isOpen) return null;
 
   return (
-    <div className="auth-modal-overlay" onClick={onClose}>
-      <div className="auth-modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="auth-modal-close" onClick={onClose} aria-label="Close">
-          ✕
+    <div className="auth-modal-overlay">
+      <div className="auth-modal-content">
+        <button className="auth-modal-close" onClick={onClose}>
+          ×
         </button>
 
         <AuthCard />

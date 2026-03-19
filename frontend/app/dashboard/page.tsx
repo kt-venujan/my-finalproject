@@ -1,18 +1,30 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+
 export default function DashboardPage() {
-  const storedUser =
-    typeof window !== "undefined"
-      ? JSON.parse(localStorage.getItem("user") || "null")
-      : null;
+  const { user } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!user) {
+      router.replace("/login");
+    }
+  }, [user, router]);
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="dashboard-page">
       <div className="dashboard-card">
         <h1>Dashboard</h1>
-        <p>Welcome {storedUser?.username || "User"}</p>
-        <p>Email: {storedUser?.email || "-"}</p>
-        <p>Role: {storedUser?.role || "-"}</p>
+        <p>Welcome {user.username || "User"}</p>
+        <p>Email: {user.email || "No email"}</p>
+        <p>Role: {user.role || "user"}</p>
       </div>
     </div>
   );
