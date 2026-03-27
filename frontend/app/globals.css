@@ -1710,3 +1710,73 @@ h1, h2, h3, h4, h5 {
   border-top: 1px solid rgba(139, 12, 46, 0.15);
 }
 
+/* PAGE */
+.admin-page {
+  padding: 100px 20px;
+  background: #f9f9f9;
+  min-height: 100vh;
+}
+
+/* TITLE */
+.admin-title {
+  color: #8b0c2e;
+  margin-bottom: 20px;
+}
+
+/* CARD */
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  max-width: 400px;
+  margin-bottom: 30px;
+}
+
+.card input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.card button {
+  margin-top: 15px;
+  width: 100%;
+  padding: 10px;
+  background: #8b0c2e;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* GRID */
+.food-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+/* FOOD CARD */
+.food-card {
+  background: white;
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.food-card h3 {
+  color: #8b0c2e;
+}
+
+.food-card button {
+  margin-top: 10px;
+  background: crimson;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+}

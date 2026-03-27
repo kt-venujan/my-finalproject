@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import api from "@/lib/axios";
 
 export default function AdminDashboard() {
-  const [name, setName] = useState("");
-  const [calories, setCalories] = useState("");
   const [foods, setFoods] = useState<any[]>([]);
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [category, setCategory] = useState("");
 
-  // 🔥 FETCH FOODS
   const fetchFoods = async () => {
     const res = await api.get("/foods");
     setFoods(res.data);
@@ -18,48 +18,63 @@ export default function AdminDashboard() {
     fetchFoods();
   }, []);
 
-  // 🔥 ADD FOOD
   const addFood = async () => {
-    await api.post("/admin/foods", {
-      name,
-      calories,
-    });
+    if (!name || !price) return alert("Fill all fields");
 
-    alert("Food Added ✅");
+    await api.post("/admin/foods", { name, price, category });
+
+    setName("");
+    setPrice("");
+    setCategory("");
+    fetchFoods();
+  };
+
+  const deleteFood = async (id: string) => {
+    await api.delete(`/admin/foods/${id}`);
     fetchFoods();
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Admin Dashboard</h1>
+    <div className="admin-page">
+      <h1 className="admin-title">Admin Dashboard 🔥</h1>
 
-      <h2>Add Food</h2>
+      {/* ADD FOOD CARD */}
+      <div className="card">
+        <h2>Add Food</h2>
 
-      <input
-        placeholder="Food name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <br />
+        <input
+          placeholder="Food Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
 
-      <input
-        placeholder="Calories"
-        value={calories}
-        onChange={(e) => setCalories(e.target.value)}
-      />
-      <br />
+        <input
+          placeholder="Price"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+        />
 
-      <button onClick={addFood}>Add Food</button>
+        <input
+          placeholder="Category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        />
 
-      <hr />
+        <button onClick={addFood}>Add Food</button>
+      </div>
 
-      <h2>All Foods</h2>
+      {/* FOOD LIST */}
+      <div className="food-grid">
+        {foods.map((f) => (
+          <div className="food-card" key={f._id}>
+            <h3>{f.name}</h3>
+            <p>Rs.{f.price}</p>
+            <span>{f.category || "No category"}</span>
 
-      {foods.map((f) => (
-        <div key={f._id}>
-          {f.name} - {f.calories} cal
-        </div>
-      ))}
+            <button onClick={() => deleteFood(f._id)}>Delete</button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
