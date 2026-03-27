@@ -13,16 +13,9 @@ const services = [
   { name: "Reminders", href: "/reminder" },
 ];
 
-const dashboards = [
-  { name: "User Dashboard", href: "/dashboard" },
-  { name: "Dietician Dashboard", href: "/dashboard" },
-  { name: "Kitchen Dashboard", href: "/dashboard" },
-  { name: "Admin Dashboard", href: "/dashboard" },
-];
 
 export default function Navbar() {
   const [showServices, setShowServices] = useState(false);
-  const [showDashboards, setShowDashboards] = useState(false);
 
   const { user, openLogin, logout } = useAuth();
 
@@ -49,7 +42,7 @@ export default function Navbar() {
               className="nav-dropdown-btn"
               onClick={() => {
                 setShowServices(!showServices);
-                setShowDashboards(false);
+               (false);
               }}
             >
               Services
@@ -75,26 +68,10 @@ export default function Navbar() {
               type="button"
               className="nav-dropdown-btn"
               onClick={() => {
-                setShowDashboards(!showDashboards);
                 setShowServices(false);
               }}
             >
-              Dashboards
             </button>
-
-            {showDashboards && (
-              <div className="dropdown-menu">
-                {dashboards.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => setShowDashboards(false)}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-              </div>
-            )}
           </div>
 
           <Link href="/pricing">Pricing</Link>

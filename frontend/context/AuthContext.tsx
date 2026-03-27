@@ -7,6 +7,7 @@ import {
   ReactNode,
   useEffect,
 } from "react";
+import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
 import {
   AuthResponse,
@@ -32,16 +33,19 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
+
   const [user, setUser] = useState<User | null>(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
+  // 🔥 Load user
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
 
     if (savedUser) {
       try {
         setUser(JSON.parse(savedUser));
-      } catch (error) {
+      } catch {
         localStorage.removeItem("user");
       }
     }
@@ -50,19 +54,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const openLogin = () => setIsLoginOpen(true);
   const closeLogin = () => setIsLoginOpen(false);
 
+  // ================= LOGIN =================
   const login = async (data: LoginInput): Promise<User> => {
     const response = await api.post<AuthResponse>("/auth/login", data);
 
     const loggedInUser = response.data.user;
 
+    // save
     setUser(loggedInUser);
     localStorage.setItem("token", response.data.token);
     localStorage.setItem("user", JSON.stringify(loggedInUser));
 
     closeLogin();
+
+    // 🔥 IMPORTANT: use window.location (force redirect)
+    const role = loggedInUser.role;
+
+    if (role === "admin") {
+      window.location.href = "/dashboard/admin";
+    } else if (role === "dietician") {
+      window.location.href = "/dashboard/dietician";
+    } else {
+      window.location.href = "/dashboard/user";
+    }
+
     return loggedInUser;
   };
 
+  // ================= REGISTER =================
   const register = async (data: RegisterInput): Promise<User> => {
     const response = await api.post<AuthResponse>("/auth/register", data);
 
@@ -73,9 +92,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("user", JSON.stringify(registeredUser));
 
     closeLogin();
+
+    const role = registeredUser.role;
+
+    if (role === "admin") {
+      window.location.href = "/dashboard/admin";
+    } else if (role === "dietician") {
+      window.location.href = "/dashboard/dietician";
+    } else {
+      window.location.href = "/dashboard/user";
+    }
+
     return registeredUser;
   };
 
+  // ================= FORGOT PASSWORD =================
   const forgotPassword = async (
     data: ForgotPasswordInput
   ): Promise<{ message: string }> => {
@@ -83,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return response.data;
   };
 
+  // ================= RESET PASSWORD =================
   const resetPassword = async (
     data: ResetPasswordInput
   ): Promise<{ message: string }> => {
@@ -90,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return response.data;
   };
 
+  // ================= LOGOUT =================
   const logout = () => {
     setUser(null);
     setIsLoginOpen(false);
@@ -119,6 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// ================= HOOK =================
 export function useAuth() {
   const context = useContext(AuthContext);
 
@@ -127,4 +161,4 @@ export function useAuth() {
   }
 
   return context;
-} 
+}
