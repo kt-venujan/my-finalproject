@@ -1,76 +1,102 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import "./ai-assistant.css";
+import Link from "next/link";
 
-export default function AIAssistantPage() {
-  const router = useRouter();
-  const [allowed, setAllowed] = useState(false);
+const floatingBadges = [
+  { title: "Calories", value: "1,820 kcal", top: "12%", left: "8%" },
+  { title: "Protein", value: "92g", top: "28%", right: "3%" },
+  { title: "Water", value: "2.5L", bottom: "20%", left: "10%" },
+  { title: "BMI", value: "22.4", bottom: "12%", right: "8%" },
+];
 
-  useEffect(() => {
-    const token =
-      localStorage.getItem("token") ||
-      localStorage.getItem("userToken") ||
-      sessionStorage.getItem("token");
+const particles = Array.from({ length: 18 }, (_, i) => i + 1);
 
-    if (!token) {
-      alert("Please login or register first to access AI Diet Assistant.");
-      router.replace("/login?next=/ai-assistant");
-      return;
-    }
-
-    setAllowed(true);
-  }, [router]);
-
-  if (!allowed) {
-    return null;
-  }
-
+export default function AIDietAssistantPage() {
   return (
-    <div className="ai-page">
-      <div className="ai-hero">
-        <div className="ai-hero-text">
-          <span className="ai-badge">AI Powered</span>
-          <h1>AI Diet Assistant</h1>
+    <main className="ai-page">
+      <div className="ai-bg-grid" />
+      <div className="ai-bg-glow ai-glow-1" />
+      <div className="ai-bg-glow ai-glow-2" />
+
+      <section className="ai-hero">
+        <div className="ai-left">
+          <span className="ai-tag">Dietara AI NUTRITION</span>
+
+          <h1>
+            Your <span>AI Diet Assistant</span> for a Smarter,
+            Healthier Lifestyle
+          </h1>
+
           <p>
-            Get smart, personalized diet guidance based on your goals,
-            eating habits, and lifestyle.
+            Get personalized meal suggestions, calorie guidance, water tracking,
+            and nutrition insights with an intelligent AI assistant designed to
+            support your daily health journey.
           </p>
 
-          <div className="ai-hero-buttons">
-            <button className="ai-primary-btn">Start Now</button>
-            <button className="ai-secondary-btn">View Suggestions</button>
+          <div className="ai-actions">
+            <Link href="/login" className="ai-btn primary">
+              Start Now
+            </Link>
+
+            <a href="#ai-features" className="ai-btn secondary">
+              Explore Features
+            </a>
+          </div>
+
+          <div className="ai-stats">
+            <div className="ai-stat-card">
+              <h3>10K+</h3>
+              <p>Diet plans generated</p>
+            </div>
+
+            <div className="ai-stat-card">
+              <h3>95%</h3>
+              <p>User satisfaction</p>
+            </div>
+
+            <div className="ai-stat-card">
+              <h3>24/7</h3>
+              <p>AI assistance</p>
+            </div>
           </div>
         </div>
 
-        <div className="ai-hero-image">
-          <img src="/ai.jpg" alt="AI Diet Assistant" />
-        </div>
-      </div>
+        <div className="ai-right">
+          <div className="robot-scene">
+            <div className="robot-glow" />
+            <div className="orbit orbit-1" />
+            <div className="orbit orbit-2" />
+            <div className="orbit orbit-3" />
 
-      <div className="ai-features">
-        <div className="ai-feature-card">
-          <h3>Personalized Plans</h3>
-          <p>
-            Get meal suggestions tailored to your body goals and routine.
-          </p>
-        </div>
+            <div className="robot-core">
+              <img src="/ai-robot.png" alt="AI Diet Assistant Robot" />
+            </div>
 
-        <div className="ai-feature-card">
-          <h3>Smart Recommendations</h3>
-          <p>
-            Receive healthy food alternatives and better diet choices.
-          </p>
-        </div>
+            <div className="pulse pulse-1" />
+            <div className="pulse pulse-2" />
+            <div className="pulse pulse-3" />
 
-        <div className="ai-feature-card">
-          <h3>Daily Guidance</h3>
-          <p>
-            Track your meals and stay consistent with AI-powered support.
-          </p>
+            {particles.map((item) => (
+              <span
+                key={item}
+                className={`particle particle-${item}`}
+              />
+            ))}
+
+            {floatingBadges.map((badge, index) => (
+              <div
+                key={index}
+                className={`floating-badge badge-${index + 1}`}
+                style={badge as React.CSSProperties}
+              >
+                <small>{badge.title}</small>
+                <strong>{badge.value}</strong>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

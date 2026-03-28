@@ -1,43 +1,4 @@
-/* ================= INTRO WRAPPER ================= */
 
-.intro-wrapper {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  display: flex;
-  overflow: hidden;
-}
-
-/* LEFT PANEL */
-.intro-left {
-  width: 50%;
-  height: 100%;
-  background: url("/intro-left.png") center / cover no-repeat;
-
- 
-
-  transition: transform 1.2s cubic-bezier(0.77, 0, 0.18, 1);
-}
-
-/* RIGHT PANEL */
-.intro-right {
-  width: 50%;
-  height: 100%;
-  background: url("/intro-right.png") center / cover no-repeat;
-
-
-
-  transition: transform 1.2s cubic-bezier(0.77, 0, 0.18, 1);
-}
-
-/* 🔥 SPLIT ANIMATION */
-.split .intro-left {
-  transform: translateX(-120%);
-}
-
-.split .intro-right {
-  transform: translateX(120%);
-}
 
 * {
   margin: 0;
@@ -648,7 +609,45 @@ h1, h2, h3, h4, h5 {
   background-position: center;
   background-repeat: no-repeat;
 }
+/* animation */
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(-60px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
+/* default visible */
+.hero-text h1,
+.hero-text p,
+.primary-btn,
+.hero-stats {
+  opacity: 1;
+}
+
+/* animation trigger */
+.hero-start .hero-text h1 {
+  animation: slideUpFade 1s ease forwards;
+}
+
+.hero-start .hero-text p {
+  animation: slideUpFade 1s ease forwards;
+  animation-delay: 0.1s;
+}
+
+.hero-start .primary-btn {
+  animation: slideUpFade 1s ease forwards;
+  animation-delay: 0.2s;
+}
+
+.hero-start .hero-stats {
+  animation: slideUpFade 1s ease forwards;
+  animation-delay: 0.9s;
+}
 /*  SMOOTH BOTTOM FADE (NO HARD CUT) */
 .hero-section::after {
   content: "";
