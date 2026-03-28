@@ -19,6 +19,7 @@ import contactRoutes from "./routes/contactRoutes.js";
 import newsletterRoutes from "./routes/newsletterRoutes.js";
 import appointmentRoutes from "./routes/appointmentRoutes.js";
 import foodRoutes from "./routes/foodRoutes.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
 
 const app = express();
 
@@ -60,6 +61,7 @@ app.use("/api/kitchen", kitchenRequestRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/appointments", appointmentRoutes);
+app.use("/api/categories", categoryRoutes);
 
 
 app.use("/api", foodRoutes);
