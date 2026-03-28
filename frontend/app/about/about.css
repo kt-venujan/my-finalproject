@@ -1,0 +1,203 @@
+/* ================= PREMIUM ABOUT ================= */
+
+.premium-about {
+  position: relative;
+
+  /* MAIN CHANGE (DARK PREMIUM LOOK) */
+  background: radial-gradient(circle at center, #3b000c, #0a0002);
+
+  min-height: 100vh;
+  padding: 120px 80px;
+  display: flex;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+/* LEFT SIDE PREMIUM GLOW */
+.premium-about::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 65%;
+  height: 100%;
+
+  background: radial-gradient(
+    circle at 70% 50%, 
+    rgba(255, 40, 80, 0.5),
+    transparent 70%
+  );
+
+  filter: blur(120px);
+  z-index: 0;
+}
+
+/* SOFT COLOR BLEND */
+.premium-about::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 65%;
+  height: 100%;
+
+  background: linear-gradient(
+    to right,
+    rgba(255, 60, 100, 0.2),
+    transparent
+  );
+
+  z-index: 0;
+}
+
+/* ================= LEFT ================= */
+
+.about-left {
+  max-width: 930px;
+  color: #f5dada; /* light text for dark bg */
+  z-index: 2;
+  position: relative;
+}
+
+.about-left h1 {
+  font-size: 58px;
+  line-height: 1.2;
+  letter-spacing: 2px;
+  color: #ffffff;
+  padding-top: 20px;
+  padding-bottom: 50px;
+}
+
+.about-left p {
+  margin-top: 30px;
+  color: #e0bcbc;
+  line-height: 1.6;
+}
+
+/* PLUS */
+.plus {
+  width: 65px;
+  height: 65px;
+  background: #ff3c5a; /* 🔥 highlight color */
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 30px 0;
+  font-size: 30px;
+  box-shadow: 0 15px 40px rgba(255, 50, 80, 0.6);
+}
+
+/* ================= IMAGES ================= */
+
+.about-images {
+  position: relative;
+  width: 750px;
+  height: 700px;
+  z-index: 2;
+}
+
+/* COMMON CARD */
+.img {
+  position: absolute;
+  border-radius: 24px;
+  overflow: hidden;
+
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+
+  box-shadow: 
+    0 40px 100px rgba(0,0,0,0.7),
+    0 0 100px rgba(255, 40, 80, 0.6);
+
+  transition: all 0.4s ease;
+}
+
+/* HOVER */
+.img:hover {
+  transform: scale(1.08) translateY(-10px);
+  box-shadow: 
+    0 50px 120px rgba(0,0,0,0.8),
+    0 0 120px rgba(255, 40, 80, 0.9);
+}
+
+/* 🔥 HERO IMAGE */
+.img1 {
+  top: 40px;
+  right: 120px;
+  width: 380px;
+  height: 380px;
+  z-index: 3;
+}
+
+/* SIDE */
+.img2 {
+  top: 240px;
+  right: 0;
+  width: 280px;
+  height: 280px;
+  z-index: 2;
+  opacity: 0.9;
+}
+
+/* BACK */
+.img3 {
+  top: 460px;
+  right: 180px;
+  width: 260px;
+  height: 260px;
+  z-index: 1;
+  opacity: 0.8;
+}
+
+/* IMAGE FIT */
+.img-fit {
+  object-fit: cover;
+  object-position: center;
+}
+
+/* ================= BIG TEXT ================= */
+
+.bg-text {
+  position: absolute;
+  bottom: 40px;
+  left: 80px;
+  font-size: 150px;
+  color: rgba(255, 80, 120, 0.08); /* 🔥 subtle glow text */
+  font-weight: bold;
+  letter-spacing: 12px;
+  z-index: 1;
+}
+
+/* ================= FLOAT ================= */
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
+
+.img1 { animation: float 4s ease-in-out infinite; }
+.img2 { animation: float 5s ease-in-out infinite; }
+.img3 { animation: float 6s ease-in-out infinite; }
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 900px) {
+  .premium-about {
+    flex-direction: column;
+    padding: 80px 20px;
+  }
+
+  .about-images {
+    margin-top: 40px;
+    width: 100%;
+    height: 500px;
+  }
+
+  .bg-text {
+    font-size: 80px;
+    left: 20px;
+  }
+}

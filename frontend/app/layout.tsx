@@ -1,10 +1,10 @@
 import { ReactNode } from "react";
 import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer"; // ✅ ADD THIS
+import Footer from "@/components/Footer";
 import "./globals.css";
 
-import { Poppins, Sora } from "next/font/google";
+import { Poppins, Sora, Playfair_Display } from "next/font/google";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -16,10 +16,17 @@ const poppins = Poppins({
   variable: "--font-body",
 });
 
-/* HEADING FONT */
+/* UI FONT */
 const sora = Sora({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  variable: "--font-ui",
+});
+
+/* 🔥 LUXURY HEADING FONT */
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
   variable: "--font-heading",
 });
 
@@ -35,24 +42,19 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${poppins.variable} ${sora.variable}`}>
+      <body
+        className={`${poppins.variable} ${sora.variable} ${playfair.variable}`}
+      >
         <AuthProvider>
           <Navbar />
 
-          {/* ===== PAGE CONTENT ===== */}
           {children}
 
-          {/* ===== FOOTER ===== */}
           <Footer />
 
-          {/* ===== TOAST ===== */}
           <ToastContainer
             position="top-right"
             autoClose={2000}
-            newestOnTop
-            closeOnClick
-            pauseOnHover
-            draggable
             theme="light"
           />
         </AuthProvider>

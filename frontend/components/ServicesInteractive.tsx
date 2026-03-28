@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify"; // ✅ ADD THIS
-
+import { toast } from "react-toastify";
 type ServiceItem = {
   title: string;
   desc: string;

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { usePathname } from "next/navigation"; // ✅ ADD
 
 const services = [
   { name: "AI Diet Assistant", href: "/ai-assistant" },
@@ -13,15 +14,22 @@ const services = [
   { name: "Reminders", href: "/reminder" },
 ];
 
-
 export default function Navbar() {
-  const [showServices, setShowServices] = useState(false);
+  const pathname = usePathname(); // ✅ GET CURRENT PATH
 
+  // 🔥 HIDE NAVBAR IN ADMIN
+  if (pathname.startsWith("/dashboard/admin")) {
+    return null;
+  }
+
+  const [showServices, setShowServices] = useState(false);
   const { user, openLogin, logout } = useAuth();
 
   return (
     <header className="site-header">
       <div className="navbar">
+
+        {/* LOGO */}
         <Link href="/" className="navbar-brand">
           <Image
             src="/logo.png"
@@ -33,17 +41,16 @@ export default function Navbar() {
           <span>Dietara</span>
         </Link>
 
+        {/* NAV LINKS */}
         <nav className="navbar-links">
           <Link href="/">Home</Link>
 
+          {/* SERVICES DROPDOWN */}
           <div className="nav-dropdown">
             <button
               type="button"
               className="nav-dropdown-btn"
-              onClick={() => {
-                setShowServices(!showServices);
-               (false);
-              }}
+              onClick={() => setShowServices(!showServices)} // ✅ FIXED
             >
               Services
             </button>
@@ -63,22 +70,12 @@ export default function Navbar() {
             )}
           </div>
 
-          <div className="nav-dropdown">
-            <button
-              type="button"
-              className="nav-dropdown-btn"
-              onClick={() => {
-                setShowServices(false);
-              }}
-            >
-            </button>
-          </div>
-
           <Link href="/pricing">Pricing</Link>
           <Link href="/about">About</Link>
           <Link href="/contact">Contact</Link>
         </nav>
 
+        {/* ACTION BUTTON */}
         <div className="navbar-actions">
           {user ? (
             <button
@@ -98,6 +95,7 @@ export default function Navbar() {
             </button>
           )}
         </div>
+
       </div>
     </header>
   );
