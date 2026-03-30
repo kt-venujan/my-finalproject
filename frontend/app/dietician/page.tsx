@@ -1,164 +1,221 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { toast } from "react-toastify";
 
 export default function DieticianPage() {
-  const router = useRouter();
-
   const [dieticians, setDieticians] = useState<any[]>([]);
+  const [filter, setFilter] = useState("available");
 
-  // 🔥 FETCH DIETICIANS
-  const fetchDieticians = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/dieticians");
-      console.log("DIETICIANS DATA:", res.data);
-      setDieticians(res.data);
-    } catch (err) {
-      console.error("Fetch error:", err);
-    }
-  };
+  const [selected, setSelected] = useState<any>(null);
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [mode, setMode] = useState("chat");
+
+  const [selectedCard, setSelectedCard] = useState("commercial");
 
   useEffect(() => {
-    fetchDieticians();
+    setDieticians([
+      { _id: "1", user: { username: "Dr. Aisha" }, specialization: "Weight Loss", available: true },
+      { _id: "2", user: { username: "Dr. Rahul" }, specialization: "Diabetes", available: true },
+      { _id: "3", user: { username: "Dr. Priya" }, specialization: "Heart Health", available: true },
+      { _id: "4", user: { username: "Dr. Arjun" }, specialization: "Sports Nutrition", available: true },
+      { _id: "5", user: { username: "Dr. Kumar" }, specialization: "Women's Health", available: false },
+      { _id: "6", user: { username: "Dr. Sneha" }, specialization: "PCOS", available: false },
+      { _id: "7", user: { username: "Dr. Meena" }, specialization: "Child Nutrition", available: true },
+      { _id: "8", user: { username: "Dr. Sanjay" }, specialization: "Muscle Gain", available: true },
+      { _id: "9", user: { username: "Dr. Kavya" }, specialization: "Pregnancy Diet", available: false },
+      { _id: "10", user: { username: "Dr. Nimal" }, specialization: "General Diet", available: true },
+    ]);
   }, []);
 
-  // 🔥 BOOK FUNCTION (FINAL)
-  const handleBooking = async (dieticianId: string) => {
-    try {
-      const token = localStorage.getItem("token");
+  const filtered = dieticians.filter((d: any) =>
+    filter === "available" ? d.available : !d.available
+  );
 
-      if (!token) {
-        alert("Please login first 🔐");
-        return router.push("/login");
-      }
+ const handlePaymentSubmit = () => {
+  if (!date || !time) {
+    toast.error("Select date & time ");
+    return;
+  }
 
-      console.log("TOKEN:", token);
-      console.log("DIETICIAN ID:", dieticianId);
-
-      const res = await axios.post(
-        "http://localhost:5000/api/bookings",
-        {
-          dieticianId,
-          date: "2026-04-01",
-          time: "10:00 AM",
-          mode: "chat",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true, // 🔥 VERY IMPORTANT
-        }
-      );
-
-      console.log("BOOKING SUCCESS:", res.data);
-
-      // ✅ redirect to chat
-      router.push(`/chat/${res.data._id}`);
-
-    } catch (err: any) {
-      console.error("BOOKING ERROR:", err.response?.data || err.message);
-
-      alert(
-        err.response?.data?.message ||
-        "Booking failed ❌"
-      );
-    }
-  };
+  toast.success("Payment Successful 🎉");
+  setSelected(null);
+};
 
   return (
-    <div className="diet-page">
+    <div className="diet-modern">
 
-      {/* 🔥 HERO */}
-      <section className="hero-wrap">
-        <div className="hero-card">
+      {/* HERO */}
+      <div className="hero">
+        <div>
+          <h1>Dieticians</h1>
+          <p>Book your diet consultation with a professional dietician.</p>
+        </div>
+        <img src="/doctor.png" />
+      </div>
 
-          <div className="hero-left">
-            <h1 className="split-text">
-              DIET<span>ICIAN</span>
-            </h1>
+      {/* FILTER */}
+      <div className="filter">
+        <button className={filter === "available" ? "active" : ""} onClick={() => setFilter("available")}>
+          ● Available
+        </button>
+        <button className={filter === "not" ? "active" : ""} onClick={() => setFilter("not")}>
+          ○ Not Available
+        </button>
+      </div>
+
+      {/* GRID */}
+      <div className="grid">
+        {filtered.map((d: any) => (
+          <div key={d._id} className={`card ${!d.available ? "disabled" : ""}`}>
+            <img src="/doc.jpg" />
+
+            <div className="info">
+              <h3>{d.user.username}</h3>
+              <p>{d.specialization}</p>
+              ⭐⭐⭐⭐⭐ 4.8
+            </div>
+
+            <div className="right">
+              <span className={d.available ? "yes" : "no"}>
+                {d.available ? "Available" : "Not Available"}
+              </span>
+
+              <button disabled={!d.available} onClick={() => setSelected(d)}>
+                Book Now
+              </button>
+            </div>
           </div>
+        ))}
+      </div>
 
-          <div className="hero-center">
-            <img src="/diet-face.png" alt="diet" />
-          </div>
+      {/* 🔥 MODAL */}
+      {selected && (
+  <div className="modal">
 
-          <div className="hero-right">
-            <h1 className="split-text right-text">
-              BOOK<span>ING</span>
-            </h1>
-          </div>
+    <div className="modal-box split">
 
+      {/* LEFT */}
+      <div className="left">
+
+        <h2>Book {selected.user.username}</h2>
+
+        <label>Date</label>
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+
+        <label>Time</label>
+        <input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+
+        <label>Mode</label>
+        <select value={mode} onChange={(e) => setMode(e.target.value)}>
+          <option value="chat">Chat</option>
+          <option value="call">Call</option>
+        </select>
+
+        <p>Consultation: Rs.1500</p>
+        <p>Service Fee: Rs.200</p>
+        <b>Total: Rs.1700</b>
+
+        <button className="close" onClick={() => setSelected(null)}>
+          Cancel
+        </button>
+      </div>
+
+      {/* RIGHT */}
+      <div className="right-panel">
+
+        <h4>Choose Payment Method</h4>
+
+        {/* 🔥 CARD LIST */}
+        <div
+          className={`card-select ${selectedCard === "commercial" ? "active" : ""}`}
+          onClick={() => setSelectedCard("commercial")}
+        >
+          <p>Commercial Bank</p>
+          <span>4567 •••• •••• 1234</span>
         </div>
-      </section>
 
-      {/* 🔥 SERVICES */}
-      <section className="services">
-        <div className="service-card">
-          <img src="/diet1.jpg" />
-          <h3>Cooking Coaching</h3>
+        <div
+          className={`card-select ${selectedCard === "hnb" ? "active" : ""}`}
+          onClick={() => setSelectedCard("hnb")}
+        >
+          <p>HNB Bank</p>
+          <span>4578 •••• •••• 5678</span>
         </div>
 
-        <div className="service-card">
-          <img src="/diet2.jpg" />
-          <h3>Family Nutrition</h3>
+        <div
+          className={`card-select ${selectedCard === "sampath" ? "active" : ""}`}
+          onClick={() => setSelectedCard("sampath")}
+        >
+          <p>Sampath Bank</p>
+          <span>4599 •••• •••• 9876</span>
         </div>
 
-        <div className="service-card">
-          <img src="/diet3.jpg" />
-          <h3>Weight Management</h3>
-        </div>
-      </section>
+        {/* 🔥 DYNAMIC CARD UI */}
+        <div className={`card-ui ${selectedCard}`}>
 
-      {/* 🔥 DIETICIANS */}
-      <section className="dieticians">
-        <h2>Available Dieticians</h2>
-
-        <div className="diet-grid">
-          {dieticians.map((d: any) => {
-            const dieticianId = d.user?._id;
-
-            return (
-              <div className="diet-card" key={d._id}>
-                <img src="/doc.jpg" />
-
-                <h3>{d.user?.username || "No Name"}</h3>
-                <p>{d.specialization || "Nutrition Expert"}</p>
-
-                <button
-                  onClick={() => {
-                    if (!dieticianId) {
-                      console.error("❌ INVALID DIETICIAN:", d);
-                      alert("Invalid dietician ❌");
-                      return;
-                    }
-
-                    console.log("CLICKED DIETICIAN:", dieticianId);
-
-                    handleBooking(dieticianId);
-                  }}
-                >
-                  Book Now
-                </button>
+          {selectedCard === "commercial" && (
+            <>
+              <p>Commercial Bank</p>
+              <h3>Arththika</h3>
+              <div className="card-number">4567 •••• •••• 1234</div>
+              <div className="card-bottom">
+                <span>05/27</span>
+                <span>VISA</span>
               </div>
-            );
-          })}
-        </div>
-      </section>
+            </>
+          )}
 
-      {/* 🔥 STEPS */}
-      <section className="steps">
-        <h2>How It Works</h2>
+          {selectedCard === "hnb" && (
+            <>
+              <p>HNB Bank</p>
+              <h3>Arththika</h3>
+              <div className="card-number">4578 •••• •••• 5678</div>
+              <div className="card-bottom">
+                <span>11/26</span>
+                <span>MASTER</span>
+              </div>
+            </>
+          )}
 
-        <div className="steps-grid">
-          <div className="step">1. Book</div>
-          <div className="step">2. Chat</div>
-          <div className="step">3. Plan</div>
-          <div className="step">4. Kitchen</div>
+          {selectedCard === "sampath" && (
+            <>
+              <p>Sampath Bank</p>
+              <h3>Arththika</h3>
+              <div className="card-number">4599 •••• •••• 9876</div>
+              <div className="card-bottom">
+                <span>08/28</span>
+                <span>VISA</span>
+              </div>
+            </>
+          )}
+
         </div>
-      </section>
+
+        {/* 🔥 CARD FORM */}
+        <div className="card-details">
+
+          <input placeholder="Card Holder Name" />
+          <input placeholder="Card Number" />
+
+          <div className="row">
+            <input placeholder="MM/YY" />
+            <input placeholder="CVC" />
+          </div>
+
+         <button className="submit-btn" onClick={handlePaymentSubmit}>
+       Submit Payment
+         </button>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+)}
+    
 
     </div>
   );
