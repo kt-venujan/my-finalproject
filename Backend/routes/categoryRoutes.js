@@ -5,17 +5,18 @@ import {
   deleteCategory,
 } from "../controllers/categoryController.js";
 
-import { protect } from "../middlewares/authMiddleware.js";
 import allowRoles from "../middlewares/roleMiddleware.js";
+import { protect, adminOnly } from "../middlewares/authMiddleware.js";
+
 
 const router = express.Router();
 
 // ADMIN CREATE
-router.post("/", protect, allowRoles("admin"), createCategory);
+router.post("/create", protect, adminOnly, createCategory);
 
 // PUBLIC GET
 router.get("/", getCategories);
 
-router.delete("/:id", protect, allowRoles("admin"), deleteCategory);
+router.delete("/:id", protect, adminOnly, deleteCategory);
 
 export default router;

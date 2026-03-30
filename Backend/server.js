@@ -21,6 +21,12 @@ import appointmentRoutes from "./routes/appointmentRoutes.js";
 import foodRoutes from "./routes/foodRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import aiRoutes from "./routes/aiRoutes.js";
+import dieticianRoutes from "./routes/dieticianRoutes.js";
+import bookingRoutes from "./routes/bookingRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
+
+
+
 
 
 
@@ -66,9 +72,10 @@ app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/ai", aiRoutes);
-
-
 app.use("/api", foodRoutes);
+app.use("/api/dieticians", dieticianRoutes);
+app.use("/api/bookings", bookingRoutes);
+app.use("/api/chat", chatRoutes);
 
 // server
 const PORT = process.env.PORT || 5000;

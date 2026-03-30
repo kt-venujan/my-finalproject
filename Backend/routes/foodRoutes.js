@@ -10,10 +10,10 @@ import allowRoles from "../middlewares/roleMiddleware.js";
 
 const router = express.Router();
 
-// ✅ CREATE FOOD (admin)
+//  CREATE FOOD (admin)
 router.post("/admin/foods", protect, allowRoles("admin"), createFood);
 
-// ✅ GET FOODS (user)
+// GET FOODS (user)
 router.get("/foods", getFoods);
 
 //  DELETE FOOD (FIX HERE )
