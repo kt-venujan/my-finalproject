@@ -76,8 +76,44 @@ const handleAnswer = async (value: string) => {
   setForm(updated);
   setInput("");
 
+  // 👉 IF NOT LAST QUESTION
   if (step < questions.length - 1) {
     setStep(step + 1);
+  } 
+  else {
+    try {
+      // 🔥 CALL BACKEND
+      const res = await axios.post(
+        "http://localhost:5000/api/ai/generate",
+        updated,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      // 🔥 SET PLAN
+      setPlan(res.data.plan);
+
+      // 🔥 SWITCH TO CHAT MODE
+      setChatMode(true);
+
+      // 🔥 INITIAL CHAT MESSAGE
+      setMessages([
+        {
+          sender: "ai",
+          text: "Hi 👋 Your diet plan is ready! You can now ask me anything about your diet.",
+        },
+      ]);
+
+      // optional session id
+      setSessionId(Date.now().toString());
+
+    } catch (err) {
+      console.error(err);
+      alert("AI failed 😢 check backend");
+    }
   }
 };
 
