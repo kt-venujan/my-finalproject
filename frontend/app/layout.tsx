@@ -9,6 +9,8 @@ import { Poppins, Sora, Playfair_Display } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import StarCursor from "@/components/StarCursor";
+
 /* BODY FONT */
 const poppins = Poppins({
   subsets: ["latin"],
@@ -23,7 +25,7 @@ const sora = Sora({
   variable: "--font-ui",
 });
 
-/* 🔥 LUXURY HEADING FONT */
+/* HEADING FONT */
 const playfair = Playfair_Display({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
@@ -46,17 +48,31 @@ export default function RootLayout({
         className={`${poppins.variable} ${sora.variable} ${playfair.variable}`}
       >
         <AuthProvider>
+
+          {/*  PREMIUM CURSOR */}
+          <StarCursor />
+
+          {/*  NAVBAR */}
           <Navbar />
 
+          {/*  PAGE CONTENT */}
           {children}
 
+          {/* FOOTER */}
           <Footer />
 
+          {/*  TOASTIFY (FINAL FIXED VERSION) */}
           <ToastContainer
-            position="top-right"
+            position="top-center"   //  better than right
             autoClose={2000}
-            theme="light"
+            hideProgressBar={false}
+            newestOnTop
+            closeOnClick
+            pauseOnHover
+            draggable
+            theme="dark"            //  IMPORTANT (matches your UI)
           />
+
         </AuthProvider>
       </body>
     </html>

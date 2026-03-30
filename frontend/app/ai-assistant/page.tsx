@@ -59,36 +59,56 @@ export default function AIDietAssistantPage() {
   const [input, setInput] = useState("");
 
   const current = questions[step];
+  const [chatMode, setChatMode] = useState(false);
+  const [sessionId, setSessionId] = useState("");
+  const [messages, setMessages] = useState<any[]>([]);
 
   /* ---------------- BACK FUNCTION ---------------- */
   const goBack = () => {
     if (step > 0) setStep(step - 1);
   };
 
-  /* ---------------- HANDLE ANSWER ---------------- */
-  const handleAnswer = async (value: string) => {
-    if (!value) return;
+/* ---------------- HANDLE ANSWER ---------------- */
+const handleAnswer = async (value: string) => {
+  if (!value) return;
 
-    const updated = { ...form, [current.key]: value };
-    setForm(updated);
-    setInput("");
+  const updated = { ...form, [current.key]: value };
+  setForm(updated);
+  setInput("");
 
-    if (step < questions.length - 1) {
-      setStep(step + 1);
-    } else {
-      const res = await axios.post(
-        "http://localhost:5000/api/ai/generate",
-        updated,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+  if (step < questions.length - 1) {
+    setStep(step + 1);
+  }
+};
 
-      setPlan(res.data.plan);
+/* ---------------- SEND MESSAGE FUNCTION ---------------- */
+const sendMessage = async () => {
+  if (!input) return;
+
+  const userMsg = { sender: "user", text: input };
+
+  setMessages((prev) => [...prev, userMsg]);
+
+  const res = await axios.post(
+   "http://localhost:5000/api/ai/generate",
+    {
+      sessionId,
+      message: input,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
     }
-  };
+  );
+
+  setMessages((prev) => [
+    ...prev,
+    { sender: "ai", text: res.data.reply },
+  ]);
+
+  setInput("");
+};
 
   return (
     <main className="ai-page">
@@ -172,7 +192,7 @@ export default function AIDietAssistantPage() {
       {/* ================= CHATBOT ================= */}
       <section id="chatbot" className="chat-section">
         <div className="chat-box">
-          {!plan ? (
+          {!chatMode ? (
             <>
               <h2>{current.label}</h2>
 
@@ -204,6 +224,29 @@ export default function AIDietAssistantPage() {
                   )}
                 </>
               )}
+
+              {chatMode && (
+               <div className="chat-container">
+               {messages.map((msg, i) => (
+                <div key={i} className={`chat-bubble ${msg.sender}`}>
+                 {msg.text}
+               </div>
+             ))}
+
+              <div className="chat-input-box">
+            <input
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        placeholder="Ask anything..."
+        onKeyDown={(e) => {
+          if (e.key === "Enter") sendMessage();
+        }}
+      />
+
+      <button onClick={sendMessage}>Send</button>
+          </div>
+             </div>
+        )}
 
               {/* OPTIONS */}
               {current.type === "options" && current.options && (

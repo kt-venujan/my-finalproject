@@ -82,17 +82,7 @@
   pointer-events: none;
 }
 
-.fork {
-  position: absolute;
-  left: 21%;
-  height: 260px;
-}
 
-.knife {
-  position: absolute;
-  right: 21%;
-  height: 260px;
-}
 
 /* ANIMATION */
 @keyframes slideDown {
@@ -170,7 +160,7 @@
 /* IMAGE */
 .card img {
   width: 100%;
-  height: 180px;   /* 🔥BIGGER */
+  height: 180px;   /* BIGGER */
   object-fit: cover;
   border-radius: 15px;
 }

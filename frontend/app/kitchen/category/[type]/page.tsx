@@ -12,7 +12,7 @@ export default function CategoryPage() {
   const [foods, setFoods] = useState<any[]>([]);
   const [cart, setCart] = useState<any[]>([]);
 
-  // 🔥 FETCH FROM BACKEND
+  // FETCH FROM BACKEND
   useEffect(() => {
     if (!type) return;
 
@@ -28,7 +28,7 @@ export default function CategoryPage() {
     fetchFoods();
   }, [type]);
 
-  // ✅ ADD TO CART
+  // ADD TO CART
   const addToCart = (item: any) => {
     setCart((prev) => {
       const exist = prev.find((i) => i._id === item._id);
@@ -43,7 +43,7 @@ export default function CategoryPage() {
     });
   };
 
-  // ✅ INCREASE
+  // INCREASE
   const increaseQty = (id: string) => {
     setCart((prev) =>
       prev.map((item) =>
@@ -52,7 +52,7 @@ export default function CategoryPage() {
     );
   };
 
-  // ✅ DECREASE
+  //  DECREASE
   const decreaseQty = (id: string) => {
     setCart((prev) =>
       prev
@@ -63,12 +63,12 @@ export default function CategoryPage() {
     );
   };
 
-  // ✅ REMOVE ITEM
+  //  REMOVE ITEM
   const removeItem = (id: string) => {
     setCart((prev) => prev.filter((item) => item._id !== id));
   };
 
-  // ✅ CLEAR CART
+  //  CLEAR CART
   const clearCart = () => {
     setCart([]);
   };
@@ -88,19 +88,34 @@ export default function CategoryPage() {
             <p>No foods available</p>
           ) : (
             foods.map((item: any) => (
-              <div className="food-card" key={item._id}>
-                <img src={item.image || "/default.jpg"} />
-                <h3>{item.name}</h3>
-                <p>Rs. {item.price}</p>
+  <div className="food-card" key={item._id}>
+    
+    {/*  IMAGE FIX */}
+    <img
+      src={
+        item.image
+          ? `http://localhost:5000${item.image}`
+          : "http://localhost:5000/uploads/default.jpg"
+      }
+      style={{
+        width: "100%",
+        height: "150px",
+        objectFit: "cover",
+        borderRadius: "10px",
+      }}
+    />
 
-                <button
-                  className="add-btn"
-                  onClick={() => addToCart(item)}
-                >
-                  Add
-                </button>
-              </div>
-            ))
+    <h3>{item.name}</h3>
+    <p>Rs. {item.price}</p>
+
+    <button
+      className="add-btn"
+      onClick={() => addToCart(item)}
+    >
+      Add
+    </button>
+  </div>
+))
           )}
         </div>
 
@@ -131,7 +146,7 @@ export default function CategoryPage() {
               className="remove-btn"
               onClick={() => removeItem(item._id)}
             >
-              ❌
+              
             </button>
 
           </div>

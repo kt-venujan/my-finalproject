@@ -17,7 +17,6 @@ export default function FoodPage() {
   const [catName, setCatName] = useState("");
   const [catImage, setCatImage] = useState("");
 
-  // FETCH
   useEffect(() => {
     fetchFoods();
     fetchCategories();
@@ -34,6 +33,7 @@ export default function FoodPage() {
   };
 
   const addFood = async () => {
+    
     await api.post("/admin/foods", {
       name,
       price: Number(price),
@@ -55,10 +55,16 @@ export default function FoodPage() {
   };
 
   const addCategory = async () => {
-    await api.post("/categories", {
+        const token = localStorage.getItem("token");
+
+    await api.post("/categories/create", {
       name: catName,
       image: catImage || "",
-    });
+    }, {
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ MUST
+        },
+      });
 
     setCatName("");
     setCatImage("");
@@ -73,16 +79,12 @@ export default function FoodPage() {
 
   return (
     <div className="layout">
-
-      {/* SIDEBAR */}
       <AdminSidebar />
 
-      {/* MAIN */}
       <div className="main">
         <h2>Food Management 🍽️</h2>
 
         <div className="panel">
-
           <div className="food-row">
 
             {/* ADD CATEGORY */}
@@ -116,9 +118,10 @@ export default function FoodPage() {
           <div className="food-grid">
             {categories.map((c) => (
               <div className="food-card" key={c._id}>
-                <img src={`http://localhost:5000${c.image}`} />
                 <h4>{c.name}</h4>
-                <button className="delete" onClick={() => deleteCategory(c._id)}>Delete</button>
+                <button className="delete" onClick={() => deleteCategory(c._id)}>
+                  Delete
+                </button>
               </div>
             ))}
           </div>
@@ -127,16 +130,18 @@ export default function FoodPage() {
           <div className="food-grid">
             {foods.map((f) => (
               <div className="food-card" key={f._id}>
-                <img src={`http://localhost:5000${f.image}`} />
                 <h4>{f.name}</h4>
                 <p>Rs. {f.price}</p>
-                <button onClick={() => deleteFood(f._id)}>Delete</button>
+                <span>{f.category}</span>
+
+                <button onClick={() => deleteFood(f._id)}>
+                  Delete
+                </button>
               </div>
             ))}
           </div>
 
         </div>
-
       </div>
     </div>
   );

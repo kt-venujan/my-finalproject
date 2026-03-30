@@ -9,7 +9,7 @@ export default function AdminDashboard() {
       <AdminSidebar />
 
       <div className="main">
-        <h2>Admin Dashboard 🔥</h2>
+        <h2>Admin Dashboard </h2>
         {/* your cards, analytics etc */}
       </div>
     </div>

@@ -33,12 +33,7 @@ export default function ServicesInteractive() {
       image: "/kitchen.jpg",
       link: "/kitchen",
     },
-    {
-      title: "Meal Tracking & Analytics",
-      desc: "Track nutrition progress.",
-      image: "/track.jpg",
-      link: "/meal-tracking",
-    },
+  
     {
       title: "Smart Reminders",
       desc: "Get reminders.",
@@ -51,13 +46,13 @@ export default function ServicesInteractive() {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      // ❌ alert REMOVE
+      // alert REMOVE
       // alert("⚠ Please login first!");
 
-      // ✅ TOAST ADD
+      //  TOAST ADD
       toast.error("Please login first!");
 
-      return; // 🔥 IMPORTANT (navigation stop)
+      return; // IMPORTANT (navigation stop)
     }
 
     router.push(path);
