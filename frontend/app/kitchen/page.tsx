@@ -28,6 +28,83 @@ interface CartItem extends Food {
   quantity: number;
 }
 
+export default function KitchenPage() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [foods, setFoods] = useState<Food[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [planType, setPlanType] = useState<PlanType>("weekly");
+  const [loadingFoods, setLoadingFoods] = useState(false);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [showHero, setShowHero] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowHero(true), 150);
+
+    const fetchCategories = async () => {
+      try {
+        const res = await api.get("/categories");
+        setCategories(res.data || []);
+      } catch (error) {
+        console.error("Failed to fetch categories", error);
+      }
+    };
+
+    fetchCategories();
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const loadFoods = async (categoryName: string) => {
+    try {
+      setSelectedCategory(categoryName);
+      setLoadingFoods(true);
+
+      const res = await api.get(
+        `/foods?category=${encodeURIComponent(categoryName)}`
+      );
+
+      setFoods(res.data || []);
+
+      document
+        .getElementById("foods-section")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (error) {
+      console.error("Failed to fetch foods", error);
+      setFoods([]);
+    } finally {
+      setLoadingFoods(false);
+    }
+  };
+
+  const addToCart = (food: Food) => {
+    setCart((prev) => {
+      const existing = prev.find((item) => item._id === food._id);
+
+      if (existing) {
+        return prev.map((item) =>
+          item._id === food._id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+
+      return [...prev, { ...food, quantity: 1 }];
+    });
+  };
+
+  const getImageUrl = (path?: string) => {
+    if (!path) return "/hero-food.jpg";
+    if (path.startsWith("http")) return path;
+    return `http://localhost:5000${path}`;
+  };
+
+  const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+
+    <></>
+}
+  
+
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
   show: (delay = 0) => ({
@@ -462,7 +539,7 @@ export default function KitchenPage() {
           )}
         </section>
       </main>
-
+             
       <Footer />
     </>
   );
