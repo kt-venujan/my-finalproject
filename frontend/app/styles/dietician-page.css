@@ -1,0 +1,88 @@
+/* ===== DIETICIAN DIRECTORY PAGE ===== */
+.diet-page {
+  min-height: 100vh; background: #0d0d0d; color: #fff;
+  padding-top: 90px;
+}
+
+/* Hero */
+.diet-hero {
+  padding: 60px 40px 40px;
+  background: linear-gradient(135deg, #1a0a12 0%, #2d0f1e 50%, #0d0d0d 100%);
+  text-align: center;
+}
+.diet-hero-text h1 { font-size: 48px; font-weight: 800; margin-bottom: 12px; }
+.diet-hero-text h1 span { color: #ff4d6d; }
+.diet-hero-text p { color: rgba(255,255,255,0.7); font-size: 18px; max-width: 600px; margin: 0 auto; }
+.diet-hero-stats { display: flex; justify-content: center; gap: 50px; margin-top: 36px; }
+.diet-hero-stat h3 { font-size: 32px; font-weight: 800; color: #ff4d6d; }
+.diet-hero-stat p { color: rgba(255,255,255,0.6); font-size: 14px; }
+
+/* Controls */
+.diet-controls { padding: 30px 40px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+.diet-search {
+  flex: 1; min-width: 280px; padding: 14px 18px; border: 2px solid #2a2a2a;
+  border-radius: 14px; background: #1a1a1a; color: #fff; font-size: 15px; outline: none;
+}
+.diet-search:focus { border-color: #8b0c2e; }
+.diet-filters { display: flex; gap: 10px; }
+.diet-filter-btn {
+  padding: 10px 20px; border: 2px solid #2a2a2a; border-radius: 10px;
+  background: transparent; color: #aaa; font-weight: 600; cursor: pointer; transition: 0.2s;
+  font-size: 14px;
+}
+.diet-filter-btn.active, .diet-filter-btn:hover { border-color: #8b0c2e; color: #ff4d6d; background: rgba(139,12,46,0.1); }
+
+/* Grid */
+.diet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; padding: 0 40px 60px; }
+.diet-card {
+  background: #1a1a1a; border-radius: 20px; padding: 24px;
+  border: 1px solid #2a2a2a; transition: 0.3s;
+  display: flex; flex-direction: column;
+}
+.diet-card:hover { border-color: #8b0c2e; transform: translateY(-4px); box-shadow: 0 12px 30px rgba(139,12,46,0.15); }
+.diet-card.unavailable { opacity: 0.55; }
+
+/* Card Top */
+.diet-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.diet-avatar {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, #8b0c2e, #ff4d6d);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 700; color: #fff; overflow: hidden;
+}
+.diet-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.diet-card-badges { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+.badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.badge.verified { background: rgba(22,163,74,0.15); color: #22c55e; }
+.badge.available { background: rgba(22,163,74,0.15); color: #22c55e; }
+.badge.unavailable { background: rgba(220,38,38,0.15); color: #ef4444; }
+
+/* Card Info */
+.diet-card-info h3 { font-size: 18px; color: #fff; margin-bottom: 4px; }
+.diet-spec { color: #ff4d6d; font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+.diet-bio { color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 10px; line-height: 1.4; }
+.diet-stars { display: flex; align-items: center; gap: 2px; margin-bottom: 12px; font-size: 16px; }
+.diet-stars .star { color: #333; }
+.diet-stars .star.full { color: #f59e0b; }
+.diet-stars .star.half { color: #f59e0b; }
+.diet-rating-num { font-size: 13px; color: rgba(255,255,255,0.6); margin-left: 6px; }
+.diet-review-count { font-size: 12px; color: rgba(255,255,255,0.4); margin-left: 4px; }
+
+/* Meta */
+.diet-card-meta { display: flex; gap: 16px; margin-top: auto; padding-top: 12px; }
+.diet-meta-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: rgba(255,255,255,0.6); }
+.diet-meta-item.price { color: #ff4d6d; font-weight: 600; }
+
+/* Book */
+.diet-book-btn {
+  margin-top: 16px; width: 100%; padding: 12px; border: none; border-radius: 12px;
+  background: linear-gradient(135deg, #8b0c2e, #c4234a); color: #fff;
+  font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.3s;
+}
+.diet-book-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(139,12,46,0.35); }
+.diet-book-btn:disabled { background: #333; color: #666; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Loading / Empty */
+.diet-loading, .diet-empty { text-align: center; padding: 80px 20px; color: rgba(255,255,255,0.5); }
+.diet-spinner { width: 40px; height: 40px; border: 3px solid #333; border-top-color: #8b0c2e; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+@keyframes spin { to { transform: rotate(360deg); } }

@@ -28,6 +28,7 @@ export default function AuthCard() {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "user",
   });
 
   const { login, register } = useAuth();
@@ -47,7 +48,9 @@ export default function AuthCard() {
     }));
   };
 
-  const handleRegisterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRegisterChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setErrorMessage("");
     setSuccessMessage("");
 
@@ -173,6 +176,18 @@ export default function AuthCard() {
             required
           />
 
+          <select
+            name="role"
+            value={registerData.role}
+            onChange={handleRegisterChange}
+            className="role-select"
+            required
+          >
+            <option value="user">Register as User</option>
+            <option value="dietician">Register as Dietician</option>
+            <option value="kitchen">Register as Kitchen Staff</option>
+          </select>
+
           <div className="password-input-wrap">
             <input
               type={showRegisterPassword ? "text" : "password"}
@@ -180,6 +195,7 @@ export default function AuthCard() {
               placeholder="Password"
               value={registerData.password}
               onChange={handleRegisterChange}
+              autoComplete="new-password"
               required
             />
 
@@ -202,6 +218,7 @@ export default function AuthCard() {
               placeholder="Confirm Password"
               value={registerData.confirmPassword}
               onChange={handleRegisterChange}
+              autoComplete="new-password"
               required
             />
 
@@ -248,6 +265,7 @@ export default function AuthCard() {
               placeholder="Password"
               value={loginData.password}
               onChange={handleLoginChange}
+              autoComplete="current-password"
               required
             />
 
