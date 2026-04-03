@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -26,84 +27,8 @@ interface Food {
 
 interface CartItem extends Food {
   quantity: number;
+  categoryName?: string;
 }
-
-export default function KitchenPage() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [foods, setFoods] = useState<Food[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [planType, setPlanType] = useState<PlanType>("weekly");
-  const [loadingFoods, setLoadingFoods] = useState(false);
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [showHero, setShowHero] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShowHero(true), 150);
-
-    const fetchCategories = async () => {
-      try {
-        const res = await api.get("/categories");
-        setCategories(res.data || []);
-      } catch (error) {
-        console.error("Failed to fetch categories", error);
-      }
-    };
-
-    fetchCategories();
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const loadFoods = async (categoryName: string) => {
-    try {
-      setSelectedCategory(categoryName);
-      setLoadingFoods(true);
-
-      const res = await api.get(
-        `/foods?category=${encodeURIComponent(categoryName)}`
-      );
-
-      setFoods(res.data || []);
-
-      document
-        .getElementById("foods-section")
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    } catch (error) {
-      console.error("Failed to fetch foods", error);
-      setFoods([]);
-    } finally {
-      setLoadingFoods(false);
-    }
-  };
-
-  const addToCart = (food: Food) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item._id === food._id);
-
-      if (existing) {
-        return prev.map((item) =>
-          item._id === food._id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-
-      return [...prev, { ...food, quantity: 1 }];
-    });
-  };
-
-  const getImageUrl = (path?: string) => {
-    if (!path) return "/hero-food.jpg";
-    if (path.startsWith("http")) return path;
-    return `http://localhost:5000${path}`;
-  };
-
-  const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-
-    <></>
-}
-  
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -154,11 +79,14 @@ const featuredMeals = [
 export default function KitchenPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [foods, setFoods] = useState<Food[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [planType, setPlanType] = useState<PlanType>("weekly");
   const [loadingFoods, setLoadingFoods] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [activeMealIndex, setActiveMealIndex] = useState(0);
+
+  const [foodsModalOpen, setFoodsModalOpen] = useState(false);
+  const [cartModalOpen, setCartModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -181,26 +109,29 @@ export default function KitchenPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const loadFoods = async (categoryName: string) => {
+  const openFoodsModal = async (category: Category) => {
     try {
-      setSelectedCategory(categoryName);
+      setSelectedCategory(category);
+      setFoodsModalOpen(true);
       setLoadingFoods(true);
 
       const res = await api.get(
-        `/foods?category=${encodeURIComponent(categoryName)}`
+        `/foods?category=${encodeURIComponent(category.name)}`
       );
 
       setFoods(res.data || []);
-
-      document
-        .getElementById("foods-section")
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (error) {
       console.error("Failed to fetch foods", error);
       setFoods([]);
     } finally {
       setLoadingFoods(false);
     }
+  };
+
+  const closeFoodsModal = () => {
+    setFoodsModalOpen(false);
+    setSelectedCategory(null);
+    setFoods([]);
   };
 
   const addToCart = (food: Food) => {
@@ -215,8 +146,41 @@ export default function KitchenPage() {
         );
       }
 
-      return [...prev, { ...food, quantity: 1 }];
+      return [
+        ...prev,
+        {
+          ...food,
+          quantity: 1,
+          categoryName: selectedCategory?.name || "",
+        },
+      ];
     });
+  };
+
+  const increaseQty = (id: string) => {
+    setCart((prev) =>
+      prev.map((item) =>
+        item._id === id ? { ...item, quantity: item.quantity + 1 } : item
+      )
+    );
+  };
+
+  const decreaseQty = (id: string) => {
+    setCart((prev) =>
+      prev
+        .map((item) =>
+          item._id === id ? { ...item, quantity: item.quantity - 1 } : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
+  };
+
+  const removeItem = (id: string) => {
+    setCart((prev) => prev.filter((item) => item._id !== id));
+  };
+
+  const clearCart = () => {
+    setCart([]);
   };
 
   const getImageUrl = (path?: string) => {
@@ -225,7 +189,16 @@ export default function KitchenPage() {
     return `http://localhost:5000${path}`;
   };
 
-  const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const totalCartCount = useMemo(
+    () => cart.reduce((sum, item) => sum + item.quantity, 0),
+    [cart]
+  );
+
+  const totalAmount = useMemo(
+    () => cart.reduce((sum, item) => sum + (item.price ?? 0) * item.quantity, 0),
+    [cart]
+  );
+
   const activeMeal = featuredMeals[activeMealIndex];
 
   return (
@@ -393,153 +366,207 @@ export default function KitchenPage() {
           </div>
         </section>
 
-        <section className="category-section">
-          <div className="section-head">
+        <section className="category-section-v2">
+          <div className="section-head-v2">
             <h2>Choose Category</h2>
             <p>
-              Select a category to view foods and add them to your{" "}
-              {planType === "weekly" ? "weekly" : "monthly"} plan.
+              Click a category and view foods in a popup. You can add items from
+              multiple categories into the same cart.
             </p>
           </div>
 
-          <div className="category-grid">
-            {categories.map((cat) => (
-              <div
-                key={cat._id}
-                className={
-                  selectedCategory === cat.name
-                    ? "category-card selected"
-                    : "category-card"
-                }
-              >
-                <div className="category-image">
-                  <img
-                    src={getImageUrl(cat.image)}
-                    alt={cat.name}
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src =
-                        "/hero-food.jpg";
-                    }}
-                  />
+          <div className="category-grid-v2">
+            {categories.map((category) => (
+              <div key={category._id} className="category-card-v2">
+                <div className="category-card-v2__top">
+                  <span className="category-card-v2__icon">🍽️</span>
+                  <h3>{category.name}</h3>
                 </div>
 
-                <div className="category-info">
-                  <h3>{cat.name}</h3>
-                  <p>Browse meals under this category</p>
-                  <button className="view-btn" onClick={() => loadFoods(cat.name)}>
-                    View Meals
-                  </button>
-                </div>
+                <p>Open this category and view more foods.</p>
+
+                <button
+                  className="category-card-v2__btn"
+                  onClick={() => openFoodsModal(category)}
+                >
+                  View More Foods
+                </button>
               </div>
             ))}
           </div>
         </section>
 
-        <section id="foods-section" className="foods-section">
-          <div className="section-head">
-            <h2>
-              {selectedCategory
-                ? `${selectedCategory} Meals`
-                : "Select a Category to View Foods"}
-            </h2>
-            <p>
-              Add meals to your{" "}
-              {planType === "weekly" ? "weekly" : "monthly"} cart.
-            </p>
-          </div>
+        <button
+          className="floating-cart-btn"
+          type="button"
+          onClick={() => setCartModalOpen(true)}
+        >
+          Cart ({totalCartCount}) • Rs. {totalAmount}
+        </button>
 
-          {loadingFoods ? (
-            <div className="empty-state">Loading foods...</div>
-          ) : selectedCategory && foods.length === 0 ? (
-            <div className="empty-state">No foods found for this category.</div>
-          ) : !selectedCategory ? (
-            <div className="empty-state">
-              Please choose a category above to view foods.
-            </div>
-          ) : (
-            <div className="food-grid">
-              {foods.map((food) => (
-                <div key={food._id} className="food-card">
-                  <div className="food-image">
-                    <img
-                      src={getImageUrl(food.image)}
-                      alt={food.name}
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src =
-                          "/food-2.png";
-                      }}
-                    />
-                  </div>
-
-                  <div className="food-body">
-                    <div className="food-top">
-                      <h3>{food.name}</h3>
-                      <span className="food-tag">
-                        {planType === "weekly" ? "Weekly" : "Monthly"}
-                      </span>
-                    </div>
-
-                    <div className="food-meta">
-                      <span>{food.calories ?? 0} kcal</span>
-                      <span>Rs. {food.price ?? 0}</span>
-                    </div>
-
-                    <div className="food-nutrition">
-                      <span>P: {food.protein ?? 0}g</span>
-                      <span>C: {food.carbs ?? 0}g</span>
-                      <span>F: {food.fat ?? 0}g</span>
-                    </div>
-
-                    <button className="add-cart-btn" onClick={() => addToCart(food)}>
-                      Add to Cart
-                    </button>
-                  </div>
+        {foodsModalOpen && (
+          <div className="modal-overlay" onClick={closeFoodsModal}>
+            <div className="foods-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <div>
+                  <h3>{selectedCategory?.name || "Foods"}</h3>
+                  <p>
+                    {planType === "weekly" ? "Weekly Plan" : "Monthly Plan"} foods
+                  </p>
                 </div>
-              ))}
+
+                <button className="modal-close" onClick={closeFoodsModal}>
+                  ✕
+                </button>
+              </div>
+
+              {loadingFoods ? (
+                <div className="modal-empty">Loading foods...</div>
+              ) : foods.length === 0 ? (
+                <div className="modal-empty">No foods found for this category.</div>
+              ) : (
+                <div className="foods-grid-v2">
+                  {foods.map((food) => (
+                    <div key={food._id} className="food-card-v2">
+                      <div className="food-card-v2__image">
+                        <img
+                          src={getImageUrl(food.image)}
+                          alt={food.name}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src =
+                              "/hero-food.jpg";
+                          }}
+                        />
+                      </div>
+
+                      <div className="food-card-v2__body">
+                        <h4>{food.name}</h4>
+
+                        <div className="food-card-v2__meta">
+                          <span>{food.calories ?? 0} kcal</span>
+                          <strong>Rs. {food.price ?? 0}</strong>
+                        </div>
+
+                        <div className="food-card-v2__nutrition">
+                          <span>P: {food.protein ?? 0}g</span>
+                          <span>C: {food.carbs ?? 0}g</span>
+                          <span>F: {food.fat ?? 0}g</span>
+                        </div>
+
+                        <button
+                          className="food-card-v2__btn"
+                          onClick={() => addToCart(food)}
+                        >
+                          Add to Cart
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </section>
-
-        <section className="cart-preview-section">
-          <div className="section-head">
-            <h2>My Cart</h2>
-            <p>Your selected meals for the current plan.</p>
           </div>
+        )}
 
-          {cart.length === 0 ? (
-            <div className="empty-state">No items added yet.</div>
-          ) : (
-            <div className="cart-list">
-              {cart.map((item) => (
-                <div key={item._id} className="cart-row">
-                  <div className="cart-row-left">
-                    <img
-                      src={getImageUrl(item.image)}
-                      alt={item.name}
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src =
-                          "/hero-food.jpg";
-                      }}
-                    />
-                    <div>
-                      <h4>{item.name}</h4>
-                      <p>
-                        {planType === "weekly" ? "Weekly Plan" : "Monthly Plan"}
-                      </p>
+        {cartModalOpen && (
+          <div
+            className="modal-overlay"
+            onClick={() => setCartModalOpen(false)}
+          >
+            <div className="cart-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <div>
+                  <h3>My Cart</h3>
+                  <p>
+                    {totalCartCount} item{totalCartCount === 1 ? "" : "s"} added
+                  </p>
+                </div>
+
+                <button
+                  className="modal-close"
+                  onClick={() => setCartModalOpen(false)}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {cart.length === 0 ? (
+                <div className="modal-empty">Your cart is empty.</div>
+              ) : (
+                <>
+                  <div className="cart-modal-list">
+                    {cart.map((item) => (
+                      <div key={item._id} className="cart-modal-row">
+                        <div className="cart-modal-row__left">
+                          <img
+                            src={getImageUrl(item.image)}
+                            alt={item.name}
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).src =
+                                "/hero-food.jpg";
+                            }}
+                          />
+
+                          <div>
+                            <h4>{item.name}</h4>
+                            <p>{item.categoryName || "Category"}</p>
+                            <span>Rs. {item.price ?? 0}</span>
+                          </div>
+                        </div>
+
+                        <div className="cart-modal-row__right">
+                          <div className="qty-box">
+                            <button onClick={() => decreaseQty(item._id)}>-</button>
+                            <span>{item.quantity}</span>
+                            <button onClick={() => increaseQty(item._id)}>+</button>
+                          </div>
+
+                          <strong>Rs. {(item.price ?? 0) * item.quantity}</strong>
+
+                          <button
+                            className="remove-btn"
+                            onClick={() => removeItem(item._id)}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="cart-modal-footer">
+                    <div className="cart-summary">
+                      <div>
+                        <span>Total Items</span>
+                        <strong>{totalCartCount}</strong>
+                      </div>
+
+                      <div>
+                        <span>Total Amount</span>
+                        <strong>Rs. {totalAmount}</strong>
+                      </div>
+                    </div>
+
+                    <div className="cart-footer-actions">
+                      <button className="clear-cart-btn" onClick={clearCart}>
+                        Clear Cart
+                      </button>
+
+                      <button
+                        className="checkout-btn"
+                        onClick={() => alert("Proceed to checkout")}
+                      >
+                        Checkout
+                      </button>
                     </div>
                   </div>
-
-                  <div className="cart-row-right">
-                    <span>Qty: {item.quantity}</span>
-                    <strong>Rs. {(item.price ?? 0) * item.quantity}</strong>
-                  </div>
-                </div>
-              ))}
+                </>
+              )}
             </div>
-          )}
-        </section>
+          </div>
+        )}
       </main>
-             
+
       <Footer />
     </>
   );
