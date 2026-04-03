@@ -24,6 +24,7 @@ import aiRoutes from "./routes/aiRoutes.js";
 import dieticianRoutes from "./routes/dieticianRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
 
 
 
@@ -76,6 +77,7 @@ app.use("/api", foodRoutes);
 app.use("/api/dieticians", dieticianRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 // server
 const PORT = process.env.PORT || 5000;

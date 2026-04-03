@@ -11,6 +11,7 @@ export default function AdminSidebar() {
     { name: "Food Management", path: "/dashboard/admin/food" },
     { name: "Orders", path: "/dashboard/admin/orders" },
     { name: "Dieticians", path: "/dashboard/admin/dieticians" },
+    { name: "User Management", path: "/dashboard/admin/users" },
     { name: "Analytics", path: "/dashboard/admin/analytics" },
   ];
 
