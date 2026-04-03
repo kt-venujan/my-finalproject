@@ -3,7 +3,6 @@
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
-import "./style.css";
 
 export default function CategoryPage() {
   const params = useParams();

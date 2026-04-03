@@ -1,6 +1,5 @@
 "use client";
 
-import "./reminder.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type MealStatus = "done" | "upcoming" | "missed";

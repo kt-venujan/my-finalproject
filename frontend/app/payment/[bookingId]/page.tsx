@@ -2,37 +2,45 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "react-toastify"; // 🔥 ADD THIS
+import { toast } from "react-toastify";
+import api from "@/lib/axios";
 
 export default function PaymentPage() {
-  const { bookingId } = useParams();
+  const params = useParams();
+  const bookingId = params.bookingId as string;
   const router = useRouter();
 
   const [method, setMethod] = useState("card");
+  const [loading, setLoading] = useState(false);
 
-  const handlePayment = () => {
-    // 🔥 TOAST SUCCESS
-    toast.success("Payment Successful 🎉");
+  const handlePayment = async () => {
+    try {
+      setLoading(true);
 
-    // 🔥 redirect after 2 sec
-    setTimeout(() => {
-      router.push("/dietician");
-    }, 2000);
+      await api.put(`/bookings/${bookingId}/pay`, {
+        method,
+      });
+
+      toast.success("Payment Successful 🎉");
+
+      setTimeout(() => {
+        router.push("/dashboard/user");
+      }, 1500);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Payment failed ❌");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="payment-page">
-
-      {/* HEADER */}
       <div className="payment-header">
         <h2>💳 Payment</h2>
         <p>Booking ID: {bookingId}</p>
       </div>
 
-      {/* CARD */}
       <div className="payment-container">
-
-        {/* 🔥 BANK CARD */}
         <div className="bank-card">
           <p className="card-type">Bank Card</p>
           <h3>Arththika</h3>
@@ -46,7 +54,6 @@ export default function PaymentPage() {
           </div>
         </div>
 
-        {/* 🔥 PAYMENT METHODS */}
         <div className="methods">
           <button
             className={method === "card" ? "active" : ""}
@@ -70,7 +77,6 @@ export default function PaymentPage() {
           </button>
         </div>
 
-        {/* 🔥 DETAILS */}
         <div className="details">
           <div>
             <span>Consultation</span>
@@ -86,18 +92,14 @@ export default function PaymentPage() {
           </div>
         </div>
 
-        {/*  PAY BUTTON */}
-        <button className="pay-btn" onClick={handlePayment}>
-          Pay Now 
+        <button className="pay-btn" onClick={handlePayment} disabled={loading}>
+          {loading ? "Processing..." : "Pay Now"}
         </button>
 
-        {/* BACK */}
         <p className="back" onClick={() => router.back()}>
-          ← Back to Chat
+          ← Back
         </p>
-
       </div>
-
     </div>
   );
 }

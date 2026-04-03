@@ -71,7 +71,6 @@ export default function Navbar() {
           </div>
 
           <Link href="/pricing">Pricing</Link>
-          <Link href="/about">About</Link>
           <Link href="/contact">Contact</Link>
         </nav>
 

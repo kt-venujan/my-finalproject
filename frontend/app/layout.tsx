@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import "./globals.css";
+import "./global.css";
 
 import { Poppins, Sora, Playfair_Display } from "next/font/google";
 

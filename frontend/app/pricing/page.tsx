@@ -1,6 +1,5 @@
 "use client";
 
-import "./pricing.css";
 import { useRouter } from "next/navigation";
 
 const plans = [

@@ -1,8 +1,6 @@
 "use client";
-
-import "./ai-assistant.css";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
 /* ---------------- EXISTING DATA ---------------- */
@@ -15,136 +13,367 @@ const floatingBadges = [
 
 const particles = Array.from({ length: 18 }, (_, i) => i + 1);
 
-/* ---------------- QUESTIONS ---------------- */
-const questions = [
-  { key: "age", label: "What is your age?", type: "input" },
+type Question = {
+  key: string;
+  label: string;
+  type: "input" | "options" | "multi-options";
+  options?: string[];
+};
 
+const baseQuestions: Question[] = [
+  { key: "age", label: "What is your age?", type: "input" },
   {
     key: "gender",
     label: "Select your gender",
     type: "options",
     options: ["Male", "Female"],
   },
-
   { key: "height", label: "What is your height (cm)?", type: "input" },
-
   { key: "weight", label: "What is your weight (kg)?", type: "input" },
-
   {
     key: "goal",
     label: "What is your goal?",
     type: "options",
     options: ["Weight Loss", "Weight Gain", "Maintain"],
   },
-
   {
     key: "foodPreference",
     label: "Veg or Non-Veg?",
     type: "options",
     options: ["Veg", "Non-Veg"],
   },
-
   {
-    key: "allergies",
-    label: "Any allergies?",
+    key: "activityLevel",
+    label: "What is your activity level?",
+    type: "options",
+    options: ["Low", "Moderate", "High"],
+  },
+  {
+    key: "healthConditions",
+    label:
+      "Do you have any health conditions? Example: diabetes, thyroid, PCOS. If none, type No.",
+    type: "input",
+  },
+  {
+    key: "hasAllergies",
+    label: "Do you have any allergies?",
     type: "options",
     options: ["Yes", "No"],
   },
+  {
+    key: "dislikedFoods",
+    label:
+      "Are there any foods you dislike? Example: bitter gourd, mushroom. If none, type No.",
+    type: "input",
+  },
+  {
+    key: "likefoods",
+    label: "Are there any foods you like and want to include? Select up to 5.",
+    type: "multi-options",
+    options: [
+      "oats",
+      "chicken",
+      "fish",
+      "egg",
+      "vegetables",
+      "fruits",
+      "nuts",
+      "seeds",
+      "legumes",
+      "sweet potato",
+      "quinoa",
+      "chia seeds",
+      "greek yogurt",
+      "avocado",
+    ],
+  },
+  {
+    key: "budget",
+    label: "What is your food budget level?",
+    type: "options",
+    options: ["500-1000", "1000-2000", "2000+"],
+  },
+  {
+    key: "cuisinePreference",
+    label: "What type of meals do you prefer?",
+    type: "options",
+    options: ["indian", "Asian", "Mixed Healthy Meals"],
+  },
+  {
+    key: "mealsPerDay",
+    label: "How many main meals do you want per day?",
+    type: "options",
+    options: ["3", "4", "5"],
+  },
+  {
+    key: "wakeUpTime",
+    label: "What time do you usually wake up?",
+    type: "input",
+  },
+  {
+    key: "sleepTime",
+    label: "What time do you usually sleep?",
+    type: "input",
+  },
+  {
+    key: "waterIntake",
+    label: "How much water do you drink daily? Example: 1L, 2L",
+    type: "options",
+    options: ["1L-2l", "2L-4l", "4l-5l", "5l+"],
+  },
 ];
 
+type Message = {
+  sender: "ai" | "user";
+  text: string;
+};
+
 export default function AIDietAssistantPage() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [questions, setQuestions] = useState<Question[]>(baseQuestions);
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState<any>({});
-  const [plan, setPlan] = useState<any>(null);
+  const [form, setForm] = useState<Record<string, string>>({});
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [completed, setCompleted] = useState(false);
+  const [allergyReport, setAllergyReport] = useState<File | null>(null);
+  const [selectedLikeFoods, setSelectedLikeFoods] = useState<string[]>([]);
 
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const current = questions[step];
-  const [chatMode, setChatMode] = useState(false);
-  const [sessionId, setSessionId] = useState("");
-  const [messages, setMessages] = useState<any[]>([]);
 
-  /* ---------------- BACK FUNCTION ---------------- */
-  const goBack = () => {
-    if (step > 0) setStep(step - 1);
+  useEffect(() => {
+    setMessages([
+      {
+        sender: "ai",
+        text: "Hello 👋 I’m your AI diet assistant. I’ll ask a few smart questions and then create a personalized meal suggestion for you.",
+      },
+      {
+        sender: "ai",
+        text: baseQuestions[0].label,
+      },
+    ]);
+  }, []);
+
+  const pushAiMessage = (text: string) => {
+    setMessages((prev) => [...prev, { sender: "ai", text }]);
   };
 
-/* ---------------- HANDLE ANSWER ---------------- */
-const handleAnswer = async (value: string) => {
-  if (!value) return;
+  const pushUserMessage = (text: string) => {
+    setMessages((prev) => [...prev, { sender: "user", text }]);
+  };
 
-  const updated = { ...form, [current.key]: value };
-  setForm(updated);
-  setInput("");
+  const askNextQuestion = (nextStep: number, updatedQuestions = questions) => {
+    setTimeout(() => {
+      setMessages((prev) => [
+        ...prev,
+        { sender: "ai", text: updatedQuestions[nextStep].label },
+      ]);
+    }, 350);
+  };
 
-  // 👉 IF NOT LAST QUESTION
-  if (step < questions.length - 1) {
-    setStep(step + 1);
-  } 
-  else {
+  const buildFinalPayload = () => {
+    const hasAllergies = form.hasAllergies === "Yes";
+
+    return {
+      age: form.age || "",
+      gender: form.gender || "",
+      height: form.height || "",
+      weight: form.weight || "",
+      goal: form.goal || "",
+      foodPreference: form.foodPreference || "",
+      activityLevel: form.activityLevel || "",
+      healthConditions: form.healthConditions || "No",
+      allergies: hasAllergies ? form.allergyDetails || "Has allergy" : "No",
+      hasAllergies: hasAllergies ? "Yes" : "No",
+      dislikedFoods: form.dislikedFoods || "No",
+      likefoods: form.likefoods || "",
+      budget: form.budget || "",
+      cuisinePreference: form.cuisinePreference || "",
+      mealsPerDay: form.mealsPerDay || "3",
+      wakeUpTime: form.wakeUpTime || "",
+      sleepTime: form.sleepTime || "",
+      waterIntake: form.waterIntake || "",
+    };
+  };
+
+  const generateDietPlan = async () => {
     try {
-      // 🔥 CALL BACKEND
+      setLoading(true);
+
+      const payload = buildFinalPayload();
+      const formData = new FormData();
+
+      Object.entries(payload).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+
+      if (allergyReport) {
+        formData.append("allergyReport", allergyReport);
+      }
+
       const res = await axios.post(
-        "http://localhost:5000/api/ai/generate",
-        updated,
+        "http://localhost:5000/api/ai/generate-diet-plan",
+        formData,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+            "Content-Type": "multipart/form-data",
           },
         }
       );
 
-      // 🔥 SET PLAN
-      setPlan(res.data.plan);
+      const plan = res.data?.plan;
 
-      // 🔥 SWITCH TO CHAT MODE
-      setChatMode(true);
+      const reply = `
+Here is your personalized diet suggestion 🍽️
 
-      // 🔥 INITIAL CHAT MESSAGE
-      setMessages([
-        {
-          sender: "ai",
-          text: "Hi 👋 Your diet plan is ready! You can now ask me anything about your diet.",
-        },
-      ]);
+Daily Calories: ${plan?.calories || "N/A"}
 
-      // optional session id
-      setSessionId(Date.now().toString());
+Breakfast:
+${
+  Array.isArray(plan?.breakfast)
+    ? plan.breakfast.map((item: string) => `• ${item}`).join("\n")
+    : "• Not available"
+}
 
-    } catch (err) {
-      console.error(err);
-      alert("AI failed 😢 check backend");
+Lunch:
+${
+  Array.isArray(plan?.lunch)
+    ? plan.lunch.map((item: string) => `• ${item}`).join("\n")
+    : "• Not available"
+}
+
+Dinner:
+${
+  Array.isArray(plan?.dinner)
+    ? plan.dinner.map((item: string) => `• ${item}`).join("\n")
+    : "• Not available"
+}
+
+Snacks:
+${
+  Array.isArray(plan?.snacks)
+    ? plan.snacks.map((item: string) => `• ${item}`).join("\n")
+    : "• Not available"
+}
+
+Tips:
+${
+  Array.isArray(plan?.tips)
+    ? plan.tips.map((item: string) => `• ${item}`).join("\n")
+    : "• Stay hydrated and eat balanced meals."
+}
+      `.trim();
+
+      pushAiMessage(reply);
+      setCompleted(true);
+    } catch (error) {
+      console.error(error);
+      pushAiMessage(
+        "Sorry 😢 I couldn’t generate your diet plan right now. Please check the backend and Gemini API setup."
+      );
+    } finally {
+      setLoading(false);
     }
-  }
-};
+  };
 
-/* ---------------- SEND MESSAGE FUNCTION ---------------- */
-const sendMessage = async () => {
-  if (!input) return;
+  const handleMultiSelectLikeFoods = (food: string) => {
+    if (!current || current.key !== "likefoods" || loading || completed) return;
 
-  const userMsg = { sender: "user", text: input };
+    let updatedSelections: string[] = [];
 
-  setMessages((prev) => [...prev, userMsg]);
-
-  const res = await axios.post(
-   "http://localhost:5000/api/ai/generate",
-    {
-      sessionId,
-      message: input,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
+    if (selectedLikeFoods.includes(food)) {
+      updatedSelections = selectedLikeFoods.filter((item) => item !== food);
+    } else {
+      if (selectedLikeFoods.length >= 5) return;
+      updatedSelections = [...selectedLikeFoods, food];
     }
-  );
 
-  setMessages((prev) => [
-    ...prev,
-    { sender: "ai", text: res.data.reply },
-  ]);
+    setSelectedLikeFoods(updatedSelections);
 
-  setInput("");
-};
+    if (updatedSelections.length === 5) {
+      const joinedValue = updatedSelections.join(", ");
+
+      pushUserMessage(joinedValue);
+
+      const updatedForm = { ...form, likefoods: joinedValue };
+      setForm(updatedForm);
+
+      const nextStep = step + 1;
+      if (nextStep < questions.length) {
+        setStep(nextStep);
+        askNextQuestion(nextStep);
+      } else {
+        generateDietPlan();
+      }
+    }
+  };
+
+  const handleAnswer = async (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed || !current || loading || completed) return;
+
+    pushUserMessage(trimmed);
+
+    const updatedForm = { ...form, [current.key]: trimmed };
+    setForm(updatedForm);
+    setInput("");
+
+    if (current.key === "likefoods") {
+      setSelectedLikeFoods([]);
+    }
+
+    if (current.key === "hasAllergies") {
+      if (trimmed === "Yes") {
+        const updatedQuestions = [
+          ...questions.slice(0, step + 1),
+          {
+            key: "allergyDetails",
+            label:
+              "What allergy do you have? Example: peanuts, milk, egg, seafood.",
+            type: "input" as const,
+          },
+          ...questions.slice(step + 1),
+        ];
+
+        setQuestions(updatedQuestions);
+        const nextStep = step + 1;
+        setStep(nextStep);
+        askNextQuestion(nextStep, updatedQuestions);
+        return;
+      }
+    }
+
+    if (current.key === "allergyDetails") {
+      pushAiMessage(
+        "If you have an allergy report, you can upload it now. Otherwise press Skip Report."
+      );
+      return;
+    }
+
+    const nextStep = step + 1;
+
+    if (nextStep < questions.length) {
+      setStep(nextStep);
+      askNextQuestion(nextStep);
+      return;
+    }
+
+    await generateDietPlan();
+  };
+
+  const handleUploadReport = async (file: File | null) => {
+    if (!file) return;
+    setAllergyReport(file);
+    pushUserMessage(`Uploaded report: ${file.name}`);
+    await generateDietPlan();
+  };
+
+  const handleSkipReport = async () => {
+    pushUserMessage("Skip Report");
+    await generateDietPlan();
+  };
 
   return (
     <main className="ai-page">
@@ -152,7 +381,6 @@ const sendMessage = async () => {
       <div className="ai-bg-glow ai-glow-1" />
       <div className="ai-bg-glow ai-glow-2" />
 
-      {/* ================= HERO ================= */}
       <section className="ai-hero">
         <div className="ai-left">
           <span className="ai-tag">Dietara AI NUTRITION</span>
@@ -225,114 +453,137 @@ const sendMessage = async () => {
         </div>
       </section>
 
-      {/* ================= CHATBOT ================= */}
       <section id="chatbot" className="chat-section">
-        <div className="chat-box">
-          {!chatMode ? (
-            <>
-              <h2>{current.label}</h2>
-
-              {/* INPUT */}
-              {current.type === "input" && (
-                <>
-                  <div className="chat-input-row">
-                    <input
-                      type="text"
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleAnswer(input);
-                      }}
-                    />
-
-                    <button
-                      className="chat-next-btn"
-                      onClick={() => handleAnswer(input)}
-                    >
-                      Next →
-                    </button>
-                  </div>
-
-                  {step > 0 && (
-                    <button className="chat-back-btn" onClick={goBack}>
-                      ← Back
-                    </button>
-                  )}
-                </>
-              )}
-
-              {chatMode && (
-               <div className="chat-container">
-               {messages.map((msg, i) => (
-                <div key={i} className={`chat-bubble ${msg.sender}`}>
-                 {msg.text}
-               </div>
-             ))}
-
-              <div className="chat-input-box">
-            <input
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Ask anything..."
-        onKeyDown={(e) => {
-          if (e.key === "Enter") sendMessage();
-        }}
-      />
-
-      <button onClick={sendMessage}>Send</button>
+        <div className="study-chat-shell">
+          <div className="study-chat-header">
+            <h2>AI Diet Assistant</h2>
+            <p>
+              Chat with AI to get a personalized meal suggestion for breakfast,
+              lunch, dinner, and snacks.
+            </p>
           </div>
-             </div>
-        )}
 
-              {/* OPTIONS */}
-              {current.type === "options" && current.options && (
-                <>
-                  <div className="option-grid">
-                    {current.options.map((opt: string) => (
-                      <button
-                        key={opt}
-                        className="option-btn"
-                        onClick={() => handleAnswer(opt)}
-                      >
-                        {opt}
-                      </button>
-                    ))}
+          <div className="study-chat-body">
+            {messages.map((msg, i) => (
+              <div key={i} className={`study-chat-bubble ${msg.sender}`}>
+                <pre>{msg.text}</pre>
+              </div>
+            ))}
+
+            {loading && (
+              <div className="study-chat-bubble ai">
+                <pre>Generating your personalized diet plan...</pre>
+              </div>
+            )}
+
+            {completed && !loading && (
+              <div className="after-plan-actions">
+                <Link href="/dietician" className="after-plan-btn primary">
+                  Book Dietician
+                </Link>
+
+                <Link href="/kitchen" className="after-plan-btn secondary">
+                  Go to Kitchen
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {!completed && !loading && current?.key !== "allergyDetails" && (
+            <div className="study-chat-footer">
+              {current?.type === "multi-options" && current.options ? (
+                <div className="study-multi-select-wrap">
+                  <div className="study-multi-select-info">
+                    Selected: {selectedLikeFoods.length}/5
                   </div>
 
-                  {step > 0 && (
-                    <button className="chat-back-btn" onClick={goBack}>
-                      ← Back
+                  <div className="study-option-grid">
+                    {current.options.map((opt) => {
+                      const active = selectedLikeFoods.includes(opt);
+
+                      return (
+                        <button
+                          key={opt}
+                          type="button"
+                          className={`study-option-btn ${active ? "active" : ""}`}
+                          onClick={() => handleMultiSelectLikeFoods(opt)}
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : current?.type === "options" && current.options ? (
+                <div className="study-option-grid">
+                  {current.options.map((opt) => (
+                    <button
+                      key={opt}
+                      className="study-option-btn"
+                      onClick={() => handleAnswer(opt)}
+                    >
+                      {opt}
                     </button>
-                  )}
-                </>
+                  ))}
+                </div>
+              ) : (
+                <div className="study-input-row">
+                  <input
+                    type="text"
+                    value={input}
+                    placeholder="Type your answer..."
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleAnswer(input);
+                    }}
+                  />
+                  <button onClick={() => handleAnswer(input)}>Send</button>
+                </div>
               )}
-            </>
-          ) : (
-            <>
-              <h2>Your Diet Plan</h2>
-              <p>Daily Calories: {plan.calories}</p>
+            </div>
+          )}
 
-              <h3>Breakfast</h3>
-              {plan.breakfast.map((i: string, idx: number) => (
-                <p key={idx}>{i}</p>
-              ))}
-
-              <h3>Lunch</h3>
-              {plan.lunch.map((i: string, idx: number) => (
-                <p key={idx}>{i}</p>
-              ))}
-
-              <h3>Dinner</h3>
-              {plan.dinner.map((i: string, idx: number) => (
-                <p key={idx}>{i}</p>
-              ))}
-
-              <div style={{ marginTop: 20 }}>
-                <button className="ai-btn primary">Save Plan</button>
-                <button className="ai-btn secondary">Order Meals</button>
-                <button className="ai-btn secondary">Book Dietician</button>
+          {!completed && !loading && current?.key === "allergyDetails" && (
+            <div className="study-chat-footer">
+              <div className="study-input-row">
+                <input
+                  type="text"
+                  value={input}
+                  placeholder="Type allergy details..."
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleAnswer(input);
+                  }}
+                />
+                <button onClick={() => handleAnswer(input)}>Send</button>
               </div>
-            </>
+
+              <div className="report-actions">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  className="hidden-file-input"
+                  onChange={(e) =>
+                    handleUploadReport(e.target.files?.[0] || null)
+                  }
+                />
+
+                <button
+                  className="study-option-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  Upload Allergy Report
+                </button>
+
+                <button
+                  className="study-option-btn"
+                  onClick={handleSkipReport}
+                >
+                  Skip Report
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </section>
