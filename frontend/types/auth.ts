@@ -23,6 +23,7 @@ export type RegisterInput = {
   email: string;
   password: string;
   confirmPassword: string;
+  role: Role;
 };
 
 export type ForgotPasswordInput = {

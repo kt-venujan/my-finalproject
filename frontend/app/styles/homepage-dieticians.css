@@ -1,0 +1,63 @@
+/* ===== HOMEPAGE DIETICIAN DIRECTORY ===== */
+.hp-diet-section {
+  padding: 80px 40px;
+  background: linear-gradient(180deg, #090204, #14050a);
+}
+.hp-diet-header {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 40px; flex-wrap: wrap; gap: 16px;
+}
+.hp-diet-header h2 {
+  font-size: 40px; font-weight: 800;
+  background: linear-gradient(90deg, #fff, #ff4d6d);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hp-diet-header p { color: rgba(255,255,255,0.6); font-size: 16px; margin-top: 8px; }
+.hp-view-all {
+  color: #ff4d6d; text-decoration: none; font-weight: 600; font-size: 16px;
+  transition: 0.2s;
+}
+.hp-view-all:hover { color: #fff; }
+
+.hp-diet-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+.hp-diet-card {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px; padding: 24px; display: flex; flex-direction: column;
+  transition: 0.3s;
+}
+.hp-diet-card:hover { border-color: rgba(139,12,46,0.5); transform: translateY(-4px); }
+
+.hp-diet-avatar {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, #8b0c2e, #ff4d6d);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 14px;
+  overflow: hidden;
+}
+.hp-diet-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.hp-diet-name-row { display: flex; align-items: center; gap: 8px; }
+.hp-diet-name-row h3 { font-size: 18px; color: #fff; }
+.hp-verified { font-size: 16px; }
+.hp-diet-spec { color: #ff4d6d; font-size: 14px; margin: 4px 0 8px; }
+.hp-stars { font-size: 16px; margin-bottom: 10px; }
+.hp-rating-val { font-size: 13px; color: rgba(255,255,255,0.5); margin-left: 6px; }
+.hp-diet-meta { display: flex; gap: 16px; font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+
+.hp-book-btn {
+  margin-top: 16px; padding: 10px 20px; border: none; border-radius: 10px;
+  background: linear-gradient(135deg, #8b0c2e, #c4234a); color: #fff;
+  font-weight: 700; cursor: pointer; transition: 0.3s; font-size: 14px;
+}
+.hp-book-btn:hover { box-shadow: 0 6px 20px rgba(139,12,46,0.4); transform: translateY(-2px); }
+.hp-book-btn:disabled { background: #333; color: #666; cursor: not-allowed; transform: none; }
+
+.hp-diet-footer { text-align: center; margin-top: 40px; }
+.hp-explore-btn {
+  display: inline-block; padding: 14px 36px; border-radius: 14px;
+  border: 2px solid rgba(255,255,255,0.2); color: #fff; text-decoration: none;
+  font-weight: 700; font-size: 16px; transition: 0.3s;
+}
+.hp-explore-btn:hover { border-color: #ff4d6d; color: #ff4d6d; background: rgba(139,12,46,0.1); }

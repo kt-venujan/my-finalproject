@@ -3,7 +3,8 @@ import {
   getAllUsers,
   getUser,
   updateUser,
-  createUser   // ✅ add this
+  createUser,
+  deleteUser
 } from "../controllers/adminController.js";
 
 import { protect, adminOnly } from "../middlewares/authMiddleware.js";
@@ -16,10 +17,13 @@ router.get("/users", protect, adminOnly, getAllUsers);
 // READ ONE
 router.get("/users/:id", protect, adminOnly, getUser);
 
-// CREATE ✅ ADD THIS
+// CREATE
 router.post("/users", protect, adminOnly, createUser);
 
 // UPDATE
 router.put("/users/:id", protect, adminOnly, updateUser);
+
+// DELETE
+router.delete("/users/:id", protect, adminOnly, deleteUser);
 
 export default router;

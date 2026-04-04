@@ -22,7 +22,7 @@ const bookingSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "confirmed", "completed"],
+      enum: ["pending", "confirmed", "completed", "cancelled"],
       default: "pending",
     },
 
@@ -37,8 +37,20 @@ const bookingSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    // dietician manually approves after reviewing the paid booking
+    dieticianApproved: {
+      type: Boolean,
+      default: false,
+    },
+
+    // has user submitted a review for this booking
+    reviewSubmitted: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
 
-export default mongoose.model("Booking", bookingSchema);
+export default mongoose.model("Booking", bookingSchema);
