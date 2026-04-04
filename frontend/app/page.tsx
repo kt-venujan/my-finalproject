@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import BookingModal from "@/components/BookingModal";
 import ServicesInteractive from "@/components/ServicesInteractive";
 import BMICalculator from "@/components/BMICalculator";
-import AuthModal from "@/components/AuthModal";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/axios";
+import { FiActivity, FiShield, FiTrendingUp, FiUserCheck } from "react-icons/fi";
 
 type Dietician = {
   _id: string;
@@ -63,8 +64,6 @@ export default function HomePage() {
 
   return (
     <>
-      <AuthModal isOpen={isLoginOpen} onClose={closeLogin} />
-
       {selected && (
         <BookingModal dietician={selected} onClose={() => setSelected(null)} />
       )}
@@ -99,59 +98,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== DIETICIAN DIRECTORY ===== */}
-        {dieticians.length > 0 && (
-          <section className="hp-diet-section">
-            <div className="hp-diet-header">
-              <div>
-                <h2>Our Expert Dieticians</h2>
-                <p>Book a personalized consultation with a certified nutrition professional</p>
-              </div>
-              <Link href="/dietician" className="hp-view-all">
-                View All →
-              </Link>
-            </div>
 
-            <div className="hp-diet-grid">
-              {dieticians.map((d) => (
-                <div key={d._id} className="hp-diet-card">
-                  <div className="hp-diet-avatar">
-                    {d.avatar ? (
-                      <img src={(d as any).avatar} alt={d.user?.username} />
-                    ) : (
-                      <span>{d.user?.username?.[0]?.toUpperCase() || "D"}</span>
-                    )}
-                  </div>
-                  <div className="hp-diet-info">
-                    <div className="hp-diet-name-row">
-                      <h3>{d.user?.username}</h3>
-                      {d.isVerified && <span className="hp-verified">✅</span>}
-                    </div>
-                    <p className="hp-diet-spec">{d.specialization}</p>
-                    <StarRating rating={d.rating || 0} />
-                    <div className="hp-diet-meta">
-                      {d.experience > 0 && <span>🎓 {d.experience} yrs</span>}
-                      <span>💰 Rs. {(d.price || 1500).toLocaleString()}</span>
-                    </div>
-                  </div>
-                  <button
-                    className="hp-book-btn"
-                    disabled={!d.isAvailable}
-                    onClick={() => handleBook(d)}
-                  >
-                    {d.isAvailable ? "Book Now" : "Busy"}
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <div className="hp-diet-footer">
-              <Link href="/dietician" className="hp-explore-btn">
-                Explore All Dieticians
-              </Link>
-            </div>
-          </section>
-        )}
 
         {/* ===== SERVICES ===== */}
         <ServicesInteractive />
@@ -160,42 +107,81 @@ export default function HomePage() {
         <BMICalculator />
 
         {/* ===== WHY CHOOSE US ===== */}
-        <section className="why-section-premium">
-          <div className="why-title">
-            <h2>Why Choose Us</h2>
-            <p>
-              Dietara helps you build healthier eating habits with expert guidance,
-              smart tracking, and quality meal support.
-            </p>
-          </div>
-          <div className="why-container">
-            <div className="why-left">
-              <div className="why-card-premium">
-                <div className="why-icon">🥗</div>
-                <h3>Customized Plans</h3>
-                <p>Customized meal plans based on your health goals.</p>
-              </div>
-              <div className="why-card-premium">
-                <div className="why-icon">👩‍⚕️</div>
-                <h3>Expert Dieticians</h3>
-                <p>Get trusted advice from certified nutrition professionals.</p>
-              </div>
+        <section className="relative overflow-hidden bg-gradient-to-b from-[#12020a] via-[#1a040f] to-[#100208] py-20 sm:py-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-3xl text-center">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#ff9eb5]">
+                Why Choose Us
+              </p>
+              <h2 className="mt-3 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+                Built For Better Nutrition Outcomes
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-[#ffdce5]/80 sm:text-lg">
+                Dietara combines expert guidance, practical meal planning, and
+                smart progress tracking so your healthy routine becomes easier
+                to maintain every day.
+              </p>
             </div>
-            <div className="why-center">
-              <div className="why-logo-premium">
-                <img src="/logo.png" alt="Dietara Logo" />
+
+            <div className="mt-12 grid items-center gap-6 lg:grid-cols-3">
+              <div className="space-y-6">
+                <div className="group rounded-2xl border border-[#ff7894]/25 bg-[rgba(52,7,24,0.7)] p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#ff9eb5]/60 hover:shadow-[0_0_35px_rgba(255,94,140,0.35)]">
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#ff9eb5]/15 text-[#ffdce5] transition-all duration-300 group-hover:bg-[#ff9eb5]/30 group-hover:text-white group-hover:shadow-[0_0_18px_rgba(255,130,170,0.45)]">
+                    <FiShield className="h-5 w-5" />
+                  </span>
+                  <h3 className="mt-4 text-2xl font-semibold text-white">Customized Plans</h3>
+                  <p className="mt-2 text-[#ffdce5]/80">
+                    Personalized meal plans designed around your goals,
+                    preferences, and health conditions.
+                  </p>
+                </div>
+
+                <div className="group rounded-2xl border border-[#ff7894]/25 bg-[rgba(52,7,24,0.7)] p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#ff9eb5]/60 hover:shadow-[0_0_35px_rgba(255,94,140,0.35)]">
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#ff9eb5]/15 text-[#ffdce5] transition-all duration-300 group-hover:bg-[#ff9eb5]/30 group-hover:text-white group-hover:shadow-[0_0_18px_rgba(255,130,170,0.45)]">
+                    <FiUserCheck className="h-5 w-5" />
+                  </span>
+                  <h3 className="mt-4 text-2xl font-semibold text-white">Expert Dieticians</h3>
+                  <p className="mt-2 text-[#ffdce5]/80">
+                    Work with certified nutrition professionals for safe,
+                    sustainable, and evidence-based guidance.
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="why-right">
-              <div className="why-card-premium">
-                <div className="why-icon">📊</div>
-                <h3>Smart Tracking</h3>
-                <p>Track your meals and progress easily.</p>
+
+              <div className="mx-auto flex h-80 w-80 items-center justify-center rounded-full border border-[#ff7894]/30 bg-[radial-gradient(circle_at_center,#390715_0%,#17040c_65%,#0f0208_100%)] shadow-[0_0_48px_rgba(255,84,126,0.3)] sm:h-96 sm:w-96">
+                <div className="relative h-44 w-44 sm:h-52 sm:w-52">
+                  <Image
+                    src="/logo.png"
+                    alt="Dietara Logo"
+                    fill
+                    className="object-contain drop-shadow-[0_0_18px_rgba(255,100,145,0.45)]"
+                    priority
+                  />
+                </div>
               </div>
-              <div className="why-card-premium">
-                <div className="why-icon">🍲</div>
-                <h3>Healthy Kitchen</h3>
-                <p>Enjoy balanced meals prepared with care.</p>
+
+              <div className="space-y-6">
+                <div className="group rounded-2xl border border-[#ff7894]/25 bg-[rgba(52,7,24,0.7)] p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#ff9eb5]/60 hover:shadow-[0_0_35px_rgba(255,94,140,0.35)]">
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#ff9eb5]/15 text-[#ffdce5] transition-all duration-300 group-hover:bg-[#ff9eb5]/30 group-hover:text-white group-hover:shadow-[0_0_18px_rgba(255,130,170,0.45)]">
+                    <FiTrendingUp className="h-5 w-5" />
+                  </span>
+                  <h3 className="mt-4 text-2xl font-semibold text-white">Smart Tracking</h3>
+                  <p className="mt-2 text-[#ffdce5]/80">
+                    Monitor meals, habits, and progress with actionable insights
+                    that keep you accountable.
+                  </p>
+                </div>
+
+                <div className="group rounded-2xl border border-[#ff7894]/25 bg-[rgba(52,7,24,0.7)] p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#ff9eb5]/60 hover:shadow-[0_0_35px_rgba(255,94,140,0.35)]">
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#ff9eb5]/15 text-[#ffdce5] transition-all duration-300 group-hover:bg-[#ff9eb5]/30 group-hover:text-white group-hover:shadow-[0_0_18px_rgba(255,130,170,0.45)]">
+                    <FiActivity className="h-5 w-5" />
+                  </span>
+                  <h3 className="mt-4 text-2xl font-semibold text-white">Healthy Kitchen</h3>
+                  <p className="mt-2 text-[#ffdce5]/80">
+                    Access balanced meals prepared with nutrition-first standards
+                    for consistent daily support.
+                  </p>
+                </div>
               </div>
             </div>
           </div>

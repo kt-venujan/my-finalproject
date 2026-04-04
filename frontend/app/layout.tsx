@@ -10,6 +10,8 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import StarCursor from "@/components/StarCursor";
+import GlobalAuth from "@/components/GlobalAuth";
+import NavigationLoader from "@/components/NavigationLoader";
 
 /* BODY FONT */
 const poppins = Poppins({
@@ -52,8 +54,14 @@ export default function RootLayout({
           {/*  PREMIUM CURSOR */}
           <StarCursor />
 
+          {/* GLOBAL AUTH MODAL */}
+          <GlobalAuth />
+
           {/*  NAVBAR */}
           <Navbar />
+
+          {/* ROUTE TRANSITION LOADER */}
+          <NavigationLoader />
 
           {/*  PAGE CONTENT */}
           {children}

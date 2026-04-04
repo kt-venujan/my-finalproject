@@ -19,6 +19,17 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
+    phone: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    avatar: {
+      type: String,
+      default: "",
+    },
+
     password: {
       type: String,
     },
@@ -65,6 +76,17 @@ const userSchema = new mongoose.Schema(
     resetOtpLastSentAt: {
       type: Date,
     },
+
+    savedCards: [
+      {
+        brand: { type: String, default: "" },
+        last4: { type: String, default: "" },
+        expMonth: { type: Number },
+        expYear: { type: Number },
+        paymentMethodId: { type: String, default: "" },
+        savedAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true }
 );

@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import api from "@/lib/axios";
 import { toast } from "react-toastify";
+import { FiAward, FiCheckCircle, FiClock, FiFileText, FiXCircle } from "react-icons/fi";
 
 type Profile = {
   _id: string;
@@ -40,7 +42,7 @@ export default function AdminDieticiansPage() {
     setProcessing(profileId);
     try {
       await api.put(`/dieticians/admin/${profileId}/approve`, {});
-      toast.success("✅ Certificate approved!");
+      toast.success("Certificate approved!");
       fetchProfiles();
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Approval failed");
@@ -54,7 +56,7 @@ export default function AdminDieticiansPage() {
     setProcessing(rejectId);
     try {
       await api.put(`/dieticians/admin/${rejectId}/reject`, { reason: rejectReason });
-      toast.success("❌ Certificate rejected");
+      toast.success("Certificate rejected");
       setRejectId(null);
       setRejectReason("");
       fetchProfiles();
@@ -71,21 +73,29 @@ export default function AdminDieticiansPage() {
   });
 
   const statusBadge = (status: string) => {
-    const map: Record<string, { color: string; label: string }> = {
-      approved: { color: "#16a34a", label: "✅ Approved" },
-      pending: { color: "#d97706", label: "⏳ Pending" },
-      rejected: { color: "#dc2626", label: "❌ Rejected" },
-      not_uploaded: { color: "#6b7280", label: "📄 Not Uploaded" },
+    const map: Record<string, { color: string; label: string; icon: ReactNode }> = {
+      approved: { color: "#16a34a", label: "Approved", icon: <FiCheckCircle /> },
+      pending: { color: "#d97706", label: "Pending", icon: <FiClock /> },
+      rejected: { color: "#dc2626", label: "Rejected", icon: <FiXCircle /> },
+      not_uploaded: { color: "#6b7280", label: "Not Uploaded", icon: <FiFileText /> },
     };
     const s = map[status] || map["not_uploaded"];
-    return <span style={{ color: s.color, fontWeight: 600 }}>{s.label}</span>;
+    return (
+      <span className="adm-cert-status-icon" style={{ color: s.color, fontWeight: 600 }}>
+        {s.icon}
+        {s.label}
+      </span>
+    );
   };
 
   return (
-    <div className="adm-cert-page">
+    <section className="adm-section adm-cert-page">
       <div className="adm-cert-header">
         <div>
-          <h1>🏅 Dietician Certificate Review</h1>
+          <h1 className="adm-title">
+            <FiAward className="adm-title-icon" />
+            Dietician Certificate Review
+          </h1>
           <p>Review uploaded certificates and verify dieticians</p>
         </div>
         <div className="adm-cert-counts">
@@ -101,7 +111,24 @@ export default function AdminDieticiansPage() {
             className={`adm-cert-tab ${filter === f ? "active" : ""}`}
             onClick={() => setFilter(f)}
           >
-            {f === "pending" ? "⏳ Pending" : f === "approved" ? "✅ Approved" : f === "rejected" ? "❌ Rejected" : "All"}
+            {f === "pending" ? (
+              <>
+                <FiClock className="adm-tab-icon" />
+                Pending
+              </>
+            ) : f === "approved" ? (
+              <>
+                <FiCheckCircle className="adm-tab-icon" />
+                Approved
+              </>
+            ) : f === "rejected" ? (
+              <>
+                <FiXCircle className="adm-tab-icon" />
+                Rejected
+              </>
+            ) : (
+              "All"
+            )}
           </button>
         ))}
       </div>
@@ -135,7 +162,8 @@ export default function AdminDieticiansPage() {
                     rel="noreferrer"
                     className="adm-cert-view-btn"
                   >
-                    📄 View Certificate
+                    <FiFileText className="adm-btn-icon" />
+                    View Certificate
                   </a>
                 ) : (
                   <span className="adm-cert-no-doc">No certificate uploaded</span>
@@ -148,14 +176,20 @@ export default function AdminDieticiansPage() {
                       onClick={() => handleApprove(p._id)}
                       disabled={processing === p._id}
                     >
-                      {processing === p._id ? "..." : "✅ Approve"}
+                      {processing === p._id ? "..." : (
+                        <>
+                          <FiCheckCircle className="adm-btn-icon" />
+                          Approve
+                        </>
+                      )}
                     </button>
                     <button
                       className="adm-cert-reject-btn"
                       onClick={() => { setRejectId(p._id); setRejectReason(""); }}
                       disabled={processing === p._id}
                     >
-                      ❌ Reject
+                      <FiXCircle className="adm-btn-icon" />
+                      Reject
                     </button>
                   </>
                 )}
@@ -194,6 +228,6 @@ export default function AdminDieticiansPage() {
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 }

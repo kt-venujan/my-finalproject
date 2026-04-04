@@ -25,6 +25,8 @@ import dieticianRoutes from "./routes/dieticianRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
+import bundleOfferRoutes from "./routes/bundleOfferRoutes.js";
 
 
 
@@ -78,6 +80,8 @@ app.use("/api/dieticians", dieticianRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/bundle-offers", bundleOfferRoutes);
 
 // server
 const PORT = process.env.PORT || 5000;

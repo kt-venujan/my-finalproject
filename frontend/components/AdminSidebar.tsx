@@ -1,54 +1,99 @@
 "use client";
 
-import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  FiArrowLeft,
+  FiBarChart2,
+  FiCoffee,
+  FiGift,
+  FiGrid,
+  FiLogOut,
+  FiPackage,
+  FiShield,
+  FiUserCheck,
+  FiUsers,
+} from "react-icons/fi";
+import { useAuth } from "@/context/AuthContext";
 
 export default function AdminSidebar() {
-  const router = useRouter();
   const path = usePathname();
+  const { user, logout } = useAuth();
 
   const menu = [
-    { name: "Dashboard", path: "/dashboard/admin" },
-    { name: "Food Management", path: "/dashboard/admin/food" },
-    { name: "Orders", path: "/dashboard/admin/orders" },
-    { name: "Dieticians", path: "/dashboard/admin/dieticians" },
-    { name: "User Management", path: "/dashboard/admin/users" },
-    { name: "Analytics", path: "/dashboard/admin/analytics" },
-  ];
-
-  const system = [
-    { name: "Notifications", path: "/dashboard/admin/notifications" },
-    { name: "Settings", path: "/dashboard/admin/settings" },
+    { name: "Dashboard", path: "/dashboard/admin", icon: <FiGrid /> },
+    {
+      name: "Food Management",
+      path: "/dashboard/admin/food",
+      icon: <FiCoffee />,
+    },
+    {
+      name: "Bundle Offers",
+      path: "/dashboard/admin/bundles",
+      icon: <FiGift />,
+    },
+    { name: "Orders", path: "/dashboard/admin/orders", icon: <FiPackage /> },
+    {
+      name: "Dieticians",
+      path: "/dashboard/admin/dieticians",
+      icon: <FiUserCheck />,
+    },
+    {
+      name: "User Management",
+      path: "/dashboard/admin/users",
+      icon: <FiUsers />,
+    },
+    {
+      name: "Analytics",
+      path: "/dashboard/admin/analytics",
+      icon: <FiBarChart2 />,
+    },
+    {
+      name: "Notifications",
+      path: "/dashboard/admin/notifications",
+      icon: <FiShield />,
+    },
   ];
 
   return (
-    <div className="sidebar">
-      <h2 className="logo">SmartDiet Hub</h2>
+    <aside className="adm-sidebar">
+      <Link href="/" className="adm-home-link" aria-label="Back to home">
+        <FiArrowLeft />
+        <span>Home</span>
+      </Link>
 
-      <p className="menu-title">MAIN MENU</p>
-      <ul>
+      <div className="adm-brand">
+        <h2>SmartDiet Hub</h2>
+        <p>Admin Console</p>
+      </div>
+
+      <p className="adm-menu-title">MAIN MENU</p>
+      <ul className="adm-nav-list">
         {menu.map((item) => (
           <li
             key={item.name}
             className={path === item.path ? "active" : ""}
-            onClick={() => router.push(item.path)}
           >
-            {item.name}
+            <Link href={item.path} className="adm-nav-link">
+              <span className="adm-nav-icon">{item.icon}</span>
+              <span>{item.name}</span>
+            </Link>
           </li>
         ))}
       </ul>
 
-      <p className="menu-title">SYSTEM</p>
-      <ul>
-        {system.map((item) => (
-          <li
-            key={item.name}
-            className={path === item.path ? "active" : ""}
-            onClick={() => router.push(item.path)}
-          >
-            {item.name}
-          </li>
-        ))}
-      </ul>
-    </div>
+      <div className="adm-sidebar-footer">
+        <p className="adm-sidebar-user">{user?.username || "Admin"}</p>
+        <button type="button" className="adm-logout-btn" onClick={logout}>
+          <FiLogOut />
+          Logout
+        </button>
+        <div className="adm-sidebar-links">
+          <a href="#">Help</a>
+          <a href="#">Terms</a>
+        </div>
+        <p className="adm-sidebar-copy">Copyright 2026</p>
+      </div>
+    </aside>
   );
 }

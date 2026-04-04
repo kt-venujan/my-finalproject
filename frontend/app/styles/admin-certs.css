@@ -3,6 +3,8 @@
 .adm-cert-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
 .adm-cert-header h1 { font-size: 24px; color: #1a1a2e; margin-bottom: 4px; }
 .adm-cert-header p { color: #888; font-size: 14px; }
+.adm-title { display: flex; align-items: center; gap: 10px; }
+.adm-title-icon { width: 20px; height: 20px; color: #8b0c2e; }
 .adm-cert-counts { color: #ff4d6d; font-weight: 600; }
 
 .adm-cert-tabs { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
@@ -10,8 +12,10 @@
   padding: 8px 18px; border: 2px solid #e0e0e0; border-radius: 10px;
   background: transparent; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s;
   color: #666;
+  display: inline-flex; align-items: center; gap: 6px;
 }
 .adm-cert-tab.active { border-color: #8b0c2e; color: #8b0c2e; background: rgba(139,12,46,0.05); }
+.adm-tab-icon { width: 14px; height: 14px; }
 
 .adm-cert-list { display: flex; flex-direction: column; gap: 14px; }
 .adm-cert-card {
@@ -31,9 +35,13 @@
 .adm-cert-info p { font-size: 13px; color: #888; }
 .adm-cert-spec { color: #8b0c2e !important; font-weight: 500; }
 .adm-cert-status { margin-top: 4px; }
+.adm-cert-status-icon { display: inline-flex; align-items: center; gap: 6px; }
+.adm-cert-status-icon svg { width: 14px; height: 14px; }
 .adm-cert-reject-note { color: #dc2626; font-size: 12px; margin-top: 4px; }
 
 .adm-cert-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.adm-btn-icon { width: 14px; height: 14px; }
+.adm-cert-view-btn, .adm-cert-approve-btn, .adm-cert-reject-btn { display: inline-flex; align-items: center; gap: 6px; }
 .adm-cert-view-btn {
   padding: 8px 16px; border: 1px solid #3b82f6; border-radius: 8px;
   color: #3b82f6; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s;

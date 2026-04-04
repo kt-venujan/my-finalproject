@@ -1,5 +1,8 @@
 import Booking from "../models/Booking.js";
 
+const BOOKING_STATUSES = ["pending", "confirmed", "completed", "cancelled"];
+const BOOKING_PAYMENT_STATUSES = ["pending", "paid"];
+
 // CREATE BOOKING
 export const createBooking = async (req, res) => {
   try {
@@ -149,5 +152,72 @@ export const approveBooking = async (req, res) => {
   } catch (err) {
     console.error("Approve Booking Error:", err);
     res.status(500).json({ message: err.message });
+  }
+};
+
+export const getAllBookingsForAdmin = async (req, res) => {
+  try {
+    const bookings = await Booking.find()
+      .populate("user", "username email")
+      .populate("dietician", "username email")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json(bookings);
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+export const updateBookingByAdmin = async (req, res) => {
+  try {
+    const { status, paymentStatus, dieticianApproved } = req.body;
+
+    if (status && !BOOKING_STATUSES.includes(status)) {
+      return res.status(400).json({ message: "Invalid booking status" });
+    }
+
+    if (paymentStatus && !BOOKING_PAYMENT_STATUSES.includes(paymentStatus)) {
+      return res.status(400).json({ message: "Invalid payment status" });
+    }
+
+    if (
+      dieticianApproved !== undefined &&
+      typeof dieticianApproved !== "boolean"
+    ) {
+      return res.status(400).json({ message: "Invalid approval value" });
+    }
+
+    const booking = await Booking.findById(req.params.bookingId)
+      .populate("user", "username email")
+      .populate("dietician", "username email");
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    if (status) {
+      booking.status = status;
+    }
+
+    if (paymentStatus) {
+      booking.paymentStatus = paymentStatus;
+    }
+
+    if (dieticianApproved !== undefined) {
+      booking.dieticianApproved = dieticianApproved;
+      if (dieticianApproved && booking.status === "pending") {
+        booking.status = "confirmed";
+      }
+    }
+
+    await booking.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Booking updated successfully",
+      booking,
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
   }
 };

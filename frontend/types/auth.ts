@@ -4,6 +4,8 @@ export type User = {
   id: string;
   username: string;
   email: string;
+  phone?: string;
+  avatar?: string;
   role: Role;
 };
 
@@ -32,6 +34,7 @@ export type ForgotPasswordInput = {
 
 export type ResetPasswordInput = {
   email: string;
-  token: string;
+  otp?: string;
+  token?: string;
   newPassword: string;
 };

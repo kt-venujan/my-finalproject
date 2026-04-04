@@ -7,7 +7,6 @@ import {
   ReactNode,
   useEffect,
 } from "react";
-import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
 import {
   AuthResponse,
@@ -27,16 +26,43 @@ type AuthContextType = {
   register: (data: RegisterInput) => Promise<User>;
   forgotPassword: (data: ForgotPasswordInput) => Promise<{ message: string }>;
   resetPassword: (data: ResetPasswordInput) => Promise<{ message: string }>;
+  refreshMe: () => Promise<User | null>;
+  setAuthUser: (nextUser: User | null) => void;
   logout: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const router = useRouter();
-
   const [user, setUser] = useState<User | null>(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+
+  const setAuthUser = (nextUser: User | null) => {
+    setUser(nextUser);
+
+    if (nextUser) {
+      localStorage.setItem("user", JSON.stringify(nextUser));
+    } else {
+      localStorage.removeItem("user");
+    }
+  };
+
+  const refreshMe = async (): Promise<User | null> => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+
+    try {
+      const response = await api.get("/auth/me");
+      const nextUser = response.data?.user as User;
+      if (nextUser) {
+        setAuthUser(nextUser);
+        return nextUser;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
 
   // 🔥 Load user
   useEffect(() => {
@@ -49,6 +75,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem("user");
       }
     }
+
+    refreshMe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const openLogin = () => setIsLoginOpen(true);
@@ -61,9 +90,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const loggedInUser = response.data.user;
 
     // save
-    setUser(loggedInUser);
+    setAuthUser(loggedInUser);
     localStorage.setItem("token", response.data.token);
-    localStorage.setItem("user", JSON.stringify(loggedInUser));
 
     closeLogin();
 
@@ -74,6 +102,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.location.href = "/dashboard/admin";
     } else if (role === "dietician") {
       window.location.href = "/dashboard/dietician";
+    } else if (role === "kitchen") {
+      window.location.href = "/dashboard/kitchen";
     } else {
       window.location.href = "/dashboard/user";
     }
@@ -87,9 +117,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const registeredUser = response.data.user;
 
-    setUser(registeredUser);
+    setAuthUser(registeredUser);
     localStorage.setItem("token", response.data.token);
-    localStorage.setItem("user", JSON.stringify(registeredUser));
 
     closeLogin();
 
@@ -99,6 +128,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.location.href = "/dashboard/admin";
     } else if (role === "dietician") {
       window.location.href = "/dashboard/dietician";
+    } else if (role === "kitchen") {
+      window.location.href = "/dashboard/kitchen";
     } else {
       window.location.href = "/dashboard/user";
     }
@@ -124,11 +155,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ================= LOGOUT =================
   const logout = () => {
-    setUser(null);
+    setAuthUser(null);
     setIsLoginOpen(false);
 
     localStorage.removeItem("token");
-    localStorage.removeItem("user");
 
     window.location.href = "/";
   };
@@ -144,6 +174,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         forgotPassword,
         resetPassword,
+        refreshMe,
+        setAuthUser,
         logout,
       }}
     >

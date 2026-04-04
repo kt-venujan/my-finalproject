@@ -5,6 +5,13 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import "./dashboard.css";
+import {
+  FiCoffee,
+  FiDroplet,
+  FiActivity,
+  FiPackage,
+  FiMoon,
+} from "react-icons/fi";
 
 type Appointment = {
   _id: string;
@@ -22,7 +29,7 @@ export default function DashboardPage() {
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
 
-  // 🔥 FETCH USER BOOKINGS
+  // Fetch user bookings
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
@@ -50,7 +57,7 @@ export default function DashboardPage() {
     <div className="dashboard-wrapper">
       {/* ===== HEADER ===== */}
       <div className="dashboard-header">
-        <h1>Welcome back, {user?.username} 👋</h1>
+        <h1>Welcome back, {user?.username}</h1>
         <p>Track your health, meals, and appointments</p>
       </div>
 
@@ -81,8 +88,8 @@ export default function DashboardPage() {
       <div className="dashboard-grid">
         {/* LEFT */}
         <div className="dashboard-left">
-          <div className="card">
-            <h2>Your Info</h2>
+          <div className="dash-card">
+            <h2>Subscriptions</h2>
             <p><strong>Email:</strong> {user?.email}</p>
             <p><strong>Role:</strong> {user?.role}</p>
           </div>
@@ -90,17 +97,29 @@ export default function DashboardPage() {
           <div className="card">
             <h2>Today's Meal Plan</h2>
             <ul>
-              <li>🥗 Breakfast: Oats + Fruits</li>
-              <li>🍛 Lunch: Rice + Chicken + Veg</li>
-              <li>🥪 Snack: Sandwich</li>
-              <li>🍲 Dinner: Soup + Salad</li>
+              <li>
+                <span className="dash-icon"><FiCoffee /></span>
+                Breakfast: Oats + Fruits
+              </li>
+              <li>
+                <span className="dash-icon"><FiPackage /></span>
+                Lunch: Rice + Chicken + Veg
+              </li>
+              <li>
+                <span className="dash-icon"><FiActivity /></span>
+                Snack: Sandwich
+              </li>
+              <li>
+                <span className="dash-icon"><FiMoon /></span>
+                Dinner: Soup + Salad
+              </li>
             </ul>
           </div>
         </div>
 
         {/* RIGHT */}
         <div className="dashboard-right">
-          <div className="card">
+          <div className="dash-card">
             <h2>Quick Actions</h2>
             <div className="actions">
               <button onClick={() => router.push("/dietician")}>
@@ -112,9 +131,9 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* 🔥 APPOINTMENT CARD */}
-          <div className="card">
-            <h2>Upcoming Appointments</h2>
+          {/* Appointment card */}
+          <div className="dash-card">
+            <h2>Appointments</h2>
 
             {appointments.length === 0 ? (
               <p>No bookings yet</p>
@@ -129,11 +148,20 @@ export default function DashboardPage() {
             )}
           </div>
 
-          <div className="card">
-            <h2>Health Tips</h2>
-            <p>💡 Drink at least 2L water daily</p>
-            <p>💡 Avoid processed sugar</p>
-            <p>💡 Maintain balanced meals</p>
+          <div className="dash-card">
+            <h2>Meal Plans</h2>
+            <p className="dash-tip">
+              <span className="dash-icon"><FiDroplet /></span>
+              Drink at least 2L water daily
+            </p>
+            <p className="dash-tip">
+              <span className="dash-icon"><FiActivity /></span>
+              Avoid processed sugar
+            </p>
+            <p className="dash-tip">
+              <span className="dash-icon"><FiPackage /></span>
+              Maintain balanced meals
+            </p>
           </div>
         </div>
       </div>

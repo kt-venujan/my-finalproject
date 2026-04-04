@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import type { AxiosError } from "axios";
 import { useAuth } from "@/context/AuthContext";
 
 export default function ResetPasswordPage() {
@@ -10,22 +11,22 @@ export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const tokenFromUrl = useMemo(
-    () => searchParams.get("token") || "",
-    [searchParams]
-  );
-
   const emailFromUrl = useMemo(
     () => searchParams.get("email") || "",
     [searchParams]
   );
 
   const [email, setEmail] = useState(emailFromUrl);
-  const [token, setToken] = useState(tokenFromUrl);
+  const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const getApiErrorMessage = (error: unknown, fallback: string) => {
+    const axiosError = error as AxiosError<{ message?: string }>;
+    return axiosError?.response?.data?.message || fallback;
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -36,7 +37,7 @@ export default function ResetPasswordPage() {
       setLoading(true);
       const response = await resetPassword({
         email,
-        token,
+        otp,
         newPassword,
       });
 
@@ -45,10 +46,8 @@ export default function ResetPasswordPage() {
       setTimeout(() => {
         router.push("/login");
       }, 1500);
-    } catch (error: any) {
-      setErrorMessage(
-        error?.response?.data?.message || "Failed to reset password"
-      );
+    } catch (error) {
+      setErrorMessage(getApiErrorMessage(error, "Failed to reset password"));
     } finally {
       setLoading(false);
     }
@@ -58,9 +57,13 @@ export default function ResetPasswordPage() {
     <div className="auth-page">
       <div className="simple-auth-card">
         <form onSubmit={handleSubmit}>
+          <div className="back-link-wrap">
+            <Link href="/forgot-password">← Back</Link>
+          </div>
+
           <h1>Reset Password</h1>
           <p className="simple-auth-subtitle">
-            Enter your email, token and new password.
+            Enter your email, OTP and new password.
           </p>
 
           <input
@@ -73,9 +76,9 @@ export default function ResetPasswordPage() {
 
           <input
             type="text"
-            placeholder="Reset Token"
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
+            placeholder="OTP Code"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
             required
           />
 

@@ -51,16 +51,44 @@
 }
 
 /* CARDS */
-.card {
+.dash-card {
   background: #fff;
   padding: 20px;
   border-radius: 16px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.05);
 }
 
-.card h2 {
+.dash-card h2 {
   margin-bottom: 12px;
   color: #8b0c2e;
+}
+
+.dash-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  color: #8b0c2e;
+}
+
+.dash-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.dash-card ul li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.dash-tip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* ACTIONS */
