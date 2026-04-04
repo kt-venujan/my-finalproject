@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import api from "@/lib/axios";
 import AdminSidebar from "@/components/AdminSidebar";
+import "./admin.css";
 
 
 export default function FoodPage() {

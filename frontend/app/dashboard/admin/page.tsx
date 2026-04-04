@@ -2,6 +2,8 @@
 
 import AdminSidebar from "@/components/AdminSidebar";
 
+import "../admin.css";
+
 export default function AdminDashboard() {
   return (
     <div className="layout">
