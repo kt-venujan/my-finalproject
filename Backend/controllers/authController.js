@@ -39,10 +39,10 @@ export const register = async (req, res) => {
     });
 
     const token = jwt.sign(
-  { _id: newUser._id, role: newUser.role }, // 🔥 CHANGE HERE
-  process.env.JWT_SECRET,
-  { expiresIn: "1d" }
-);
+      { id: newUser._id, role: newUser.role }, // 🔥 CHANGE HERE
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
 
     return res.status(201).json({
       success: true,
