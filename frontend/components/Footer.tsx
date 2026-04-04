@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import api from "@/lib/axios";
 import { toast } from "react-toastify";
 import {
@@ -11,8 +12,13 @@ import {
 } from "react-icons/fa";
 
 export default function Footer() {
+  const pathname = usePathname();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+
+  if (pathname.startsWith("/dashboard")) {
+    return null;
+  }
 
   const handleSubscribe = async () => {
     if (!email || !email.includes("@")) {

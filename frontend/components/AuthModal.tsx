@@ -37,9 +37,18 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="auth-modal-overlay">
-      <div className="auth-modal-content">
-        <button className="auth-modal-close" onClick={onClose}>
+    <div 
+      className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-[10000] p-6 overflow-y-auto"
+      onClick={onClose}
+    >
+      <div 
+        className="relative bg-white rounded-[30px] shadow-2xl w-[900px] max-w-full min-h-[550px] z-[10001] overflow-hidden" 
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button 
+          className="absolute top-5 right-6 text-3xl text-gray-500 hover:text-red-700 z-[10002] transition-colors" 
+          onClick={onClose}
+        >
           ×
         </button>
 

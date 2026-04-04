@@ -16,7 +16,9 @@
 }
 .dd-nav-item:hover { color: #fff; background: rgba(255,255,255,0.04); }
 .dd-nav-item.active { color: #ff4d6d; background: rgba(139,12,46,0.1); border-right: 3px solid #ff4d6d; }
-.dd-nav-icon { font-size: 18px; }
+.dd-nav-icon { width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; }
+.dd-nav-icon svg { width: 18px; height: 18px; color: #8c8c96; }
+.dd-nav-item.active .dd-nav-icon svg { color: #ff4d6d; }
 .dd-badge {
   margin-left: auto; background: #ff4d6d; color: #fff; font-size: 11px;
   padding: 2px 8px; border-radius: 10px; font-weight: 700;
@@ -29,6 +31,13 @@
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 16px;
 }
+.dd-user-avatar-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #2f3342;
+}
 .dd-user-name { font-size: 14px; font-weight: 600; }
 .dd-user-role { font-size: 12px; color: #888; }
 .dd-logout-btn {
@@ -36,12 +45,87 @@
   background: transparent; color: #aaa; cursor: pointer; font-size: 13px; transition: 0.2s;
 }
 .dd-logout-btn:hover { border-color: #ff4d6d; color: #ff4d6d; }
+.dd-mini-links { margin-top: 10px; display: flex; gap: 10px; }
+.dd-mini-links a { color: #8e96ab; text-decoration: none; font-size: 12px; }
+.dd-mini-links a:hover { color: #fff; }
+.dd-mini-copy { margin-top: 8px; color: #737b91; font-size: 11px; }
 
 /* Main */
 .dd-main { flex: 1; margin-left: 260px; padding: 32px 40px; }
+.dd-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.dd-topbar-search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  border: 1px solid #2b2b3a;
+  background: #191927;
+}
+.dd-topbar-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 14px;
+}
+.dd-topbar-search input::placeholder { color: #8e96ab; }
+.dd-topbar-search-icon { width: 16px; height: 16px; color: #a5b0cb; }
+.dd-topbar-right { display: flex; align-items: center; gap: 10px; }
+.dd-topbar-notify {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  border: 1px solid #2f3342;
+  background: #1a1d2a;
+  color: #dce3f5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.dd-topbar-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ff4d6d;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.dd-topbar-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b0c2e, #ff4d6d);
+  color: #fff;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.dd-topbar-avatar-img {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #2f3342;
+}
 .dd-section { max-width: 1000px; }
 .dd-page-header h1 { font-size: 28px; margin-bottom: 4px; }
 .dd-page-header p { color: #888; font-size: 15px; margin-bottom: 28px; }
+.dd-title { display: flex; align-items: center; gap: 10px; }
+.dd-title-icon { width: 20px; height: 20px; }
 
 /* Stats */
 .dd-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
@@ -53,7 +137,12 @@
 .dd-stat-card.green { border-left: 4px solid #22c55e; }
 .dd-stat-card.orange { border-left: 4px solid #f59e0b; }
 .dd-stat-card.blue { border-left: 4px solid #3b82f6; }
-.dd-stat-icon { font-size: 28px; }
+.dd-stat-icon {
+  width: 36px; height: 36px; border-radius: 12px; background: #111118;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: #d1d5db;
+}
+.dd-stat-icon svg { width: 18px; height: 18px; }
 .dd-stat-card h3 { font-size: 28px; font-weight: 800; }
 .dd-stat-card p { font-size: 13px; color: #888; }
 
@@ -63,6 +152,7 @@
   display: flex; align-items: center; gap: 16px; border: 1px solid #333; border-left: 4px solid;
 }
 .dd-cert-icon { font-size: 32px; }
+.dd-cert-icon svg { width: 24px; height: 24px; }
 .dd-cert-label { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
 .dd-cert-reason { color: #ef4444; font-size: 13px; margin-top: 4px; }
 .dd-cert-action-btn {
@@ -108,6 +198,11 @@
 .dd-booking-details { flex: 1; }
 .dd-booking-details h3 { font-size: 16px; margin-bottom: 2px; }
 .dd-booking-details p { font-size: 13px; color: #888; }
+.dd-inline-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  margin: 0 6px 0 12px; color: #9ca3af; vertical-align: middle;
+}
+.dd-inline-icon svg { width: 14px; height: 14px; }
 .dd-booking-badges { display: flex; gap: 8px; flex-wrap: wrap; }
 .dd-pill {
   padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;
@@ -117,8 +212,11 @@
 .dd-pill.confirmed { background: rgba(59,130,246,0.15); color: #3b82f6; }
 .dd-pill.approved { background: rgba(22,163,74,0.15); color: #22c55e; }
 .dd-pill.new { background: rgba(255,77,109,0.15); color: #ff4d6d; }
+.dd-pill-icon { width: 12px; height: 12px; }
 
 .dd-booking-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.dd-action-icon { width: 16px; height: 16px; }
+.dd-action-btn, .dd-approve-btn { display: inline-flex; align-items: center; gap: 8px; }
 .dd-approve-btn {
   padding: 10px 20px; border: none; border-radius: 10px;
   background: linear-gradient(135deg, #16a34a, #22c55e); color: #fff;
@@ -144,6 +242,9 @@
   background: #1a1a24; border-radius: 16px; padding: 24px; margin-bottom: 28px;
   display: flex; align-items: center; gap: 16px; border: 1px solid #333; border-left: 4px solid;
 }
+.dd-verify-icon { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; }
+.dd-verify-icon svg { width: 22px; height: 22px; }
+.dd-link-icon { width: 14px; height: 14px; margin-right: 6px; vertical-align: middle; }
 .dd-verify-status-label { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
 .dd-cert-link { color: #3b82f6; text-decoration: none; font-size: 13px; margin-top: 6px; display: inline-block; }
 .dd-cert-link:hover { text-decoration: underline; }
@@ -167,9 +268,11 @@
   text-align: center; cursor: pointer; transition: 0.2s; color: #888;
 }
 .dd-upload-zone:hover { border-color: #8b0c2e; background: rgba(139,12,46,0.05); }
-.dd-upload-icon { font-size: 32px; margin-bottom: 8px; }
+.dd-upload-icon { font-size: 32px; margin-bottom: 8px; display: inline-flex; align-items: center; justify-content: center; }
+.dd-upload-icon svg { width: 28px; height: 28px; }
 .dd-upload-hint { font-size: 12px; color: #555; margin-top: 4px; }
-.dd-upload-file { color: #ff4d6d; font-weight: 600; }
+.dd-upload-file { color: #ff4d6d; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.dd-upload-file-icon { width: 16px; height: 16px; }
 
 .dd-submit-btn {
   padding: 14px 32px; border: none; border-radius: 12px;
@@ -185,7 +288,8 @@
   display: flex; align-items: center; gap: 14px; padding: 16px;
   background: #1a1a24; border-radius: 14px; border: 1px solid #222;
 }
-.dd-notify-icon { font-size: 24px; }
+.dd-notify-icon { width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; color: #ff4d6d; }
+.dd-notify-icon svg { width: 18px; height: 18px; }
 .dd-notify-item p { font-size: 14px; }
 .dd-notify-time { font-size: 12px; color: #888; margin-top: 2px; }
 
@@ -194,3 +298,140 @@
   background: #1a1a24; border-radius: 16px; padding: 28px; border: 1px solid #222;
 }
 .dd-settings-card p { margin-bottom: 8px; font-size: 15px; color: #ccc; }
+
+.dd-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.dd-settings-card h3 {
+  margin: 0 0 10px;
+}
+
+.dd-settings-help {
+  color: #aeb8d4;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.dd-account-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.dd-account-avatar {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #2f3342;
+}
+
+.dd-account-avatar.placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #8b0c2e, #ff4d6d);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.dd-account-avatar-controls input[type="file"] {
+  width: 100%;
+  color: #aeb8d4;
+  font-size: 12px;
+}
+
+.dd-settings-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #aeb8d4;
+  font-size: 12px;
+  margin-top: 7px;
+}
+
+.dd-settings-input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #2f3342;
+  background: #11111a;
+  color: #fff;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  outline: none;
+}
+
+.dd-settings-input:focus {
+  border-color: #ff4d6d;
+}
+
+.dd-settings-otp-btn {
+  border-radius: 10px;
+  border: 1px solid #2f3342;
+  background: #181929;
+  color: #d5def6;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.dd-settings-otp-btn:hover {
+  border-color: #ff4d6d;
+}
+
+@media (max-width: 1100px) {
+  .dd-topbar {
+    flex-wrap: wrap;
+  }
+
+  .dd-topbar-search {
+    width: 100%;
+  }
+
+  .dd-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .dd-sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+    border-right: 0;
+    border-bottom: 1px solid #222;
+  }
+
+  .dd-wrapper {
+    flex-direction: column;
+  }
+
+  .dd-main {
+    margin-left: 0;
+    width: 100%;
+    padding: 20px;
+  }
+
+  .dd-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dd-settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .dd-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dd-page-header h1 {
+    font-size: 24px;
+  }
+}

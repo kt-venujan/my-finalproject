@@ -4,9 +4,14 @@ import {
   register,
   login,
   logout,
+  getMe,
+  updateMe,
   forgotPassword,
+  verifyResetOtp,
   resetPassword,
 } from "../controllers/authController.js";
+import { protect } from "../middlewares/authMiddleware.js";
+import { avatarUpload } from "../middlewares/imageUpload.js";
 
 const router = express.Router();
 
@@ -14,7 +19,10 @@ const router = express.Router();
 router.post("/register", register);
 router.post("/login", login);
 router.post("/logout", logout);
+router.get("/me", protect, getMe);
+router.put("/me", protect, avatarUpload.single("avatar"), updateMe);
 router.post("/forgot-password", forgotPassword);
+router.post("/verify-reset-otp", verifyResetOtp);
 router.post("/reset-password", resetPassword);
 
 // ===== Google OAuth =====

@@ -2,75 +2,110 @@
 
 import { useEffect, useState } from "react";
 import api from "@/lib/axios";
-import AdminSidebar from "@/components/AdminSidebar";
-import "./admin.css";
+import { FiCoffee, FiEdit2, FiPlus, FiTag, FiX } from "react-icons/fi";
 
+type Food = {
+  _id: string;
+  name: string;
+  price: number;
+  category: string;
+  image?: string;
+};
+
+type Category = {
+  _id: string;
+  name: string;
+};
 
 export default function FoodPage() {
-  const [foods, setFoods] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [foods, setFoods] = useState<Food[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("");
   const [image, setImage] = useState("");
+  const [foodImageFile, setFoodImageFile] = useState<File | null>(null);
 
   const [catName, setCatName] = useState("");
-  const [catImage, setCatImage] = useState("");
 
-  useEffect(() => {
-    fetchFoods();
-    fetchCategories();
-  }, []);
+  const [editingFoodId, setEditingFoodId] = useState<string | null>(null);
+  const [editFoodName, setEditFoodName] = useState("");
+  const [editFoodPrice, setEditFoodPrice] = useState("");
+  const [editFoodCategory, setEditFoodCategory] = useState("");
+  const [editFoodImage, setEditFoodImage] = useState("");
+  const [editFoodFile, setEditFoodFile] = useState<File | null>(null);
+
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [editCatName, setEditCatName] = useState("");
 
   const fetchFoods = async () => {
-    const res = await api.get("/foods");
-    setFoods(res.data);
+    try {
+      const res = await api.get("/foods");
+      setFoods(res.data || []);
+    } catch (error) {
+      console.error("Failed to fetch foods", error);
+      setFoods([]);
+    }
   };
 
   const fetchCategories = async () => {
-    const res = await api.get("/categories");
-    setCategories(res.data);
+    try {
+      const res = await api.get("/categories");
+      setCategories(res.data || []);
+    } catch (error) {
+      console.error("Failed to fetch categories", error);
+      setCategories([]);
+    }
   };
 
-  const addFood = async () => {
-    
-    await api.post("/admin/foods", {
-      name,
-      price: Number(price),
-      category,
-      image,
-    });
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchFoods();
+      fetchCategories();
+    }, 0);
 
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+  const resetFoodCreateForm = () => {
     setName("");
     setPrice("");
     setCategory("");
     setImage("");
+    setFoodImageFile(null);
+  };
 
+  const resetCategoryCreateForm = () => {
+    setCatName("");
+  };
+
+  const saveFood = async () => {
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("price", price);
+    formData.append("category", category);
+
+    if (foodImageFile) {
+      formData.append("image", foodImageFile);
+    } else if (image) {
+      formData.append("image", image);
+    }
+
+    await api.post("/admin/foods", formData);
+    resetFoodCreateForm();
     fetchFoods();
+  };
+
+  const saveCategory = async () => {
+    await api.post("/categories/create", { name: catName });
+    resetCategoryCreateForm();
+    fetchCategories();
   };
 
   const deleteFood = async (id: string) => {
-    await api.delete(`/foods/${id}`);
+    await api.delete(`/admin/foods/${id}`);
     fetchFoods();
-  };
-
-  const addCategory = async () => {
-        const token = localStorage.getItem("token");
-
-    await api.post("/categories/create", {
-      name: catName,
-      image: catImage || "",
-    }, {
-        headers: {
-          Authorization: `Bearer ${token}`, // ✅ MUST
-        },
-      });
-
-    setCatName("");
-    setCatImage("");
-
-    fetchCategories();
   };
 
   const deleteCategory = async (id: string) => {
@@ -78,72 +113,272 @@ export default function FoodPage() {
     fetchCategories();
   };
 
+  const resolveImage = (path?: string) => {
+    if (!path) return "";
+    if (path.startsWith("http")) return path;
+    return `http://localhost:5000${path}`;
+  };
+
+  const openCategoryModal = (selected: Category) => {
+    setEditingCategoryId(selected._id);
+    setEditCatName(selected.name || "");
+  };
+
+  const closeCategoryModal = () => {
+    setEditingCategoryId(null);
+    setEditCatName("");
+  };
+
+  const saveCategoryEdit = async () => {
+    if (!editingCategoryId) return;
+
+    await api.put(`/categories/${editingCategoryId}`, { name: editCatName });
+    closeCategoryModal();
+    fetchCategories();
+  };
+
+  const openFoodModal = (selected: Food) => {
+    setEditingFoodId(selected._id);
+    setEditFoodName(selected.name || "");
+    setEditFoodPrice(String(selected.price ?? ""));
+    setEditFoodCategory(selected.category || "");
+    setEditFoodImage(selected.image || "");
+    setEditFoodFile(null);
+  };
+
+  const closeFoodModal = () => {
+    setEditingFoodId(null);
+    setEditFoodName("");
+    setEditFoodPrice("");
+    setEditFoodCategory("");
+    setEditFoodImage("");
+    setEditFoodFile(null);
+  };
+
+  const saveFoodEdit = async () => {
+    if (!editingFoodId) return;
+
+    const formData = new FormData();
+    formData.append("name", editFoodName);
+    formData.append("price", editFoodPrice);
+    formData.append("category", editFoodCategory);
+
+    if (editFoodFile) {
+      formData.append("image", editFoodFile);
+    } else if (editFoodImage) {
+      formData.append("image", editFoodImage);
+    }
+
+    await api.put(`/admin/foods/${editingFoodId}`, formData);
+    closeFoodModal();
+    fetchFoods();
+  };
+
   return (
-    <div className="layout">
-      <AdminSidebar />
+    <section className="adm-section">
+      <div className="adm-page-head">
+        <h1 className="adm-title">Food Management</h1>
+        <p>Add, edit, and organize kitchen products and categories.</p>
+      </div>
 
-      <div className="main">
-        <h2>Food Management 🍽️</h2>
+      <div className="adm-food-create-grid">
+        <div className="adm-panel">
+          <h3 className="adm-subtitle">
+            <FiTag />
+            Add Category
+          </h3>
+          <input
+            className="adm-input"
+            value={catName}
+            onChange={(e) => setCatName(e.target.value)}
+            placeholder="Category name"
+          />
+          <button className="adm-btn primary" onClick={saveCategory}>
+            <FiPlus />
+            Add Category
+          </button>
+        </div>
 
-        <div className="panel">
-          <div className="food-row">
-
-            {/* ADD CATEGORY */}
-            <div>
-              <h4>Add Category</h4>
-              <input value={catName} onChange={(e) => setCatName(e.target.value)} placeholder="Category Name" />
-              <input value={catImage} onChange={(e) => setCatImage(e.target.value)} placeholder="/uploads/oats.jpg" />
-              <button onClick={addCategory}>+ Add Category</button>
-            </div>
-
-            {/* ADD FOOD */}
-            <div>
-              <h4>Add Food</h4>
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Food Name" />
-              <input value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Price" />
-
-              <select value={category} onChange={(e) => setCategory(e.target.value)}>
-                <option>Select Category</option>
-                {categories.map((c) => (
-                  <option key={c._id}>{c.name}</option>
-                ))}
-              </select>
-
-              <input value={image} onChange={(e) => setImage(e.target.value)} placeholder="/uploads/pizza.jpg" />
-              <button onClick={addFood}>+ Add Food</button>
-            </div>
-
-          </div>
-
-          {/* CATEGORY LIST */}
-          <div className="food-grid">
+        <div className="adm-panel">
+          <h3 className="adm-subtitle">
+            <FiCoffee />
+            Add Food
+          </h3>
+          <input
+            className="adm-input"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Food name"
+          />
+          <input
+            className="adm-input"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            placeholder="Price"
+            type="number"
+            min="0"
+          />
+          <select
+            className="adm-select"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            <option value="">Select category</option>
             {categories.map((c) => (
-              <div className="food-card" key={c._id}>
-                <h4>{c.name}</h4>
-                <button className="delete" onClick={() => deleteCategory(c._id)}>
-                  Delete
-                </button>
-              </div>
+              <option key={c._id} value={c.name}>
+                {c.name}
+              </option>
             ))}
-          </div>
-
-          {/* FOOD LIST */}
-          <div className="food-grid">
-            {foods.map((f) => (
-              <div className="food-card" key={f._id}>
-                <h4>{f.name}</h4>
-                <p>Rs. {f.price}</p>
-                <span>{f.category}</span>
-
-                <button onClick={() => deleteFood(f._id)}>
-                  Delete
-                </button>
-              </div>
-            ))}
-          </div>
-
+          </select>
+          <input
+            className="adm-input"
+            value={image}
+            onChange={(e) => setImage(e.target.value)}
+            placeholder="/uploads/foods/item.jpg"
+          />
+          <input
+            className="adm-input"
+            type="file"
+            accept="image/*"
+            onChange={(e) => setFoodImageFile(e.target.files?.[0] || null)}
+          />
+          <button className="adm-btn primary" onClick={saveFood}>
+            <FiPlus />
+            Add Food
+          </button>
         </div>
       </div>
-    </div>
+
+      <div className="adm-panel">
+        <h3 className="adm-subtitle">Categories</h3>
+        <div className="adm-food-grid">
+          {categories.map((c) => (
+            <article className="adm-food-card" key={c._id}>
+              <h4>{c.name}</h4>
+              <div className="adm-action-row">
+                <button className="adm-btn ghost" onClick={() => openCategoryModal(c)}>
+                  <FiEdit2 />
+                  Edit
+                </button>
+                <button className="adm-btn danger" onClick={() => deleteCategory(c._id)}>
+                  Delete
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <div className="adm-panel">
+        <h3 className="adm-subtitle">Foods</h3>
+        <div className="adm-food-grid">
+          {foods.map((f) => (
+            <article className="adm-food-card" key={f._id}>
+              {f.image && <img src={resolveImage(f.image)} alt={f.name} />}
+              <h4>{f.name}</h4>
+              <p>Rs. {f.price}</p>
+              <span>{f.category}</span>
+              <div className="adm-action-row">
+                <button className="adm-btn ghost" onClick={() => openFoodModal(f)}>
+                  <FiEdit2 />
+                  Edit
+                </button>
+                <button className="adm-btn danger" onClick={() => deleteFood(f._id)}>
+                  Delete
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      {editingCategoryId && (
+        <div
+          className="adm-modal-overlay"
+          onClick={(e) => e.target === e.currentTarget && closeCategoryModal()}
+        >
+          <div className="adm-modal">
+            <button className="adm-modal-close" onClick={closeCategoryModal}>
+              <FiX />
+            </button>
+            <h3>Edit Category</h3>
+            <input
+              className="adm-input"
+              value={editCatName}
+              onChange={(e) => setEditCatName(e.target.value)}
+              placeholder="Category name"
+            />
+            <div className="adm-action-row">
+              <button className="adm-btn primary" onClick={saveCategoryEdit}>
+                Save Category
+              </button>
+              <button className="adm-btn ghost" onClick={closeCategoryModal}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editingFoodId && (
+        <div
+          className="adm-modal-overlay"
+          onClick={(e) => e.target === e.currentTarget && closeFoodModal()}
+        >
+          <div className="adm-modal">
+            <button className="adm-modal-close" onClick={closeFoodModal}>
+              <FiX />
+            </button>
+            <h3>Edit Food</h3>
+            <input
+              className="adm-input"
+              value={editFoodName}
+              onChange={(e) => setEditFoodName(e.target.value)}
+              placeholder="Food name"
+            />
+            <input
+              className="adm-input"
+              value={editFoodPrice}
+              onChange={(e) => setEditFoodPrice(e.target.value)}
+              placeholder="Price"
+              type="number"
+              min="0"
+            />
+            <select
+              className="adm-select"
+              value={editFoodCategory}
+              onChange={(e) => setEditFoodCategory(e.target.value)}
+            >
+              <option value="">Select category</option>
+              {categories.map((c) => (
+                <option key={c._id} value={c.name}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <input
+              className="adm-input"
+              value={editFoodImage}
+              onChange={(e) => setEditFoodImage(e.target.value)}
+              placeholder="Image path"
+            />
+            <input
+              className="adm-input"
+              type="file"
+              accept="image/*"
+              onChange={(e) => setEditFoodFile(e.target.files?.[0] || null)}
+            />
+            <div className="adm-action-row">
+              <button className="adm-btn primary" onClick={saveFoodEdit}>
+                Save Food
+              </button>
+              <button className="adm-btn ghost" onClick={closeFoodModal}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

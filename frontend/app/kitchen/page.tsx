@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import { FiGrid } from "react-icons/fi";
+import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
 
 type PlanType = "weekly" | "monthly";
+type SizeType = "small" | "medium" | "large";
 
 interface Category {
   _id: string;
@@ -25,9 +26,32 @@ interface Food {
   fat?: number;
 }
 
+interface BundleOfferItem {
+  food: Food;
+  defaultQty: number;
+  minQty: number;
+  maxQty: number;
+  allowedSizes: SizeType[];
+}
+
+interface BundleOffer {
+  _id: string;
+  name: string;
+  description: string;
+  planType: PlanType;
+  discountPercent: number;
+  isActive: boolean;
+  items: BundleOfferItem[];
+}
+
 interface CartItem extends Food {
   quantity: number;
   categoryName?: string;
+  size?: SizeType;
+  bundleOfferId?: string;
+  bundleOfferName?: string;
+  discountPercent?: number;
+  cartKey: string;
 }
 
 const fadeUp = {
@@ -77,6 +101,7 @@ const featuredMeals = [
 ];
 
 export default function KitchenPage() {
+  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [foods, setFoods] = useState<Food[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -84,6 +109,17 @@ export default function KitchenPage() {
   const [loadingFoods, setLoadingFoods] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [activeMealIndex, setActiveMealIndex] = useState(0);
+  const [bundleOffersByPlan, setBundleOffersByPlan] = useState<
+    Record<PlanType, BundleOffer[]>
+  >({
+    weekly: [],
+    monthly: [],
+  });
+  const [bundleModalOpen, setBundleModalOpen] = useState(false);
+  const [selectedBundle, setSelectedBundle] = useState<BundleOffer | null>(null);
+  const [bundleSelection, setBundleSelection] = useState<
+    Record<string, { quantity: number; size: SizeType }>
+  >({});
 
   const [foodsModalOpen, setFoodsModalOpen] = useState(false);
   const [cartModalOpen, setCartModalOpen] = useState(false);
@@ -100,6 +136,50 @@ export default function KitchenPage() {
 
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    const storedCart = localStorage.getItem("kitchenCart");
+    if (storedCart) {
+      try {
+        const parsed = JSON.parse(storedCart) as CartItem[];
+        setCart(
+          parsed.map((item) => ({
+            ...item,
+            cartKey:
+              item.cartKey ||
+              `${item._id}::${item.bundleOfferId || "single"}::${item.size || "small"}`,
+          }))
+        );
+      } catch {
+        localStorage.removeItem("kitchenCart");
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchBundleOffers = async () => {
+      try {
+        const [weeklyRes, monthlyRes] = await Promise.all([
+          api.get("/bundle-offers?planType=weekly"),
+          api.get("/bundle-offers?planType=monthly"),
+        ]);
+
+        setBundleOffersByPlan({
+          weekly: weeklyRes.data || [],
+          monthly: monthlyRes.data || [],
+        });
+      } catch (error) {
+        console.error("Failed to fetch bundle offers", error);
+        setBundleOffersByPlan({ weekly: [], monthly: [] });
+      }
+    };
+
+    fetchBundleOffers();
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("kitchenCart", JSON.stringify(cart));
+  }, [cart]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -134,13 +214,24 @@ export default function KitchenPage() {
     setFoods([]);
   };
 
+  const getCartKey = (foodId: string, size: SizeType, bundleOfferId?: string) => {
+    return `${foodId}::${bundleOfferId || "single"}::${size}`;
+  };
+
+  const sizeMultiplier: Record<SizeType, number> = {
+    small: 1,
+    medium: 1.25,
+    large: 1.5,
+  };
+
   const addToCart = (food: Food) => {
+    const cartKey = getCartKey(food._id, "small");
     setCart((prev) => {
-      const existing = prev.find((item) => item._id === food._id);
+      const existing = prev.find((item) => item.cartKey === cartKey);
 
       if (existing) {
         return prev.map((item) =>
-          item._id === food._id
+          item.cartKey === cartKey
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
@@ -150,33 +241,110 @@ export default function KitchenPage() {
         ...prev,
         {
           ...food,
+          cartKey,
           quantity: 1,
+          size: "small",
           categoryName: selectedCategory?.name || "",
         },
       ];
     });
   };
 
-  const increaseQty = (id: string) => {
+  const increaseQty = (cartKey: string) => {
     setCart((prev) =>
       prev.map((item) =>
-        item._id === id ? { ...item, quantity: item.quantity + 1 } : item
+        item.cartKey === cartKey ? { ...item, quantity: item.quantity + 1 } : item
       )
     );
   };
 
-  const decreaseQty = (id: string) => {
+  const decreaseQty = (cartKey: string) => {
     setCart((prev) =>
       prev
         .map((item) =>
-          item._id === id ? { ...item, quantity: item.quantity - 1 } : item
+          item.cartKey === cartKey ? { ...item, quantity: item.quantity - 1 } : item
         )
         .filter((item) => item.quantity > 0)
     );
   };
 
-  const removeItem = (id: string) => {
-    setCart((prev) => prev.filter((item) => item._id !== id));
+  const removeItem = (cartKey: string) => {
+    setCart((prev) => prev.filter((item) => item.cartKey !== cartKey));
+  };
+
+  const openBundleModal = (offer: BundleOffer) => {
+    const nextSelection: Record<string, { quantity: number; size: SizeType }> = {};
+
+    offer.items.forEach((item) => {
+      if (!item.food?._id) return;
+
+      nextSelection[item.food._id] = {
+        quantity: Math.max(0, Number(item.defaultQty ?? 1)),
+        size: (item.allowedSizes?.[0] || "small") as SizeType,
+      };
+    });
+
+    setSelectedBundle(offer);
+    setBundleSelection(nextSelection);
+    setBundleModalOpen(true);
+  };
+
+  const addBundleToCart = () => {
+    if (!selectedBundle) return;
+
+    setCart((prev) => {
+      let next = [...prev];
+
+      selectedBundle.items.forEach((rule) => {
+        const food = rule.food;
+        if (!food?._id) return;
+
+        const selected = bundleSelection[food._id];
+        if (!selected) return;
+
+        const quantity = Number(selected.quantity || 0);
+        if (quantity <= 0) return;
+
+        const size = selected.size || "small";
+        const multiplier = sizeMultiplier[size] || 1;
+        const discountedPrice = Number(
+          (
+            Number(food.price || 0) *
+            multiplier *
+            (1 - Number(selectedBundle.discountPercent || 0) / 100)
+          ).toFixed(2)
+        );
+
+        const cartKey = getCartKey(food._id, size, selectedBundle._id);
+        const existing = next.find((item) => item.cartKey === cartKey);
+
+        if (existing) {
+          next = next.map((item) =>
+            item.cartKey === cartKey
+              ? { ...item, quantity: item.quantity + quantity }
+              : item
+          );
+        } else {
+          next.push({
+            ...food,
+            name: `${food.name} (${size})`,
+            price: discountedPrice,
+            quantity,
+            size,
+            bundleOfferId: selectedBundle._id,
+            bundleOfferName: selectedBundle.name,
+            discountPercent: selectedBundle.discountPercent,
+            categoryName: food.category || "Bundle",
+            cartKey,
+          });
+        }
+      });
+
+      return next;
+    });
+
+    setBundleModalOpen(false);
+    setSelectedBundle(null);
   };
 
   const clearCart = () => {
@@ -203,8 +371,6 @@ export default function KitchenPage() {
 
   return (
     <>
-      <Navbar />
-
       <main className="kitchen-page">
         <section className={`cinematic-hero ${activeMeal.bg}`}>
           <div className="hero-noise" />
@@ -379,7 +545,9 @@ export default function KitchenPage() {
             {categories.map((category) => (
               <div key={category._id} className="category-card-v2">
                 <div className="category-card-v2__top">
-                  <span className="category-card-v2__icon">🍽️</span>
+                  <span className="category-card-v2__icon">
+                    <FiGrid />
+                  </span>
                   <h3>{category.name}</h3>
                 </div>
 
@@ -393,6 +561,69 @@ export default function KitchenPage() {
                 </button>
               </div>
             ))}
+          </div>
+        </section>
+
+        <section className="mx-auto w-full max-w-[1400px] px-4 md:px-6 lg:px-8 pb-20">
+          <div className="mb-8 text-center">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-[#fff7ef]">Bundle Offers</h2>
+            <p className="mx-auto mt-3 max-w-3xl text-base text-white/75">
+              Choose weekly or monthly bundles, customize food count and size, and get admin-managed discounts.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
+            {(["weekly", "monthly"] as PlanType[]).map((plan) => {
+              const offers = bundleOffersByPlan[plan] || [];
+              const planLabel = plan === "weekly" ? "Weekly Plans" : "Monthly Plans";
+
+              return (
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5" key={plan}>
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <h3 className="text-2xl font-semibold text-[#fff7ef]">{planLabel}</h3>
+                    <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-[#efe8f0]">
+                      {offers.length} offers
+                    </span>
+                  </div>
+
+                  {offers.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-white/25 px-5 py-8 text-center text-white/70">
+                      No active {plan} bundles right now.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-4">
+                      {offers.map((offer) => (
+                        <article
+                          key={offer._id}
+                          className="rounded-2xl border border-white/10 bg-[#250914]/90 p-5 shadow-[0_16px_30px_rgba(0,0,0,0.2)]"
+                        >
+                          <div className="mb-2 flex items-center justify-between gap-3">
+                            <h3 className="min-w-0 text-3xl font-semibold leading-tight text-white break-words">
+                              {offer.name}
+                            </h3>
+                            <span className="shrink-0 rounded-full bg-[#4f8a43]/35 px-3 py-1 text-xs font-bold text-[#e3f7dd]">
+                              {offer.discountPercent}% OFF
+                            </span>
+                          </div>
+
+                          <p className="text-base text-white/80">
+                            {offer.description || "Build your custom meal mix."}
+                          </p>
+                          <p className="mt-2 text-sm text-white/75">{offer.items.length} foods included</p>
+
+                          <button
+                            className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-br from-[#4f8a43] to-[#3f7435] px-4 py-3 text-lg font-bold text-white transition hover:brightness-110"
+                            onClick={() => openBundleModal(offer)}
+                          >
+                            Customize Bundle
+                          </button>
+                        </article>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </section>
 
@@ -496,7 +727,7 @@ export default function KitchenPage() {
                 <>
                   <div className="cart-modal-list">
                     {cart.map((item) => (
-                      <div key={item._id} className="cart-modal-row">
+                      <div key={item.cartKey} className="cart-modal-row">
                         <div className="cart-modal-row__left">
                           <img
                             src={getImageUrl(item.image)}
@@ -510,22 +741,27 @@ export default function KitchenPage() {
                           <div>
                             <h4>{item.name}</h4>
                             <p>{item.categoryName || "Category"}</p>
+                            {item.bundleOfferName && (
+                              <p>
+                                Bundle: {item.bundleOfferName} ({item.discountPercent || 0}% off)
+                              </p>
+                            )}
                             <span>Rs. {item.price ?? 0}</span>
                           </div>
                         </div>
 
                         <div className="cart-modal-row__right">
                           <div className="qty-box">
-                            <button onClick={() => decreaseQty(item._id)}>-</button>
+                            <button onClick={() => decreaseQty(item.cartKey)}>-</button>
                             <span>{item.quantity}</span>
-                            <button onClick={() => increaseQty(item._id)}>+</button>
+                            <button onClick={() => increaseQty(item.cartKey)}>+</button>
                           </div>
 
                           <strong>Rs. {(item.price ?? 0) * item.quantity}</strong>
 
                           <button
                             className="remove-btn"
-                            onClick={() => removeItem(item._id)}
+                            onClick={() => removeItem(item.cartKey)}
                           >
                             Remove
                           </button>
@@ -548,13 +784,23 @@ export default function KitchenPage() {
                     </div>
 
                     <div className="cart-footer-actions">
+                      <button
+                        className="ghost-cart-btn"
+                        onClick={() => setCartModalOpen(false)}
+                      >
+                        Continue Shopping
+                      </button>
+
                       <button className="clear-cart-btn" onClick={clearCart}>
                         Clear Cart
                       </button>
 
                       <button
                         className="checkout-btn"
-                        onClick={() => alert("Proceed to checkout")}
+                        onClick={() => {
+                          setCartModalOpen(false);
+                          router.push("/checkout");
+                        }}
                       >
                         Checkout
                       </button>
@@ -565,9 +811,102 @@ export default function KitchenPage() {
             </div>
           </div>
         )}
-      </main>
 
-      <Footer />
+        {bundleModalOpen && selectedBundle && (
+          <div className="modal-overlay" onClick={() => setBundleModalOpen(false)}>
+            <div className="foods-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <div>
+                  <h3>{selectedBundle.name}</h3>
+                  <p>{selectedBundle.discountPercent}% discount for {selectedBundle.planType} plan</p>
+                </div>
+                <button className="modal-close" onClick={() => setBundleModalOpen(false)}>
+                  ✕
+                </button>
+              </div>
+
+              <div className="bundle-customize-list">
+                {selectedBundle.items.map((rule) => {
+                  const food = rule.food;
+                  if (!food?._id) return null;
+
+                  const selected = bundleSelection[food._id] || {
+                    quantity: rule.defaultQty || 1,
+                    size: (rule.allowedSizes?.[0] || "small") as SizeType,
+                  };
+
+                  return (
+                    <div key={food._id} className="bundle-custom-row">
+                      <div className="bundle-custom-food">
+                        <img
+                          src={getImageUrl(food.image)}
+                          alt={food.name}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = "/hero-food.jpg";
+                          }}
+                        />
+                        <div>
+                          <h4>{food.name}</h4>
+                          <p>Base Rs. {food.price ?? 0}</p>
+                          <p>
+                            Qty range {rule.minQty} - {rule.maxQty}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="bundle-custom-controls">
+                        <input
+                          type="number"
+                          min={rule.minQty}
+                          max={rule.maxQty}
+                          value={selected.quantity}
+                          onChange={(e) =>
+                            setBundleSelection((prev) => ({
+                              ...prev,
+                              [food._id]: {
+                                ...selected,
+                                quantity: Number(e.target.value || 0),
+                              },
+                            }))
+                          }
+                        />
+
+                        <select
+                          value={selected.size}
+                          onChange={(e) =>
+                            setBundleSelection((prev) => ({
+                              ...prev,
+                              [food._id]: {
+                                ...selected,
+                                size: e.target.value as SizeType,
+                              },
+                            }))
+                          }
+                        >
+                          {rule.allowedSizes.map((size) => (
+                            <option key={size} value={size}>
+                              {size}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="bundle-custom-footer">
+                <button className="ghost-cart-btn" onClick={() => setBundleModalOpen(false)}>
+                  Cancel
+                </button>
+                <button className="checkout-btn" onClick={addBundleToCart}>
+                  Add Bundle to Cart
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
     </>
   );
 }

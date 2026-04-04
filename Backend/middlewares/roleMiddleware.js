@@ -4,7 +4,16 @@ const allowRoles = (...roles) => {
       return res.status(401).json({ message: "Not authorized" });
     }
 
-    if (!roles.includes(req.user.role)) {
+    const normalizeRole = (role) => {
+      const value = String(role || "").trim().toLowerCase();
+      if (value === "customer") return "user";
+      return value;
+    };
+
+    const allowedRoles = roles.map(normalizeRole);
+    const currentRole = normalizeRole(req.user.role);
+
+    if (!allowedRoles.includes(currentRole)) {
       return res.status(403).json({ message: "Access denied" });
     }
 

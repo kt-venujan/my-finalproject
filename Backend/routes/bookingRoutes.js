@@ -6,6 +6,8 @@ import {
   getDieticianBookings,
   markDieticianAlertSeen,
   approveBooking,
+  getAllBookingsForAdmin,
+  updateBookingByAdmin,
 } from "../controllers/bookingController.js";
 import { protect } from "../middlewares/authMiddleware.js";
 import allowRoles from "../middlewares/roleMiddleware.js";
@@ -29,5 +31,9 @@ router.put("/:bookingId/alert-seen", protect, allowRoles("dietician"), markDieti
 
 // DIETICIAN — approve booking (unlocks Call/Chat)
 router.put("/:bookingId/approve", protect, allowRoles("dietician"), approveBooking);
+
+// ADMIN — manage all bookings
+router.get("/admin/all", protect, allowRoles("admin"), getAllBookingsForAdmin);
+router.put("/admin/:bookingId", protect, allowRoles("admin"), updateBookingByAdmin);
 
 export default router;
