@@ -10,6 +10,27 @@ import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/axios";
 import { FiActivity, FiShield, FiTrendingUp, FiUserCheck } from "react-icons/fi";
 
+const HERO_SLIDES = [
+  {
+    image: "/diet-hero.jpg",
+    title: "Transform Your Diet & Health",
+    description:
+      "Achieve your nutrition goals with customized meal plans, expert dietician advice, and a healthier lifestyle tailored for you.",
+  },
+  {
+    image: "/meal.jpg",
+    title: "Eat Smart With Guided Meal Plans",
+    description:
+      "Build better habits with meal plans prepared around your goals, taste, and everyday routine.",
+  },
+  {
+    image: "/track.jpg",
+    title: "Track Progress And Stay Consistent",
+    description:
+      "Follow your daily nutrition journey with expert support and clear progress insights that keep you on track.",
+  },
+];
+
 type Dietician = {
   _id: string;
   user: { _id: string; username: string; email: string };
@@ -39,6 +60,7 @@ export default function HomePage() {
   const { isLoginOpen, openLogin, closeLogin, user } = useAuth();
   const [dieticians, setDieticians] = useState<Dietician[]>([]);
   const [selected, setSelected] = useState<Dietician | null>(null);
+  const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
 
   // Load top dieticians
   useEffect(() => {
@@ -54,6 +76,14 @@ export default function HomePage() {
       script.async = true;
       document.body.appendChild(script);
     }
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentHeroSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 4500);
+
+    return () => clearInterval(timer);
   }, []);
 
   const handleBook = (d: Dietician) => {
@@ -72,14 +102,21 @@ export default function HomePage() {
 
         {/* ===== HERO ===== */}
         <section className="hero-section">
+          <div className="hero-bg-slider" aria-hidden="true">
+            {HERO_SLIDES.map((slide, index) => (
+              <div
+                key={slide.image}
+                className={`hero-bg-slide ${index === currentHeroSlide ? "active" : ""}`}
+                style={{ backgroundImage: `url("${slide.image}")` }}
+              />
+            ))}
+          </div>
+
           <div className="hero-overlay">
             <div className="hero-content">
-              <div className="hero-text">
-                <h1>Transform Your Diet &amp; Health</h1>
-                <p>
-                  Achieve your nutrition goals with customized meal plans,
-                  expert dietician advice, and a healthier lifestyle tailored for you.
-                </p>
+              <div className="hero-text hero-copy-anim" key={currentHeroSlide}>
+                <h1>{HERO_SLIDES[currentHeroSlide].title}</h1>
+                <p>{HERO_SLIDES[currentHeroSlide].description}</p>
                 <div className="hero-buttons">
                   <button className="primary-btn" onClick={openLogin}>
                     Get Started

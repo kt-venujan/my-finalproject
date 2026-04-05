@@ -13,6 +13,8 @@ import StarCursor from "@/components/StarCursor";
 import GlobalAuth from "@/components/GlobalAuth";
 import NavigationLoader from "@/components/NavigationLoader";
 import ScrollReveal from "@/components/ScrollReveal";
+import FloatingAIAssistant from "@/components/FloatingAIAssistant";
+import PageTransition from "@/components/PageTransition";
 
 /* BODY FONT */
 const poppins = Poppins({
@@ -67,8 +69,11 @@ export default function RootLayout({
           {/* GLOBAL SCROLL ANIMATIONS */}
           <ScrollReveal />
 
+          {/* GLOBAL FLOATING AI CHATBOT */}
+          <FloatingAIAssistant />
+
           {/*  PAGE CONTENT */}
-          {children}
+          <PageTransition>{children}</PageTransition>
 
           {/* FOOTER */}
           <Footer />

@@ -15,7 +15,7 @@ export default function AuthCard() {
   const searchParams = useSearchParams();
   const initialRoleParam = (searchParams.get("role") || "").toLowerCase();
   const initialRole: RegisterInput["role"] =
-    initialRoleParam === "dietician"
+    initialRoleParam === "dietician" || initialRoleParam === "dietitian"
       ? "dietician"
       : initialRoleParam === "kitchen"
         ? "kitchen"

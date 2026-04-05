@@ -2,6 +2,8 @@ import express from "express";
 import {
   createCheckoutSession,
   confirmCheckout,
+  createDieticianCheckoutSession,
+  confirmDieticianCheckout,
   createCashOrder,
   getMyKitchenOrders,
   getAllKitchenOrders,
@@ -21,11 +23,25 @@ router.post(
   createCheckoutSession
 );
 
+router.post(
+  "/stripe/create-dietician-checkout-session",
+  protect,
+  allowRoles("user"),
+  createDieticianCheckoutSession
+);
+
 router.get(
   "/stripe/confirm",
   protect,
   allowRoles("user"),
   confirmCheckout
+);
+
+router.get(
+  "/stripe/confirm-dietician",
+  protect,
+  allowRoles("user"),
+  confirmDieticianCheckout
 );
 
 router.post("/orders/cash", protect, allowRoles("user"), createCashOrder);

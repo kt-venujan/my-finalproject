@@ -1,37 +1,74 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import api from "@/lib/axios";
 
 export default function PaymentPage() {
   const params = useParams();
   const bookingId = params.bookingId as string;
+  const searchParams = useSearchParams();
+  const sessionId = searchParams.get("session_id");
+  const cancelled = searchParams.get("cancelled");
   const router = useRouter();
 
-  const [method, setMethod] = useState("card");
   const [loading, setLoading] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (cancelled) {
+      setMessage("Payment cancelled. You can try again.");
+      toast.info("Payment cancelled");
+    }
+  }, [cancelled]);
+
+  useEffect(() => {
+    if (!sessionId) return;
+
+    const confirmPayment = async () => {
+      try {
+        setConfirming(true);
+        await api.get(`/payments/stripe/confirm-dietician?sessionId=${sessionId}`);
+        setMessage("Payment successful. Booking confirmed and dietician notified.");
+        toast.success("Payment Successful");
+      } catch (err: any) {
+        const errorMessage = err?.response?.data?.message || "Payment confirmation failed";
+        setMessage(errorMessage);
+        toast.error(errorMessage);
+      } finally {
+        setConfirming(false);
+      }
+    };
+
+    confirmPayment();
+  }, [sessionId]);
 
   const handlePayment = async () => {
     try {
       setLoading(true);
 
-      await api.put(`/bookings/${bookingId}/pay`, {
-        method,
+      const res = await api.post("/payments/stripe/create-dietician-checkout-session", {
+        bookingId,
       });
 
-      toast.success("Payment Successful 🎉");
+      if (res.data?.url) {
+        window.location.href = res.data.url;
+        return;
+      }
 
-      setTimeout(() => {
-        router.push("/dashboard/user");
-      }, 1500);
+      toast.error("Unable to start Stripe checkout.");
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Payment failed ❌");
+      toast.error(err?.response?.data?.message || "Payment failed");
     } finally {
       setLoading(false);
     }
   };
+
+  const statusText = confirming
+    ? "Confirming payment..."
+    : message || "Complete your payment securely with Stripe.";
 
   return (
     <div className="payment-page">
@@ -41,64 +78,41 @@ export default function PaymentPage() {
       </div>
 
       <div className="payment-container">
-        <div className="bank-card">
-          <p className="card-type">Bank Card</p>
-          <h3>Arththika</h3>
-
-          <div className="card-number">
-            3417 •••• •••• 2115
-          </div>
-
-          <div className="card-bottom">
-            <span>12/24</span>
-          </div>
-        </div>
-
-        <div className="methods">
-          <button
-            className={method === "card" ? "active" : ""}
-            onClick={() => setMethod("card")}
-          >
-            💳 Card
-          </button>
-
-          <button
-            className={method === "paypal" ? "active" : ""}
-            onClick={() => setMethod("paypal")}
-          >
-            🅿️ PayPal
-          </button>
-
-          <button
-            className={method === "cash" ? "active" : ""}
-            onClick={() => setMethod("cash")}
-          >
-            💵 Cash
-          </button>
+        <div className="bank-card" style={{ display: "grid", gap: 10 }}>
+          <p className="card-type">Secure Stripe Checkout</p>
+          <h3>Dietician Consultation Payment</h3>
+          <p style={{ fontSize: 14, opacity: 0.86 }}>
+            Card details are handled directly by Stripe for security.
+          </p>
         </div>
 
         <div className="details">
           <div>
             <span>Consultation</span>
-            <span>Rs. 1500</span>
+            <span>Price shown at checkout</span>
           </div>
           <div>
             <span>Service Fee</span>
-            <span>Rs. 200</span>
+            <span>Included at checkout</span>
           </div>
           <div className="total">
-            <span>Total</span>
-            <span>Rs. 1700</span>
+            <span>Status</span>
+            <span>{statusText}</span>
           </div>
         </div>
 
-        <button className="pay-btn" onClick={handlePayment} disabled={loading}>
-          {loading ? "Processing..." : "Pay Now"}
+        <button className="pay-btn" onClick={handlePayment} disabled={loading || confirming}>
+          {loading ? "Redirecting..." : "Pay with Stripe"}
         </button>
 
-        <p className="back" onClick={() => router.back()}>
-          ← Back
-        </p>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12 }}>
+          <p className="back" onClick={() => router.back()}>
+            ← Back
+          </p>
+          <p className="back" onClick={() => router.push("/dashboard/user")}>
+            Go to Dashboard →
+          </p>
+        </div>
       </div>
     </div>
   );

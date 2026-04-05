@@ -27,7 +27,9 @@ import {
   FiPhone,
   FiPackage,
   FiSearch,
+  FiLock,
   FiStar,
+  FiTrash2,
   FiUser,
   FiUserCheck,
 } from "react-icons/fi";
@@ -68,6 +70,8 @@ type KitchenOrder = {
   paymentMethod: "cash_on_delivery" | "card";
   createdAt: string;
 };
+
+type ProfilePanel = "account" | "security" | "delete";
 
 function RatingModal({
   booking,
@@ -158,6 +162,10 @@ export default function UserDashboard() {
   const [otpResetting, setOtpResetting] = useState(false);
   const [resetOtp, setResetOtp] = useState("");
   const [resetNewPassword, setResetNewPassword] = useState("");
+  const [profilePanel, setProfilePanel] = useState<ProfilePanel>("account");
+  const [deleteOtpSending, setDeleteOtpSending] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteOtp, setDeleteOtp] = useState("");
 
   const resolveAvatar = (avatar?: string) => {
     return resolveBackendAssetUrl(avatar);
@@ -335,13 +343,30 @@ export default function UserDashboard() {
     setProfileAvatarPreview(resolveAvatar(user?.avatar));
   };
 
+  const handleRemoveAvatarClick = () => {
+    if (!removeAvatar) {
+      const confirmed = window.confirm(
+        "Remove current avatar? This will apply after you click Save Profile."
+      );
+
+      if (!confirmed) return;
+
+      setRemoveAvatar(true);
+      setProfileAvatarFile(null);
+      setProfileAvatarPreview("");
+      return;
+    }
+
+    setRemoveAvatar(false);
+    setProfileAvatarPreview(resolveAvatar(user?.avatar));
+  };
+
   const saveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingProfile(true);
     try {
       const formData = new FormData();
       formData.append("username", profileName);
-      formData.append("email", profileEmail);
       formData.append("phone", profilePhone);
 
       if (profileAvatarFile) {
@@ -407,6 +432,41 @@ export default function UserDashboard() {
     }
   };
 
+  const sendDeleteOtp = async () => {
+    setDeleteOtpSending(true);
+    try {
+      const res = await api.post("/auth/delete-account/send-otp");
+      toast.success(res.data?.message || "Delete OTP sent to your email");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to send delete OTP");
+    } finally {
+      setDeleteOtpSending(false);
+    }
+  };
+
+  const confirmDeleteAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!deleteOtp.trim()) {
+      toast.error("Enter OTP to delete your profile");
+      return;
+    }
+
+    setDeletingAccount(true);
+    try {
+      const res = await api.delete("/auth/delete-account", {
+        data: { otp: deleteOtp.trim() },
+      });
+
+      toast.success(res.data?.message || "Account deleted successfully");
+      logout();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to delete account");
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
+
   return (
     <div className="ud-wrapper">
 
@@ -428,7 +488,12 @@ export default function UserDashboard() {
             <li
               key={item.id}
               className={active === item.id ? "ud-nav-item active" : "ud-nav-item"}
-              onClick={() => setActive(item.id)}
+              onClick={() => {
+                setActive(item.id);
+                if (item.id === "profile") {
+                  setProfilePanel("account");
+                }
+              }}
             >
               <span className="ud-nav-icon-wrap">{item.icon}</span>
               <span>{item.label}</span>
@@ -665,14 +730,14 @@ export default function UserDashboard() {
                         <>
                           <button
                             className="ud-action-btn call"
-                            onClick={() => router.push(`/call?bookingId=${b._id}`)}
+                            onClick={() => router.push(`/call/${b._id}`)}
                           >
                             <FiPhone className="ud-action-icon" />
                             Call
                           </button>
                           <button
                             className="ud-action-btn chat"
-                            onClick={() => router.push(`/chat?bookingId=${b._id}`)}
+                            onClick={() => router.push(`/chat/${b._id}`)}
                           >
                             <FiMessageCircle className="ud-action-icon" />
                             Chat
@@ -694,11 +759,22 @@ export default function UserDashboard() {
                           )}
                         </>
                       ) : (
-                        <p className="ud-waiting">
-                          {b.paymentStatus === "paid"
-                            ? "Waiting for dietician approval..."
-                            : "Payment required"}
-                        </p>
+                        <>
+                          <p className="ud-waiting">
+                            {b.paymentStatus === "paid"
+                              ? "Waiting for dietician approval..."
+                              : "Payment required"}
+                          </p>
+                          {b.paymentStatus !== "paid" && (
+                            <button
+                              className="ud-action-btn pay"
+                              onClick={() => router.push(`/payment/${b._id}`)}
+                            >
+                              <FiCreditCard className="ud-action-icon" />
+                              Pay Now
+                            </button>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -788,107 +864,197 @@ export default function UserDashboard() {
           <div className="ud-section">
             <div className="ud-page-header">
               <h1>My Profile</h1>
-              <p>Edit your details and profile image</p>
+              <p>Manage your account settings securely</p>
             </div>
 
-            <div className="ud-profile-grid">
-              <form className="ud-profile-card" onSubmit={saveProfile}>
-                <h3>Account Details</h3>
+            <div className="mb-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setProfilePanel("account")}
+                className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                  profilePanel === "account"
+                    ? "border-[#8b0c2e] bg-[#8b0c2e] text-white"
+                    : "border-[#efc8d4] bg-white text-[#8b0c2e] hover:bg-[#fff4f7]"
+                }`}
+              >
+                Account Profile
+              </button>
+              <button
+                type="button"
+                onClick={() => setProfilePanel("security")}
+                className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                  profilePanel === "security"
+                    ? "border-[#8b0c2e] bg-[#8b0c2e] text-white"
+                    : "border-[#efc8d4] bg-white text-[#8b0c2e] hover:bg-[#fff4f7]"
+                }`}
+              >
+                <span className="inline-flex items-center gap-2">
+                  <FiLock />
+                  Security
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setProfilePanel("delete")}
+                className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                  profilePanel === "delete"
+                    ? "border-[#b91c1c] bg-[#b91c1c] text-white"
+                    : "border-[#f1c9cf] bg-[#fff6f7] text-[#b91c1c] hover:bg-[#ffeef0]"
+                }`}
+              >
+                <span className="inline-flex items-center gap-2">
+                  <FiTrash2 />
+                  Delete Profile
+                </span>
+              </button>
+            </div>
 
-                <div className="ud-avatar-editor">
-                  {profileAvatarPreview ? (
-                    <img
-                      src={profileAvatarPreview}
-                      alt={profileName || "User"}
-                      className="ud-profile-avatar"
-                      onError={() => setProfileAvatarPreview("")}
-                    />
-                  ) : (
-                    <div className="ud-profile-avatar placeholder">
-                      {profileName?.[0]?.toUpperCase() || "U"}
-                    </div>
-                  )}
+            <div className="ud-profile-grid" style={{ gridTemplateColumns: "1fr" }}>
+              {profilePanel === "account" && (
+                <form className="ud-profile-card" onSubmit={saveProfile}>
+                  <h3>Account Details</h3>
 
-                  <div className="ud-avatar-controls">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleProfileImageChange(e.target.files?.[0] || null)}
-                    />
-                    <label className="ud-check-row">
-                      <input
-                        type="checkbox"
-                        checked={removeAvatar}
-                        onChange={(e) => setRemoveAvatar(e.target.checked)}
+                  <div className="ud-avatar-editor">
+                    {profileAvatarPreview ? (
+                      <img
+                        src={profileAvatarPreview}
+                        alt={profileName || "User"}
+                        className="ud-profile-avatar"
+                        onError={() => setProfileAvatarPreview("")}
                       />
-                      Remove current avatar
-                    </label>
+                    ) : (
+                      <div className="ud-profile-avatar placeholder">
+                        {profileName?.[0]?.toUpperCase() || "U"}
+                      </div>
+                    )}
+
+                    <div className="ud-avatar-controls">
+                      <label className="profile-file-picker" aria-label="Choose avatar">
+                        <span className="profile-file-picker-btn">Choose avatar</span>
+                        <span className="profile-file-picker-name">
+                          {profileAvatarFile?.name || "No file chosen"}
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleProfileImageChange(e.target.files?.[0] || null)}
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        className={`profile-remove-btn ${removeAvatar ? "active" : ""}`}
+                        onClick={handleRemoveAvatarClick}
+                      >
+                        {removeAvatar ? "Undo remove avatar" : "Remove current avatar"}
+                      </button>
+                      {removeAvatar && (
+                        <p className="ud-profile-help">Avatar will be removed when you save profile.</p>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <input
-                  className="ud-input"
-                  value={profileName}
-                  onChange={(e) => setProfileName(e.target.value)}
-                  placeholder="Username"
-                  required
-                />
-                <input
-                  className="ud-input"
-                  type="email"
-                  value={profileEmail}
-                  onChange={(e) => setProfileEmail(e.target.value)}
-                  placeholder="Email"
-                  required
-                />
-                <input
-                  className="ud-input"
-                  value={profilePhone}
-                  onChange={(e) => setProfilePhone(e.target.value)}
-                  placeholder="Phone"
-                />
+                  <input
+                    className="ud-input"
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    placeholder="Username"
+                    required
+                  />
+                  <input
+                    className="ud-input"
+                    type="email"
+                    value={profileEmail}
+                    placeholder="Email"
+                    readOnly
+                    disabled
+                  />
+                  <p className="ud-profile-help">Email is locked and cannot be changed.</p>
+                  <input
+                    className="ud-input"
+                    value={profilePhone}
+                    onChange={(e) => setProfilePhone(e.target.value)}
+                    placeholder="Phone"
+                  />
 
-                <button className="ud-new-booking-btn" type="submit" disabled={savingProfile}>
-                  {savingProfile ? "Saving..." : "Save Profile"}
-                </button>
-              </form>
+                  <button className="ud-new-booking-btn" type="submit" disabled={savingProfile}>
+                    {savingProfile ? "Saving..." : "Save Profile"}
+                  </button>
+                </form>
+              )}
 
-              <form className="ud-profile-card" onSubmit={submitPasswordReset}>
-                <h3>Reset Password (OTP)</h3>
-                <p className="ud-profile-help">
-                  We will send an OTP to your registered email before resetting your password.
-                </p>
+              {profilePanel === "security" && (
+                <form className="ud-profile-card" onSubmit={submitPasswordReset}>
+                  <h3>Reset Password (OTP)</h3>
+                  <p className="ud-profile-help">
+                    We will send an OTP to your registered email before resetting your password.
+                  </p>
 
-                <button
-                  type="button"
-                  className="ud-ghost-btn"
-                  onClick={sendResetOtp}
-                  disabled={otpSending}
-                >
-                  {otpSending ? "Sending OTP..." : "Send OTP"}
-                </button>
+                  <button
+                    type="button"
+                    className="ud-ghost-btn"
+                    onClick={sendResetOtp}
+                    disabled={otpSending}
+                  >
+                    {otpSending ? "Sending OTP..." : "Send OTP"}
+                  </button>
 
-                <input
-                  className="ud-input"
-                  value={resetOtp}
-                  onChange={(e) => setResetOtp(e.target.value)}
-                  placeholder="Enter OTP"
-                  required
-                />
-                <input
-                  className="ud-input"
-                  type="password"
-                  value={resetNewPassword}
-                  onChange={(e) => setResetNewPassword(e.target.value)}
-                  placeholder="Enter new password"
-                  minLength={6}
-                  required
-                />
+                  <input
+                    className="ud-input"
+                    value={resetOtp}
+                    onChange={(e) => setResetOtp(e.target.value)}
+                    placeholder="Enter OTP"
+                    required
+                  />
+                  <input
+                    className="ud-input"
+                    type="password"
+                    value={resetNewPassword}
+                    onChange={(e) => setResetNewPassword(e.target.value)}
+                    placeholder="Enter new password"
+                    minLength={6}
+                    required
+                  />
 
-                <button className="ud-new-booking-btn" type="submit" disabled={otpResetting}>
-                  {otpResetting ? "Resetting..." : "Reset Password"}
-                </button>
-              </form>
+                  <button className="ud-new-booking-btn" type="submit" disabled={otpResetting}>
+                    {otpResetting ? "Resetting..." : "Reset Password"}
+                  </button>
+                </form>
+              )}
+
+              {profilePanel === "delete" && (
+                <form className="ud-profile-card" onSubmit={confirmDeleteAccount}>
+                  <h3 className="text-[#b91c1c]">Delete Profile</h3>
+                  <p className="ud-profile-help">
+                    This action is permanent. Send OTP and confirm account deletion.
+                  </p>
+
+                  <button
+                    type="button"
+                    className="ud-ghost-btn"
+                    onClick={sendDeleteOtp}
+                    disabled={deleteOtpSending}
+                  >
+                    {deleteOtpSending ? "Sending OTP..." : "Send Delete OTP"}
+                  </button>
+
+                  <input
+                    className="ud-input"
+                    value={deleteOtp}
+                    onChange={(e) => setDeleteOtp(e.target.value)}
+                    placeholder="Enter delete OTP"
+                    required
+                  />
+
+                  <button
+                    className="ud-new-booking-btn"
+                    type="submit"
+                    disabled={deletingAccount}
+                    style={{ background: "#b91c1c" }}
+                  >
+                    {deletingAccount ? "Deleting..." : "Delete Profile"}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         )}

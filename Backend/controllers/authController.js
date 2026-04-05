@@ -3,6 +3,14 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import sendEmail from "../utils/sendEmail.js";
+import DieticianProfile from "../models/DieticianProfile.js";
+import Booking from "../models/Booking.js";
+import KitchenOrder from "../models/KitchenOrder.js";
+import KitchenRequest from "../models/KitchenRequest.js";
+import Appointment from "../models/Appointment.js";
+import Chat from "../models/Chat.js";
+import Review from "../models/Review.js";
+import AiChatSession from "../models/AiChatSession.js";
 
 const ALLOWED_ROLES = ["user", "dietician", "kitchen", "admin"];
 const OTP_EXPIRES_MS = 10 * 60 * 1000;
@@ -175,16 +183,9 @@ export const updateMe = async (req, res) => {
 
     if (email !== undefined) {
       const nextEmail = String(email).trim().toLowerCase();
-      if (!nextEmail) {
-        return res.status(400).json({ message: "Email is required" });
+      if (nextEmail && nextEmail !== String(user.email || "").trim().toLowerCase()) {
+        return res.status(400).json({ message: "Email cannot be changed" });
       }
-
-      const existingEmail = await User.findOne({ email: nextEmail });
-      if (existingEmail && existingEmail._id.toString() !== user._id.toString()) {
-        return res.status(400).json({ message: "Email already in use" });
-      }
-
-      user.email = nextEmail;
     }
 
     if (phone !== undefined) {
@@ -215,6 +216,121 @@ export const updateMe = async (req, res) => {
 export const logout = (req, res) => {
   res.clearCookie("token");
   return res.status(200).json({ message: "Logged out successfully" });
+};
+
+export const sendDeleteAccountOtp = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (
+      user.resetOtpLastSentAt &&
+      Date.now() - new Date(user.resetOtpLastSentAt).getTime() < OTP_RESEND_COOLDOWN_MS
+    ) {
+      return res.status(429).json({
+        message: "Please wait a minute before requesting another OTP.",
+      });
+    }
+
+    const otp = generateOtp();
+    user.resetOtpHash = hashOtp(otp);
+    user.resetOtpExpires = Date.now() + OTP_EXPIRES_MS;
+    user.resetOtpAttempts = 0;
+    user.resetOtpLastSentAt = Date.now();
+    await user.save();
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2>Delete Account OTP</h2>
+        <p>You requested to permanently delete your Dietara Hub account.</p>
+        <p>Your OTP code is:</p>
+        <p style="font-size: 24px; font-weight: 700; letter-spacing: 4px; color: #a4002c;">${otp}</p>
+        <p style="margin-top:16px;">This OTP will expire in 10 minutes.</p>
+        <p>If you did not request this, please ignore this email.</p>
+      </div>
+    `;
+
+    await sendEmail({
+      to: user.email,
+      subject: "Delete Account OTP - Dietara Hub",
+      html,
+    });
+
+    return res.status(200).json({ message: "Delete account OTP sent to your email." });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const deleteAccountWithOtp = async (req, res) => {
+  try {
+    const { otp } = req.body;
+
+    if (!otp) {
+      return res.status(400).json({ message: "OTP is required" });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (
+      !user.resetOtpHash ||
+      !user.resetOtpExpires ||
+      new Date(user.resetOtpExpires).getTime() < Date.now()
+    ) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    if ((user.resetOtpAttempts || 0) >= OTP_MAX_ATTEMPTS) {
+      return res.status(429).json({ message: "Too many invalid attempts. Request a new OTP." });
+    }
+
+    const expectedHash = hashOtp(String(otp).trim());
+    if (expectedHash !== user.resetOtpHash) {
+      user.resetOtpAttempts = (user.resetOtpAttempts || 0) + 1;
+      await user.save();
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    const userId = user._id;
+
+    const [profileDocs, bookingDocs] = await Promise.all([
+      DieticianProfile.find({ user: userId }).select("_id"),
+      Booking.find({ $or: [{ user: userId }, { dietician: userId }] }).select("_id"),
+    ]);
+
+    const profileIds = profileDocs.map((profile) => profile._id);
+    const bookingIds = bookingDocs.map((booking) => booking._id);
+
+    await Promise.all([
+      Chat.deleteMany(bookingIds.length ? { booking: { $in: bookingIds } } : { _id: null }),
+      Review.deleteMany(
+        profileIds.length
+          ? { $or: [{ user: userId }, { dietician: { $in: profileIds } }, { booking: { $in: bookingIds } }] }
+          : bookingIds.length
+            ? { $or: [{ user: userId }, { booking: { $in: bookingIds } }] }
+            : { user: userId }
+      ),
+      DieticianProfile.deleteMany({ user: userId }),
+      Booking.deleteMany({ $or: [{ user: userId }, { dietician: userId }] }),
+      KitchenOrder.deleteMany({ user: userId }),
+      KitchenRequest.deleteMany({ user: userId }),
+      Appointment.deleteMany({ $or: [{ user: userId }, { dietician: userId }] }),
+      AiChatSession.deleteMany({ user: userId }),
+      User.findByIdAndDelete(userId),
+    ]);
+
+    res.clearCookie("token");
+
+    return res.status(200).json({ success: true, message: "Account deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
 };
 
 // ================= FORGOT PASSWORD =================

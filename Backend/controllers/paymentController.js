@@ -3,6 +3,8 @@ import Food from "../models/Food.js";
 import KitchenOrder from "../models/KitchenOrder.js";
 import User from "../models/User.js";
 import BundleOffer from "../models/BundleOffer.js";
+import Booking from "../models/Booking.js";
+import DieticianProfile from "../models/DieticianProfile.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2024-04-10",
@@ -28,6 +30,7 @@ const SIZE_MULTIPLIERS = {
   medium: 1.25,
   large: 1.5,
 };
+const DIETICIAN_SERVICE_FEE = Number(process.env.DIETICIAN_SERVICE_FEE || 200);
 
 const createHttpError = (status, message) => {
   const error = new Error(message);
@@ -160,6 +163,44 @@ const normalizeOrderItems = async (rawItems = []) => {
   return { normalizedItems, subtotal };
 };
 
+const buildDieticianLineItems = ({ dieticianName, consultationFee, serviceFee }) => {
+  return [
+    {
+      price_data: {
+        currency: "lkr",
+        product_data: {
+          name: `Consultation with ${dieticianName}`,
+        },
+        unit_amount: Math.round(Number(consultationFee || 0) * 100),
+      },
+      quantity: 1,
+    },
+    {
+      price_data: {
+        currency: "lkr",
+        product_data: {
+          name: "Dietara Service Fee",
+        },
+        unit_amount: Math.round(Number(serviceFee || 0) * 100),
+      },
+      quantity: 1,
+    },
+  ];
+};
+
+const resolveDieticianPricing = async (dieticianUserId) => {
+  const profile = await DieticianProfile.findOne({ user: dieticianUserId });
+  const consultationFee = Math.max(0, Number(profile?.price || 1500));
+  const serviceFee = Math.max(0, DIETICIAN_SERVICE_FEE);
+  const total = Number((consultationFee + serviceFee).toFixed(2));
+
+  return {
+    consultationFee,
+    serviceFee,
+    total,
+  };
+};
+
 export const createCheckoutSession = async (req, res) => {
   try {
     const { items, saveCard } = req.body;
@@ -197,6 +238,91 @@ export const createCheckoutSession = async (req, res) => {
     if (error.status) {
       return res.status(error.status).json({ message: error.message });
     }
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const createDieticianCheckoutSession = async (req, res) => {
+  try {
+    const { bookingId, date, time, mode } = req.body;
+    const dieticianId = req.body?.dieticianId || req.body?.dietitianId;
+    let booking = null;
+
+    if (bookingId) {
+      booking = await Booking.findById(bookingId).populate("dietician", "username email");
+
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+
+      if (booking.user.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      if (booking.paymentStatus === "paid") {
+        return res.status(400).json({ message: "Booking already paid" });
+      }
+
+      if (booking.status === "cancelled") {
+        return res.status(400).json({ message: "Cancelled booking cannot be paid" });
+      }
+    } else {
+      if (!dieticianId || !date || !time || !mode) {
+        return res
+          .status(400)
+          .json({ message: "dieticianId, date, time and mode are required" });
+      }
+
+      booking = await Booking.create({
+        user: req.user._id,
+        dietician: dieticianId,
+        date,
+        time,
+        mode,
+        status: "pending",
+        paymentStatus: "pending",
+        dieticianAlertSeen: true,
+        dieticianApproved: false,
+      });
+
+      booking = await Booking.findById(booking._id).populate("dietician", "username email");
+    }
+
+    if (!booking?.dietician) {
+      return res.status(400).json({ message: "Invalid dietician for booking" });
+    }
+
+    const dieticianUserId = booking.dietician?._id || booking.dietician;
+
+    const { consultationFee, serviceFee, total } = await resolveDieticianPricing(dieticianUserId);
+    const dieticianName = booking.dietician?.username || "Dietician";
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      payment_method_types: ["card"],
+      line_items: buildDieticianLineItems({
+        dieticianName,
+        consultationFee,
+        serviceFee,
+      }),
+      success_url: `${FRONTEND_URL}/payment/${booking._id}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${FRONTEND_URL}/payment/${booking._id}?cancelled=true`,
+      customer_email: req.user.email,
+      metadata: {
+        bookingId: booking._id.toString(),
+        userId: req.user._id.toString(),
+        paymentType: "dietician_booking",
+      },
+    });
+
+    return res.status(200).json({
+      url: session.url,
+      bookingId: booking._id,
+      consultationFee,
+      serviceFee,
+      total,
+    });
+  } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
@@ -262,6 +388,54 @@ export const confirmCheckout = async (req, res) => {
     }
 
     return res.status(200).json({ success: true, order });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const confirmDieticianCheckout = async (req, res) => {
+  try {
+    const { sessionId } = req.query;
+
+    if (!sessionId) {
+      return res.status(400).json({ message: "sessionId is required" });
+    }
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ["payment_intent"],
+    });
+
+    const bookingId = session?.metadata?.bookingId;
+    const paymentType = session?.metadata?.paymentType;
+
+    if (!bookingId || paymentType !== "dietician_booking") {
+      return res.status(400).json({ message: "Invalid checkout session" });
+    }
+
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    if (booking.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    if (booking.paymentStatus === "paid") {
+      return res.status(200).json({ success: true, booking });
+    }
+
+    if (session.payment_status !== "paid") {
+      return res.status(400).json({ message: "Payment not completed yet" });
+    }
+
+    booking.paymentStatus = "paid";
+    booking.status = "confirmed";
+    booking.dieticianAlertSeen = false;
+    await booking.save();
+
+    return res.status(200).json({ success: true, booking });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

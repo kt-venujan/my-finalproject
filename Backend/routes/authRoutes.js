@@ -9,6 +9,8 @@ import {
   forgotPassword,
   verifyResetOtp,
   resetPassword,
+  sendDeleteAccountOtp,
+  deleteAccountWithOtp,
 } from "../controllers/authController.js";
 import { protect } from "../middlewares/authMiddleware.js";
 import { avatarUpload } from "../middlewares/imageUpload.js";
@@ -24,6 +26,8 @@ router.put("/me", protect, avatarUpload.single("avatar"), updateMe);
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-reset-otp", verifyResetOtp);
 router.post("/reset-password", resetPassword);
+router.post("/delete-account/send-otp", protect, sendDeleteAccountOtp);
+router.delete("/delete-account", protect, deleteAccountWithOtp);
 
 // ===== Google OAuth =====
 router.get(

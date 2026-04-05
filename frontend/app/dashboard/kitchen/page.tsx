@@ -8,8 +8,10 @@ import {
   FiArrowLeft,
   FiCheckCircle,
   FiClock,
+  FiLock,
   FiLogOut,
   FiPackage,
+  FiTrash2,
   FiUser,
 } from "react-icons/fi";
 import { useAuth } from "@/context/AuthContext";
@@ -40,6 +42,7 @@ type KitchenOrder = {
 };
 
 type Tab = "profile" | "dashboard" | "orders";
+type ProfilePanel = "account" | "security" | "delete";
 
 const statusOptions: KitchenOrderStatus[] = [
   "pending",
@@ -88,6 +91,10 @@ export default function KitchenDashboardPage() {
   const [resettingPassword, setResettingPassword] = useState(false);
   const [resetOtp, setResetOtp] = useState("");
   const [resetNewPassword, setResetNewPassword] = useState("");
+  const [profilePanel, setProfilePanel] = useState<ProfilePanel>("account");
+  const [deleteOtpSending, setDeleteOtpSending] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteOtp, setDeleteOtp] = useState("");
 
   const getApiErrorMessage = (error: unknown, fallback: string) => {
     const axiosError = error as AxiosError<{ message?: string }>;
@@ -152,13 +159,30 @@ export default function KitchenDashboardPage() {
     setProfileAvatarPreview(resolveBackendAssetUrl(user?.avatar));
   };
 
+  const handleRemoveAvatarClick = () => {
+    if (!removeAvatar) {
+      const confirmed = window.confirm(
+        "Remove current avatar? This will apply after you click Save Profile."
+      );
+
+      if (!confirmed) return;
+
+      setRemoveAvatar(true);
+      setProfileAvatarFile(null);
+      setProfileAvatarPreview("");
+      return;
+    }
+
+    setRemoveAvatar(false);
+    setProfileAvatarPreview(resolveBackendAssetUrl(user?.avatar));
+  };
+
   const saveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingProfile(true);
     try {
       const formData = new FormData();
       formData.append("username", profileName);
-      formData.append("email", profileEmail);
       formData.append("phone", profilePhone);
 
       if (profileAvatarFile) {
@@ -224,6 +248,41 @@ export default function KitchenDashboardPage() {
     }
   };
 
+  const sendDeleteOtp = async () => {
+    setDeleteOtpSending(true);
+    try {
+      const res = await api.post("/auth/delete-account/send-otp");
+      toast.success(res.data?.message || "Delete OTP sent to your email");
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Failed to send delete OTP"));
+    } finally {
+      setDeleteOtpSending(false);
+    }
+  };
+
+  const deleteAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!deleteOtp.trim()) {
+      toast.error("Enter OTP to delete your profile");
+      return;
+    }
+
+    setDeletingAccount(true);
+    try {
+      const res = await api.delete("/auth/delete-account", {
+        data: { otp: deleteOtp.trim() },
+      });
+
+      toast.success(res.data?.message || "Account deleted successfully");
+      logout();
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Failed to delete profile"));
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
+
   const stats = useMemo(() => {
     const processing = orders.filter((o) => o.status === "processing").length;
     const cooking = orders.filter((o) => o.status === "cooking").length;
@@ -268,7 +327,12 @@ export default function KitchenDashboardPage() {
               <button
                 key={item.id}
                 type="button"
-                onClick={() => setActive(item.id as Tab)}
+                onClick={() => {
+                  setActive(item.id as Tab);
+                  if (item.id === "profile") {
+                    setProfilePanel("account");
+                  }
+                }}
                 className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition ${
                   active === item.id
                     ? "bg-[#8b0c2e] text-white"
@@ -400,121 +464,212 @@ export default function KitchenDashboardPage() {
           {active === "profile" && (
             <section>
               <h2 className="text-3xl font-bold text-white">My Profile</h2>
-              <p className="mt-1 text-sm text-[#ffd1dd]/80">Update your account and password.</p>
+              <p className="mt-1 text-sm text-[#ffd1dd]/80">Manage account settings securely.</p>
 
-              <div className="mt-6 grid gap-5 lg:grid-cols-2">
-                <form
-                  onSubmit={saveProfile}
-                  className="rounded-2xl border border-[#ff7a95]/20 bg-[#220713] p-5"
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setProfilePanel("account")}
+                  className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                    profilePanel === "account"
+                      ? "border-[#8b0c2e] bg-[#8b0c2e] text-white"
+                      : "border-[#ff7a95]/35 bg-[#220713] text-[#ffd7e1] hover:bg-[#2f0c1a]"
+                  }`}
                 >
-                  <h3 className="text-lg font-semibold text-white">Account Details</h3>
+                  Account Profile
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProfilePanel("security")}
+                  className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                    profilePanel === "security"
+                      ? "border-[#8b0c2e] bg-[#8b0c2e] text-white"
+                      : "border-[#ff7a95]/35 bg-[#220713] text-[#ffd7e1] hover:bg-[#2f0c1a]"
+                  }`}
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <FiLock />
+                    Security
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProfilePanel("delete")}
+                  className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                    profilePanel === "delete"
+                      ? "border-[#b91c1c] bg-[#b91c1c] text-white"
+                      : "border-[#f87171]/40 bg-[#3a0a12] text-[#fecaca] hover:bg-[#4b0d17]"
+                  }`}
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <FiTrash2 />
+                    Delete Profile
+                  </span>
+                </button>
+              </div>
 
-                  <div className="mt-4 flex items-center gap-4">
-                    {profileAvatarPreview ? (
-                      <img
-                        src={profileAvatarPreview}
-                        alt={profileName || "Kitchen Staff"}
-                        className="h-16 w-16 rounded-full border border-[#ff7a95]/25 object-cover"
-                        onError={() => setProfileAvatarPreview("")}
-                      />
-                    ) : (
-                      <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#ff7a95]/25 bg-[#2b0b18] text-xl font-bold text-white">
-                        {profileName?.[0]?.toUpperCase() || "K"}
-                      </div>
-                    )}
+              <div className="mt-6 grid gap-5">
+                {profilePanel === "account" && (
+                  <form
+                    onSubmit={saveProfile}
+                    className="rounded-2xl border border-[#ff7a95]/20 bg-[#220713] p-5"
+                  >
+                    <h3 className="text-lg font-semibold text-white">Account Details</h3>
 
-                    <div className="flex-1">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleProfileImageChange(e.target.files?.[0] || null)}
-                        className="w-full text-sm text-[#ffd7e1]"
-                      />
-                      <label className="mt-2 flex items-center gap-2 text-sm text-[#ffd7e1]">
-                        <input
-                          type="checkbox"
-                          checked={removeAvatar}
-                          onChange={(e) => setRemoveAvatar(e.target.checked)}
+                    <div className="mt-4 flex items-center gap-4">
+                      {profileAvatarPreview ? (
+                        <img
+                          src={profileAvatarPreview}
+                          alt={profileName || "Kitchen Staff"}
+                          className="h-16 w-16 rounded-full border border-[#ff7a95]/25 object-cover"
+                          onError={() => setProfileAvatarPreview("")}
                         />
-                        Remove current avatar
-                      </label>
+                      ) : (
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#ff7a95]/25 bg-[#2b0b18] text-xl font-bold text-white">
+                          {profileName?.[0]?.toUpperCase() || "K"}
+                        </div>
+                      )}
+
+                      <div className="flex-1">
+                          <label className="profile-file-picker" aria-label="Choose avatar">
+                            <span className="profile-file-picker-btn">Choose avatar</span>
+                            <span className="profile-file-picker-name">
+                              {profileAvatarFile?.name || "No file chosen"}
+                            </span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleProfileImageChange(e.target.files?.[0] || null)}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            className={`profile-remove-btn ${removeAvatar ? "active" : ""}`}
+                            onClick={handleRemoveAvatarClick}
+                          >
+                            {removeAvatar ? "Undo remove avatar" : "Remove current avatar"}
+                          </button>
+                          {removeAvatar && (
+                            <p className="mt-2 text-xs text-[#fecaca]">Avatar will be removed when you save profile.</p>
+                          )}
+                      </div>
                     </div>
-                  </div>
 
-                  <input
-                    className="mt-4 w-full rounded-lg border border-[#ff7a95]/30 bg-[#17040c] px-3 py-2 text-white outline-none"
-                    value={profileName}
-                    onChange={(e) => setProfileName(e.target.value)}
-                    placeholder="Username"
-                    required
-                  />
-                  <input
-                    className="mt-3 w-full rounded-lg border border-[#ff7a95]/30 bg-[#17040c] px-3 py-2 text-white outline-none"
-                    type="email"
-                    value={profileEmail}
-                    onChange={(e) => setProfileEmail(e.target.value)}
-                    placeholder="Email"
-                    required
-                  />
-                  <input
-                    className="mt-3 w-full rounded-lg border border-[#ff7a95]/30 bg-[#17040c] px-3 py-2 text-white outline-none"
-                    value={profilePhone}
-                    onChange={(e) => setProfilePhone(e.target.value)}
-                    placeholder="Phone"
-                  />
+                    <input
+                      className="mt-4 w-full rounded-lg border border-[#ff7a95]/30 bg-[#17040c] px-3 py-2 text-white outline-none"
+                      value={profileName}
+                      onChange={(e) => setProfileName(e.target.value)}
+                      placeholder="Username"
+                      required
+                    />
+                    <input
+                      className="mt-3 w-full rounded-lg border border-[#ff7a95]/30 bg-[#17040c] px-3 py-2 text-white outline-none opacity-80"
+                      type="email"
+                      value={profileEmail}
+                      placeholder="Email"
+                      readOnly
+                      disabled
+                    />
+                    <p className="mt-2 text-xs text-[#ffd7e1]/75">Email is locked and cannot be changed.</p>
+                    <input
+                      className="mt-3 w-full rounded-lg border border-[#ff7a95]/30 bg-[#17040c] px-3 py-2 text-white outline-none"
+                      value={profilePhone}
+                      onChange={(e) => setProfilePhone(e.target.value)}
+                      placeholder="Phone"
+                    />
 
-                  <button
-                    type="submit"
-                    disabled={savingProfile}
-                    className="mt-4 rounded-lg bg-[#8b0c2e] px-4 py-2 text-sm font-semibold text-white hover:bg-[#a2133d] disabled:opacity-60"
+                    <button
+                      type="submit"
+                      disabled={savingProfile}
+                      className="mt-4 rounded-lg bg-[#8b0c2e] px-4 py-2 text-sm font-semibold text-white hover:bg-[#a2133d] disabled:opacity-60"
+                    >
+                      {savingProfile ? "Saving..." : "Save Profile"}
+                    </button>
+                  </form>
+                )}
+
+                {profilePanel === "security" && (
+                  <form
+                    onSubmit={resetPassword}
+                    className="rounded-2xl border border-[#ff7a95]/20 bg-[#220713] p-5"
                   >
-                    {savingProfile ? "Saving..." : "Save Profile"}
-                  </button>
-                </form>
+                    <h3 className="text-lg font-semibold text-white">Reset Password (OTP)</h3>
+                    <p className="mt-2 text-sm text-[#ffd7e1]/80">
+                      Send OTP to your registered email and reset your password securely.
+                    </p>
 
-                <form
-                  onSubmit={resetPassword}
-                  className="rounded-2xl border border-[#ff7a95]/20 bg-[#220713] p-5"
-                >
-                  <h3 className="text-lg font-semibold text-white">Reset Password (OTP)</h3>
-                  <p className="mt-2 text-sm text-[#ffd7e1]/80">
-                    Send OTP to your registered email and reset your password securely.
-                  </p>
+                    <button
+                      type="button"
+                      onClick={sendResetOtp}
+                      disabled={sendingOtp}
+                      className="mt-4 rounded-lg border border-[#ff7a95]/35 bg-[#17040c] px-4 py-2 text-sm font-semibold text-[#ffd7e1] hover:bg-[#220713] disabled:opacity-60"
+                    >
+                      {sendingOtp ? "Sending OTP..." : "Send OTP"}
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={sendResetOtp}
-                    disabled={sendingOtp}
-                    className="mt-4 rounded-lg border border-[#ff7a95]/35 bg-[#17040c] px-4 py-2 text-sm font-semibold text-[#ffd7e1] hover:bg-[#220713] disabled:opacity-60"
+                    <input
+                      className="mt-4 w-full rounded-lg border border-[#ff7a95]/30 bg-[#17040c] px-3 py-2 text-white outline-none"
+                      value={resetOtp}
+                      onChange={(e) => setResetOtp(e.target.value)}
+                      placeholder="Enter OTP"
+                      required
+                    />
+                    <input
+                      className="mt-3 w-full rounded-lg border border-[#ff7a95]/30 bg-[#17040c] px-3 py-2 text-white outline-none"
+                      type="password"
+                      minLength={6}
+                      value={resetNewPassword}
+                      onChange={(e) => setResetNewPassword(e.target.value)}
+                      placeholder="Enter new password"
+                      required
+                    />
+
+                    <button
+                      type="submit"
+                      disabled={resettingPassword}
+                      className="mt-4 rounded-lg bg-[#8b0c2e] px-4 py-2 text-sm font-semibold text-white hover:bg-[#a2133d] disabled:opacity-60"
+                    >
+                      {resettingPassword ? "Resetting..." : "Reset Password"}
+                    </button>
+                  </form>
+                )}
+
+                {profilePanel === "delete" && (
+                  <form
+                    onSubmit={deleteAccount}
+                    className="rounded-2xl border border-[#f87171]/30 bg-[#3a0a12] p-5"
                   >
-                    {sendingOtp ? "Sending OTP..." : "Send OTP"}
-                  </button>
+                    <h3 className="text-lg font-semibold text-[#fecaca]">Delete Profile</h3>
+                    <p className="mt-2 text-sm text-[#fecaca]/90">
+                      This action permanently deletes your account and cannot be undone.
+                    </p>
 
-                  <input
-                    className="mt-4 w-full rounded-lg border border-[#ff7a95]/30 bg-[#17040c] px-3 py-2 text-white outline-none"
-                    value={resetOtp}
-                    onChange={(e) => setResetOtp(e.target.value)}
-                    placeholder="Enter OTP"
-                    required
-                  />
-                  <input
-                    className="mt-3 w-full rounded-lg border border-[#ff7a95]/30 bg-[#17040c] px-3 py-2 text-white outline-none"
-                    type="password"
-                    minLength={6}
-                    value={resetNewPassword}
-                    onChange={(e) => setResetNewPassword(e.target.value)}
-                    placeholder="Enter new password"
-                    required
-                  />
+                    <button
+                      type="button"
+                      onClick={sendDeleteOtp}
+                      disabled={deleteOtpSending}
+                      className="mt-4 rounded-lg border border-[#fca5a5]/40 bg-[#2f0810] px-4 py-2 text-sm font-semibold text-[#fecaca] hover:bg-[#3f0b14] disabled:opacity-60"
+                    >
+                      {deleteOtpSending ? "Sending OTP..." : "Send Delete OTP"}
+                    </button>
 
-                  <button
-                    type="submit"
-                    disabled={resettingPassword}
-                    className="mt-4 rounded-lg bg-[#8b0c2e] px-4 py-2 text-sm font-semibold text-white hover:bg-[#a2133d] disabled:opacity-60"
-                  >
-                    {resettingPassword ? "Resetting..." : "Reset Password"}
-                  </button>
-                </form>
+                    <input
+                      className="mt-4 w-full rounded-lg border border-[#fca5a5]/40 bg-[#2f0810] px-3 py-2 text-white outline-none"
+                      value={deleteOtp}
+                      onChange={(e) => setDeleteOtp(e.target.value)}
+                      placeholder="Enter delete OTP"
+                      required
+                    />
+
+                    <button
+                      type="submit"
+                      disabled={deletingAccount}
+                      className="mt-4 rounded-lg bg-[#b91c1c] px-4 py-2 text-sm font-semibold text-white hover:bg-[#991b1b] disabled:opacity-60"
+                    >
+                      {deletingAccount ? "Deleting..." : "Delete Profile"}
+                    </button>
+                  </form>
+                )}
               </div>
             </section>
           )}
