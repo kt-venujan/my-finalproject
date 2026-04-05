@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, JSX } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
 import { toast } from "react-toastify";
