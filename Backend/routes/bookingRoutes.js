@@ -6,6 +6,7 @@ import {
   getDieticianBookings,
   markDieticianAlertSeen,
   approveBooking,
+  getBookingCommunicationSession,
   getAllBookingsForAdmin,
   updateBookingByAdmin,
 } from "../controllers/bookingController.js";
@@ -19,6 +20,14 @@ router.post("/", protect, createBooking);
 
 // USER — get own bookings
 router.get("/my", protect, getMyBookings);
+
+// USER/DIETICIAN — get communication session details for approved bookings
+router.get(
+  "/:bookingId/session",
+  protect,
+  allowRoles("user", "dietician", "admin"),
+  getBookingCommunicationSession
+);
 
 // USER — mark payment paid
 router.put("/:bookingId/pay", protect, markBookingPaid);

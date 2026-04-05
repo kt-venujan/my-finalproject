@@ -8,6 +8,7 @@ import ServicesInteractive from "@/components/ServicesInteractive";
 import BMICalculator from "@/components/BMICalculator";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/axios";
+import { motion } from "framer-motion";
 import { FiActivity, FiShield, FiTrendingUp, FiUserCheck } from "react-icons/fi";
 
 const HERO_SLIDES = [
@@ -30,6 +31,17 @@ const HERO_SLIDES = [
       "Follow your daily nutrition journey with expert support and clear progress insights that keep you on track.",
   },
 ];
+
+const HERO_ORBIT_ITEMS = [
+  { src: "/ingredients/tomato-slice.png", alt: "Tomato slice" },
+  { src: "/ingredients/red-onion.png", alt: "Red onion" },
+  { src: "/hero-food-2.png", alt: "Healthy dish" },
+  { src: "/ingredients/tomato-half.png", alt: "Tomato half" },
+  { src: "/hero-food-3.png", alt: "Meal garnish" },
+  { src: "/hero-food.png", alt: "Fresh ingredients" },
+];
+
+const HERO_ORBIT_RADIUS = 168;
 
 type Dietician = {
   _id: string;
@@ -130,6 +142,75 @@ export default function HomePage() {
                   <div className="stat-box"><h2>50+</h2><p>Expert Dieticians</p></div>
                   <div className="stat-box"><h2>100+</h2><p>Healthy Plans</p></div>
                 </div>
+              </div>
+
+              <div className="hero-orbit-shell" aria-hidden="true">
+                <motion.div
+                  className="hero-orbit-ring hero-orbit-ring-main"
+                  initial={{ opacity: 0, scale: 0.82 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                />
+                <motion.div
+                  className="hero-orbit-ring hero-orbit-ring-alt"
+                  initial={{ opacity: 0, scale: 0.76 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 1, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                />
+
+                <motion.div
+                  className="hero-orbit-rotor"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                >
+                  {HERO_ORBIT_ITEMS.map((item, index) => {
+                    const angle = (index / HERO_ORBIT_ITEMS.length) * Math.PI * 2 - Math.PI / 2;
+                    const x = Math.cos(angle) * HERO_ORBIT_RADIUS;
+                    const y = Math.sin(angle) * HERO_ORBIT_RADIUS;
+
+                    return (
+                      <motion.div
+                        key={item.src}
+                        className="hero-orbit-node"
+                        initial={{ opacity: 0, scale: 0.2, x: 0, y: 0 }}
+                        animate={{ opacity: 1, scale: 1, x, y }}
+                        transition={{
+                          delay: 0.35 + index * 0.16,
+                          type: "spring",
+                          stiffness: 120,
+                          damping: 12,
+                        }}
+                      >
+                        <div className="hero-orbit-node-inner">
+                          <Image
+                            src={item.src}
+                            alt={item.alt}
+                            width={36}
+                            height={36}
+                            className="hero-orbit-node-img"
+                          />
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+
+                <motion.div
+                  className="hero-orbit-center"
+                  initial={{ opacity: 0, scale: 0.72 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.7, type: "spring", stiffness: 115, damping: 14 }}
+                >
+                  <div className="hero-orbit-center-media">
+                    <Image
+                      src="/food2.jpg"
+                      alt="Healthy signature meal"
+                      fill
+                      className="hero-orbit-center-img"
+                      priority
+                    />
+                  </div>
+                </motion.div>
               </div>
             </div>
           </div>

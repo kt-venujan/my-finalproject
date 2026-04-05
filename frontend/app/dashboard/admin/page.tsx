@@ -42,15 +42,35 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchSummary = async () => {
       try {
-        const [ordersRes, bookingsRes, foodsRes, usersRes] = await Promise.all([
+        const [ordersRes, bookingsRes, foodsRes, usersRes] = await Promise.allSettled([
           api.get("/payments/orders/admin/all"),
           api.get("/bookings/admin/all"),
           api.get("/foods"),
           api.get("/admin/users"),
         ]);
 
-        const orders: KitchenOrder[] = ordersRes.data || [];
-        const bookings: Booking[] = bookingsRes.data || [];
+        const orders: KitchenOrder[] =
+          ordersRes.status === "fulfilled" ? ordersRes.value.data || [] : [];
+        const bookings: Booking[] =
+          bookingsRes.status === "fulfilled" ? bookingsRes.value.data || [] : [];
+        const foodsCount =
+          foodsRes.status === "fulfilled" ? (foodsRes.value.data || []).length : 0;
+        const usersCount =
+          usersRes.status === "fulfilled" ? (usersRes.value.data || []).length : 0;
+
+        if (ordersRes.status === "rejected") {
+          console.warn("Admin summary: failed to load orders", ordersRes.reason);
+        }
+        if (bookingsRes.status === "rejected") {
+          console.warn("Admin summary: failed to load bookings", bookingsRes.reason);
+        }
+        if (foodsRes.status === "rejected") {
+          console.warn("Admin summary: failed to load foods", foodsRes.reason);
+        }
+        if (usersRes.status === "rejected") {
+          console.warn("Admin summary: failed to load users", usersRes.reason);
+        }
+
         const paidRevenue = orders
           .filter((o) => o.paymentStatus === "paid")
           .reduce((sum, o) => sum + Number(o.subtotal || 0), 0);
@@ -58,8 +78,8 @@ export default function AdminDashboard() {
         setSummary({
           orders: orders.length,
           bookings: bookings.length,
-          foods: (foodsRes.data || []).length,
-          users: (usersRes.data || []).length,
+          foods: foodsCount,
+          users: usersCount,
           paidRevenue,
         });
       } catch (error) {

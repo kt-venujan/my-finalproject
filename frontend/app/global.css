@@ -808,11 +808,102 @@
   flex: 1;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 48px;
 }
 
 /* TEXT BLOCK */
 .hero-text {
   max-width: 760px;
+  flex: 1 1 58%;
+}
+
+.hero-orbit-shell {
+  position: relative;
+  width: 460px;
+  height: 460px;
+  flex: 0 0 460px;
+  margin-left: auto;
+}
+
+.hero-orbit-shell::before {
+  content: "";
+  position: absolute;
+  inset: 20%;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 120, 148, 0.18), rgba(255, 120, 148, 0));
+  filter: blur(12px);
+}
+
+.hero-orbit-ring {
+  position: absolute;
+  border-radius: 999px;
+  border: 1px dashed rgba(255, 204, 219, 0.28);
+}
+
+.hero-orbit-ring-main {
+  inset: 12%;
+}
+
+.hero-orbit-ring-alt {
+  inset: 4%;
+  border-color: rgba(255, 120, 148, 0.2);
+}
+
+.hero-orbit-rotor {
+  position: absolute;
+  inset: 0;
+}
+
+.hero-orbit-node {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -28px;
+  margin-top: -28px;
+}
+
+.hero-orbit-node-inner {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 188, 209, 0.6);
+  box-shadow: 0 8px 22px rgba(20, 6, 12, 0.45);
+}
+
+.hero-orbit-node-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.hero-orbit-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 220px;
+  height: 220px;
+  margin-left: -110px;
+  margin-top: -110px;
+  border-radius: 999px;
+  padding: 10px;
+  background: linear-gradient(145deg, rgba(255, 122, 152, 0.84), rgba(128, 13, 42, 0.95));
+  box-shadow: 0 0 42px rgba(255, 89, 130, 0.35), 0 22px 36px rgba(15, 4, 8, 0.48);
+}
+
+.hero-orbit-center-media {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.hero-orbit-center-img {
+  object-fit: cover;
 }
 
 /* TITLE */
@@ -1068,6 +1159,35 @@
 /* ================= MOBILE ================= */
 
 @media (max-width: 1200px) {
+  .hero-overlay {
+    padding: 128px 44px 72px;
+  }
+
+  .hero-content {
+    gap: 30px;
+  }
+
+  .hero-text h1 {
+    font-size: 68px;
+  }
+
+  .hero-text p {
+    font-size: 22px;
+  }
+
+  .hero-orbit-shell {
+    width: 390px;
+    height: 390px;
+    flex-basis: 390px;
+  }
+
+  .hero-orbit-center {
+    width: 188px;
+    height: 188px;
+    margin-left: -94px;
+    margin-top: -94px;
+  }
+
   .why-section {
     padding: 90px 30px;
   }
@@ -1103,6 +1223,42 @@
   .large-card,
   .side-card {
     min-height: auto;
+  }
+}
+
+@media (max-width: 980px) {
+  .hero-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hero-orbit-shell {
+    width: 340px;
+    height: 340px;
+    flex-basis: auto;
+    margin: 24px auto 0;
+  }
+
+  .hero-orbit-node {
+    margin-left: -24px;
+    margin-top: -24px;
+  }
+
+  .hero-orbit-node-inner {
+    width: 48px;
+    height: 48px;
+  }
+
+  .hero-orbit-node-img {
+    width: 28px;
+    height: 28px;
+  }
+
+  .hero-orbit-center {
+    width: 168px;
+    height: 168px;
+    margin-left: -84px;
+    margin-top: -84px;
   }
 }
 
@@ -1211,6 +1367,11 @@
     padding: 120px 20px 40px;
   }
 
+  .hero-content {
+    align-items: flex-start;
+    gap: 20px;
+  }
+
   .hero-text h1 {
     font-size: 42px;
   }
@@ -1221,6 +1382,19 @@
 
   .hero-stats {
     gap: 30px;
+  }
+
+  .hero-orbit-shell {
+    width: 290px;
+    height: 290px;
+    margin: 20px auto 0;
+  }
+
+  .hero-orbit-center {
+    width: 144px;
+    height: 144px;
+    margin-left: -72px;
+    margin-top: -72px;
   }
 
   .stat-box h2 {
