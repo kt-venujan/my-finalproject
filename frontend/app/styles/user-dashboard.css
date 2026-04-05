@@ -338,6 +338,70 @@
   border-color: #ff4d6d;
 }
 
+.profile-file-picker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
+  cursor: pointer;
+}
+
+.profile-file-picker input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.profile-file-picker-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid #394056;
+  background: #171927;
+  color: #f3f6ff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.profile-file-picker-name {
+  color: #c6cee6;
+  font-size: 12px;
+  max-width: calc(100% - 150px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-remove-btn {
+  margin-top: 8px;
+  border-radius: 10px;
+  border: 1px solid #4a5169;
+  background: #181b2a;
+  color: #f3c9d5;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.profile-remove-btn:hover {
+  border-color: #ff6a8c;
+  color: #ffe8ef;
+}
+
+.profile-remove-btn.active {
+  background: rgba(185, 28, 28, 0.2);
+  border-color: #b91c1c;
+  color: #fecaca;
+}
+
 /* Rating Modal */
 .rm-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.6);

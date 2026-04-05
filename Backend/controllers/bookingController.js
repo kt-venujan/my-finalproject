@@ -6,13 +6,19 @@ const BOOKING_PAYMENT_STATUSES = ["pending", "paid"];
 // CREATE BOOKING
 export const createBooking = async (req, res) => {
   try {
+    const dieticianId = req.body?.dieticianId || req.body?.dietitianId;
+
+    if (!dieticianId) {
+      return res.status(400).json({ message: "dieticianId is required" });
+    }
+
     console.log("Creating booking...");
     console.log("User:", req.user._id);
-    console.log("Dietician ID:", req.body.dieticianId);
+    console.log("Dietician ID:", dieticianId);
 
     const booking = await Booking.create({
       user: req.user._id,
-      dietician: req.body.dieticianId,
+      dietician: dieticianId,
       date: req.body.date,
       time: req.body.time,
       mode: req.body.mode,

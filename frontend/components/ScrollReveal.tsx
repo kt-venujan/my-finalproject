@@ -35,7 +35,7 @@ const collectTargets = () => {
 
 export default function ScrollReveal() {
   const pathname = usePathname();
-  const hasBootstrappedRef = useRef(false);
+  const skippedInitialHydrationRef = useRef(false);
 
   const setupReveal = () => {
     const targets = collectTargets();
@@ -105,33 +105,17 @@ export default function ScrollReveal() {
   };
 
   useEffect(() => {
+    if (!skippedInitialHydrationRef.current) {
+      skippedInitialHydrationRef.current = true;
+      return;
+    }
+
     let cleanupReveal = () => {};
     let startTimer: number | null = null;
 
-    const runReveal = () => {
+    startTimer = window.setTimeout(() => {
       cleanupReveal = setupReveal();
-      hasBootstrappedRef.current = true;
-    };
-
-    const shouldDelayForHydration = !hasBootstrappedRef.current;
-
-    if (shouldDelayForHydration && document.readyState !== "complete") {
-      const handleLoad = () => {
-        startTimer = window.setTimeout(runReveal, 150);
-      };
-
-      window.addEventListener("load", handleLoad, { once: true });
-
-      return () => {
-        window.removeEventListener("load", handleLoad);
-        if (startTimer) {
-          window.clearTimeout(startTimer);
-        }
-        cleanupReveal();
-      };
-    }
-
-    startTimer = window.setTimeout(runReveal, shouldDelayForHydration ? 150 : 0);
+    }, 0);
 
     return () => {
       if (startTimer) {

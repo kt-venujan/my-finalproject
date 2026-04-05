@@ -19,6 +19,8 @@ import {
   FiPhone,
   FiSearch,
   FiSettings,
+  FiLock,
+  FiTrash2,
   FiUpload,
   FiXCircle,
 } from "react-icons/fi";
@@ -51,6 +53,7 @@ type Profile = {
 };
 
 type NavTab = "dashboard" | "bookings" | "verify" | "notify" | "settings";
+type SettingsPanel = "account" | "security" | "delete";
 
 export default function DieticianDashboard() {
   const { user, logout, setAuthUser } = useAuth();
@@ -89,6 +92,10 @@ export default function DieticianDashboard() {
   const [resettingPassword, setResettingPassword] = useState(false);
   const [resetOtp, setResetOtp] = useState("");
   const [resetNewPassword, setResetNewPassword] = useState("");
+  const [settingsPanel, setSettingsPanel] = useState<SettingsPanel>("account");
+  const [deleteOtpSending, setDeleteOtpSending] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteOtp, setDeleteOtp] = useState("");
 
   const resolveAvatar = (avatar?: string) => {
     return resolveBackendAssetUrl(avatar);
@@ -309,13 +316,30 @@ export default function DieticianDashboard() {
     setAccountAvatarPreview(resolveAvatar(user?.avatar));
   };
 
+  const handleRemoveAvatarClick = () => {
+    if (!removeAvatar) {
+      const confirmed = window.confirm(
+        "Remove current avatar? This will apply after you click Save Account."
+      );
+
+      if (!confirmed) return;
+
+      setRemoveAvatar(true);
+      setAccountAvatarFile(null);
+      setAccountAvatarPreview("");
+      return;
+    }
+
+    setRemoveAvatar(false);
+    setAccountAvatarPreview(resolveAvatar(user?.avatar));
+  };
+
   const handleAccountSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingAccount(true);
     try {
       const formData = new FormData();
       formData.append("username", accountName);
-      formData.append("email", accountEmail);
       formData.append("phone", accountPhone);
 
       if (accountAvatarFile) {
@@ -381,6 +405,41 @@ export default function DieticianDashboard() {
     }
   };
 
+  const handleSendDeleteOtp = async () => {
+    setDeleteOtpSending(true);
+    try {
+      const res = await api.post("/auth/delete-account/send-otp");
+      toast.success(res.data?.message || "Delete OTP sent");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to send delete OTP");
+    } finally {
+      setDeleteOtpSending(false);
+    }
+  };
+
+  const handleDeleteAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!deleteOtp.trim()) {
+      toast.error("Enter OTP to delete profile");
+      return;
+    }
+
+    setDeletingAccount(true);
+    try {
+      const res = await api.delete("/auth/delete-account", {
+        data: { otp: deleteOtp.trim() },
+      });
+
+      toast.success(res.data?.message || "Account deleted successfully");
+      logout();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to delete profile");
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
+
   return (
     <div className="dd-wrapper">
 
@@ -401,7 +460,12 @@ export default function DieticianDashboard() {
             <li
               key={item.id}
               className={active === item.id ? "dd-nav-item active" : "dd-nav-item"}
-              onClick={() => setActive(item.id)}
+              onClick={() => {
+                setActive(item.id);
+                if (item.id === "settings") {
+                  setSettingsPanel("account");
+                }
+              }}
             >
               <span className="dd-nav-icon">{item.icon}</span>
               <span>{item.label}</span>
@@ -617,14 +681,14 @@ export default function DieticianDashboard() {
                         <>
                           <button
                             className="dd-action-btn call"
-                            onClick={() => router.push(`/call?bookingId=${b._id}&userId=${b.user._id}`)}
+                            onClick={() => router.push(`/call/${b._id}`)}
                           >
                             <FiPhone className="dd-action-icon" />
                             Call
                           </button>
                           <button
                             className="dd-action-btn chat"
-                            onClick={() => router.push(`/chat?bookingId=${b._id}&userId=${b.user._id}`)}
+                            onClick={() => router.push(`/chat/${b._id}`)}
                           >
                             <FiMessageCircle className="dd-action-icon" />
                             Chat
@@ -791,102 +855,193 @@ export default function DieticianDashboard() {
                 Settings
               </h1>
             </div>
-            <div className="dd-settings-grid">
-              <form className="dd-settings-card" onSubmit={handleAccountSave}>
-                <h3>Account Profile</h3>
-                <div className="dd-account-avatar-row">
-                  {accountAvatarPreview ? (
-                    <img
-                      src={accountAvatarPreview}
-                      alt={accountName || "Dietician"}
-                      className="dd-account-avatar"
-                      onError={() => setAccountAvatarPreview("")}
-                    />
-                  ) : (
-                    <div className="dd-account-avatar placeholder">
-                      {accountName?.[0]?.toUpperCase() || "D"}
-                    </div>
-                  )}
-                  <div className="dd-account-avatar-controls">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleAvatarChange(e.target.files?.[0] || null)}
-                    />
-                    <label className="dd-settings-check">
-                      <input
-                        type="checkbox"
-                        checked={removeAvatar}
-                        onChange={(e) => setRemoveAvatar(e.target.checked)}
+
+            <div className="mb-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setSettingsPanel("account")}
+                className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                  settingsPanel === "account"
+                    ? "border-[#8b0c2e] bg-[#8b0c2e] text-white"
+                    : "border-[#f0d3dd] bg-white text-[#8b0c2e] hover:bg-[#fff3f7]"
+                }`}
+              >
+                Account Profile
+              </button>
+              <button
+                type="button"
+                onClick={() => setSettingsPanel("security")}
+                className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                  settingsPanel === "security"
+                    ? "border-[#8b0c2e] bg-[#8b0c2e] text-white"
+                    : "border-[#f0d3dd] bg-white text-[#8b0c2e] hover:bg-[#fff3f7]"
+                }`}
+              >
+                <span className="inline-flex items-center gap-2">
+                  <FiLock />
+                  Security
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSettingsPanel("delete")}
+                className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                  settingsPanel === "delete"
+                    ? "border-[#b91c1c] bg-[#b91c1c] text-white"
+                    : "border-[#f4c9d0] bg-[#fff5f6] text-[#b91c1c] hover:bg-[#ffecef]"
+                }`}
+              >
+                <span className="inline-flex items-center gap-2">
+                  <FiTrash2 />
+                  Delete Profile
+                </span>
+              </button>
+            </div>
+
+            <div className="dd-settings-grid" style={{ gridTemplateColumns: "1fr" }}>
+              {settingsPanel === "account" && (
+                <form className="dd-settings-card" onSubmit={handleAccountSave}>
+                  <h3>Account Profile</h3>
+                  <div className="dd-account-avatar-row">
+                    {accountAvatarPreview ? (
+                      <img
+                        src={accountAvatarPreview}
+                        alt={accountName || "Dietician"}
+                        className="dd-account-avatar"
+                        onError={() => setAccountAvatarPreview("")}
                       />
-                      Remove current avatar
-                    </label>
+                    ) : (
+                      <div className="dd-account-avatar placeholder">
+                        {accountName?.[0]?.toUpperCase() || "D"}
+                      </div>
+                    )}
+                    <div className="dd-account-avatar-controls">
+                      <label className="profile-file-picker" aria-label="Choose avatar">
+                        <span className="profile-file-picker-btn">Choose avatar</span>
+                        <span className="profile-file-picker-name">
+                          {accountAvatarFile?.name || "No file chosen"}
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleAvatarChange(e.target.files?.[0] || null)}
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        className={`profile-remove-btn ${removeAvatar ? "active" : ""}`}
+                        onClick={handleRemoveAvatarClick}
+                      >
+                        {removeAvatar ? "Undo remove avatar" : "Remove current avatar"}
+                      </button>
+                      {removeAvatar && (
+                        <p className="dd-settings-help">Avatar will be removed when you save account.</p>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <input
-                  className="dd-settings-input"
-                  value={accountName}
-                  onChange={(e) => setAccountName(e.target.value)}
-                  placeholder="Username"
-                  required
-                />
-                <input
-                  className="dd-settings-input"
-                  type="email"
-                  value={accountEmail}
-                  onChange={(e) => setAccountEmail(e.target.value)}
-                  placeholder="Email"
-                  required
-                />
-                <input
-                  className="dd-settings-input"
-                  value={accountPhone}
-                  onChange={(e) => setAccountPhone(e.target.value)}
-                  placeholder="Phone"
-                />
+                  <input
+                    className="dd-settings-input"
+                    value={accountName}
+                    onChange={(e) => setAccountName(e.target.value)}
+                    placeholder="Username"
+                    required
+                  />
+                  <input
+                    className="dd-settings-input"
+                    type="email"
+                    value={accountEmail}
+                    placeholder="Email"
+                    readOnly
+                    disabled
+                  />
+                  <p className="dd-settings-help">Email is locked and cannot be changed.</p>
+                  <input
+                    className="dd-settings-input"
+                    value={accountPhone}
+                    onChange={(e) => setAccountPhone(e.target.value)}
+                    placeholder="Phone"
+                  />
 
-                <button className="dd-submit-btn" type="submit" disabled={savingAccount}>
-                  {savingAccount ? "Saving..." : "Save Account"}
-                </button>
-              </form>
+                  <button className="dd-submit-btn" type="submit" disabled={savingAccount}>
+                    {savingAccount ? "Saving..." : "Save Account"}
+                  </button>
+                </form>
+              )}
 
-              <form className="dd-settings-card" onSubmit={handleResetPassword}>
-                <h3>Reset Password (OTP)</h3>
-                <p className="dd-settings-help">
-                  Send OTP to your email and verify it to set a new password.
-                </p>
+              {settingsPanel === "security" && (
+                <form className="dd-settings-card" onSubmit={handleResetPassword}>
+                  <h3>Reset Password (OTP)</h3>
+                  <p className="dd-settings-help">
+                    Send OTP to your email and verify it to set a new password.
+                  </p>
 
-                <button
-                  type="button"
-                  className="dd-settings-otp-btn"
-                  onClick={handleSendOtp}
-                  disabled={sendingOtp}
-                >
-                  {sendingOtp ? "Sending OTP..." : "Send OTP"}
-                </button>
+                  <button
+                    type="button"
+                    className="dd-settings-otp-btn"
+                    onClick={handleSendOtp}
+                    disabled={sendingOtp}
+                  >
+                    {sendingOtp ? "Sending OTP..." : "Send OTP"}
+                  </button>
 
-                <input
-                  className="dd-settings-input"
-                  value={resetOtp}
-                  onChange={(e) => setResetOtp(e.target.value)}
-                  placeholder="OTP code"
-                  required
-                />
-                <input
-                  className="dd-settings-input"
-                  type="password"
-                  value={resetNewPassword}
-                  onChange={(e) => setResetNewPassword(e.target.value)}
-                  placeholder="New password"
-                  minLength={6}
-                  required
-                />
+                  <input
+                    className="dd-settings-input"
+                    value={resetOtp}
+                    onChange={(e) => setResetOtp(e.target.value)}
+                    placeholder="OTP code"
+                    required
+                  />
+                  <input
+                    className="dd-settings-input"
+                    type="password"
+                    value={resetNewPassword}
+                    onChange={(e) => setResetNewPassword(e.target.value)}
+                    placeholder="New password"
+                    minLength={6}
+                    required
+                  />
 
-                <button className="dd-submit-btn" type="submit" disabled={resettingPassword}>
-                  {resettingPassword ? "Resetting..." : "Reset Password"}
-                </button>
-              </form>
+                  <button className="dd-submit-btn" type="submit" disabled={resettingPassword}>
+                    {resettingPassword ? "Resetting..." : "Reset Password"}
+                  </button>
+                </form>
+              )}
+
+              {settingsPanel === "delete" && (
+                <form className="dd-settings-card" onSubmit={handleDeleteAccount}>
+                  <h3 className="text-[#b91c1c]">Delete Profile</h3>
+                  <p className="dd-settings-help">
+                    This action permanently deletes your account and cannot be undone.
+                  </p>
+
+                  <button
+                    type="button"
+                    className="dd-settings-otp-btn"
+                    onClick={handleSendDeleteOtp}
+                    disabled={deleteOtpSending}
+                  >
+                    {deleteOtpSending ? "Sending OTP..." : "Send Delete OTP"}
+                  </button>
+
+                  <input
+                    className="dd-settings-input"
+                    value={deleteOtp}
+                    onChange={(e) => setDeleteOtp(e.target.value)}
+                    placeholder="Enter delete OTP"
+                    required
+                  />
+
+                  <button
+                    className="dd-submit-btn"
+                    type="submit"
+                    disabled={deletingAccount}
+                    style={{ background: "#b91c1c" }}
+                  >
+                    {deletingAccount ? "Deleting..." : "Delete Profile"}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         )}
