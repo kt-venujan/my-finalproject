@@ -195,3 +195,24 @@ textarea{
     height:220px;
   }
 }
+
+@media (max-width: 480px){
+  .contact-page{
+    padding:96px 12px 26px;
+  }
+
+  .contact-container{
+    padding:20px 14px;
+    border-radius:12px;
+  }
+
+  .contact-left h1{
+    font-size:28px;
+    line-height:1.2;
+  }
+
+  .send-btn{
+    padding:14px;
+    font-size:15px;
+  }
+}

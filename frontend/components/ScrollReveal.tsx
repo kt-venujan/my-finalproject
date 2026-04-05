@@ -1,21 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-
-const hiddenClasses = [
-  "opacity-0",
-  "translate-y-6",
-  "transition-all",
-  "duration-700",
-  "ease-out",
-  "will-change-transform",
-  "motion-reduce:opacity-100",
-  "motion-reduce:translate-y-0",
-  "motion-reduce:transition-none",
-];
-
-const visibleClasses = ["opacity-100", "translate-y-0"];
+import { animate, stagger } from "framer-motion";
 
 const revealSelectors = ["main > *", "main section", "main article", "[data-scroll-reveal]"];
 
@@ -35,93 +22,101 @@ const collectTargets = () => {
 
 export default function ScrollReveal() {
   const pathname = usePathname();
-  const skippedInitialHydrationRef = useRef(false);
 
-  const setupReveal = () => {
-    const targets = collectTargets();
-    if (targets.length === 0) return () => {};
-
+  useEffect(() => {
+    let lateBindTimer: number | null = null;
+    let startTimer: number | null = null;
+    const revealedElements = new WeakSet<HTMLElement>();
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let observer: IntersectionObserver | null = null;
 
-    if (prefersReducedMotion) {
-      targets.forEach((element) => {
-        element.classList.add(...visibleClasses);
+    const revealElements = (elements: HTMLElement[]) => {
+      if (elements.length === 0) return;
+
+      animate(
+        elements,
+        { opacity: 1 },
+        {
+          duration: 0.52,
+          ease: [0.22, 1, 0.36, 1],
+          delay: stagger(0.07),
+        }
+      );
+
+      elements.forEach((element) => {
+        revealedElements.add(element);
+        element.style.willChange = "auto";
+        observer?.unobserve(element);
       });
-      return () => {};
-    }
+    };
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-
-          const element = entry.target as HTMLElement;
-          element.classList.remove("opacity-0", "translate-y-6");
-          element.classList.add(...visibleClasses);
-          observer.unobserve(element);
+    const bindTargets = (elements: HTMLElement[]) => {
+      if (prefersReducedMotion) {
+        elements.forEach((element) => {
+          element.style.opacity = "1";
         });
-      },
-      {
-        threshold: 0.16,
-        rootMargin: "0px 0px -10% 0px",
+        return;
       }
-    );
 
-    const bindTargets = (elements: HTMLElement[], offsetIndex = 0) => {
-      elements.forEach((element, index) => {
-        if (element.dataset.scrollRevealBound === "true") return;
-
-        element.dataset.scrollRevealBound = "true";
+      elements.forEach((element) => {
+        if (revealedElements.has(element)) return;
 
         const rect = element.getBoundingClientRect();
         const alreadyVisible =
           rect.top < window.innerHeight * 0.92 && rect.bottom > window.innerHeight * 0.05;
 
+        element.style.opacity = "0";
+        element.style.willChange = "opacity";
+
         if (alreadyVisible) {
-          element.classList.add(...visibleClasses);
+          revealElements([element]);
           return;
         }
 
-        element.classList.add(...hiddenClasses);
-        element.classList.remove(...visibleClasses);
-        element.style.transitionDelay = `${Math.min((offsetIndex + index) % 6, 5) * 80}ms`;
-        observer.observe(element);
+        observer?.observe(element);
       });
     };
 
-    bindTargets(targets);
+    if (!prefersReducedMotion) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const visibleTargets: HTMLElement[] = [];
 
-    const lateBindTimer = window.setTimeout(() => {
-      const lateTargets = collectTargets().filter(
-        (element) => element.dataset.scrollRevealBound !== "true"
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+
+            const element = entry.target as HTMLElement;
+            if (revealedElements.has(element)) return;
+            visibleTargets.push(element);
+          });
+
+          revealElements(visibleTargets);
+        },
+        {
+          threshold: 0.16,
+          rootMargin: "0px 0px -10% 0px",
+        }
       );
-      bindTargets(lateTargets, targets.length);
-    }, 350);
-
-    return () => {
-      window.clearTimeout(lateBindTimer);
-      observer.disconnect();
-    };
-  };
-
-  useEffect(() => {
-    if (!skippedInitialHydrationRef.current) {
-      skippedInitialHydrationRef.current = true;
-      return;
     }
 
-    let cleanupReveal = () => {};
-    let startTimer: number | null = null;
-
     startTimer = window.setTimeout(() => {
-      cleanupReveal = setupReveal();
+      const targets = collectTargets();
+      bindTargets(targets);
+
+      lateBindTimer = window.setTimeout(() => {
+        const lateTargets = collectTargets().filter((element) => !revealedElements.has(element));
+        bindTargets(lateTargets);
+      }, 320);
     }, 0);
 
     return () => {
       if (startTimer) {
         window.clearTimeout(startTimer);
       }
-      cleanupReveal();
+      if (lateBindTimer) {
+        window.clearTimeout(lateBindTimer);
+      }
+      observer?.disconnect();
     };
   }, [pathname]);
 

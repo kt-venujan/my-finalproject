@@ -61,3 +61,57 @@
   font-weight: 700; font-size: 16px; transition: 0.3s;
 }
 .hp-explore-btn:hover { border-color: #ff4d6d; color: #ff4d6d; background: rgba(139,12,46,0.1); }
+
+@media (max-width: 1100px) {
+  .hp-diet-section {
+    padding: 72px 24px;
+  }
+
+  .hp-diet-header h2 {
+    font-size: 34px;
+  }
+
+  .hp-diet-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .hp-diet-section {
+    padding: 56px 16px;
+  }
+
+  .hp-diet-header {
+    margin-bottom: 24px;
+    align-items: flex-start;
+  }
+
+  .hp-diet-header h2 {
+    font-size: 30px;
+  }
+
+  .hp-diet-header p,
+  .hp-view-all {
+    font-size: 14px;
+  }
+
+  .hp-diet-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .hp-diet-card {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hp-diet-header h2 {
+    font-size: 26px;
+  }
+
+  .hp-explore-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
