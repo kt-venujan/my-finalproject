@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { toast } from "react-toastify";
 import BookingModal from "@/components/BookingModal";
 import api from "@/lib/axios";
@@ -172,6 +173,31 @@ export default function DieticianPage() {
                 aria-label={`Go to slide ${index + 1}`}
               ></button>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-10 pb-2 pt-8 max-w-7xl mx-auto" data-scroll-reveal>
+        <div className="rounded-2xl border border-[#3a2430] bg-gradient-to-r from-[#1e1016] to-[#151515] p-5 md:p-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.2em] text-[#ff9fb5] font-semibold">Plan Your Flow</p>
+            <h2 className="mt-2 text-xl md:text-2xl font-bold text-white">Need help before booking?</h2>
+            <p className="mt-1 text-sm text-white/70">Start with AI guidance or compare memberships, then book the best-fit dietician.</p>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/ai-assistant"
+              className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#8b0c2e] to-[#c4234a] px-4 py-2.5 text-sm font-semibold text-white transition hover:brightness-110"
+            >
+              Generate AI Diet Plan
+            </Link>
+            <Link
+              href="/pricing"
+              className="inline-flex items-center justify-center rounded-xl border border-[#ffb9cb]/35 bg-[#1d1216] px-4 py-2.5 text-sm font-semibold text-[#ffe4ec] transition hover:border-[#ffb9cb]/60"
+            >
+              See Pricing Plans
+            </Link>
           </div>
         </div>
       </section>

@@ -609,7 +609,7 @@
 
 .dropdown-menu {
   position: absolute;
-  top: 34px;
+  top: calc(100% + 2px);
   left: 0;
   min-width: 220px;
   background: #fff;
@@ -2779,6 +2779,75 @@ select {
   background: rgba(139, 12, 46, 0.28);
 }
 
+.after-plan-flow {
+  margin-top: 10px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(140deg, rgba(139, 12, 46, 0.26), rgba(255, 46, 99, 0.12));
+  padding: 18px;
+}
+
+.after-plan-title {
+  margin: 0;
+  color: #ffe3eb;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.after-plan-text {
+  margin: 8px 0 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.after-plan-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.after-plan-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.after-plan-btn.primary {
+  background: linear-gradient(130deg, #8b0c2e, #ff2e63);
+  color: #fff;
+  box-shadow: 0 10px 26px rgba(139, 12, 46, 0.28);
+}
+
+.after-plan-btn.secondary {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.after-plan-btn:hover {
+  transform: translateY(-1px);
+}
+
+.after-plan-link {
+  margin-top: 12px;
+  display: inline-flex;
+  text-decoration: none;
+  color: #ffd5e1;
+  font-size: 0.9rem;
+}
+
+.after-plan-link:hover {
+  color: #ffffff;
+}
+
 @media (max-width: 900px) {
   .study-chat-shell {
     max-width: 100%;
@@ -2790,6 +2859,14 @@ select {
 
   .study-option-grid {
     grid-template-columns: 1fr;
+  }
+
+  .after-plan-actions {
+    flex-direction: column;
+  }
+
+  .after-plan-btn {
+    width: 100%;
   }
 }
 

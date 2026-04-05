@@ -12,6 +12,7 @@ import "react-toastify/dist/ReactToastify.css";
 import StarCursor from "@/components/StarCursor";
 import GlobalAuth from "@/components/GlobalAuth";
 import NavigationLoader from "@/components/NavigationLoader";
+import ScrollReveal from "@/components/ScrollReveal";
 
 /* BODY FONT */
 const poppins = Poppins({
@@ -62,6 +63,9 @@ export default function RootLayout({
 
           {/* ROUTE TRANSITION LOADER */}
           <NavigationLoader />
+
+          {/* GLOBAL SCROLL ANIMATIONS */}
+          <ScrollReveal />
 
           {/*  PAGE CONTENT */}
           {children}

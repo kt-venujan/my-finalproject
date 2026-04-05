@@ -33,15 +33,29 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const normalizeRole = (role?: string): User["role"] => {
+  const value = String(role || "").trim().toLowerCase();
+  if (value === "customer") return "user";
+  if (value === "dietitian") return "dietician";
+  if (value === "admin" || value === "kitchen" || value === "dietician") {
+    return value;
+  }
+  return "user";
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   const setAuthUser = (nextUser: User | null) => {
-    setUser(nextUser);
+    const normalizedUser = nextUser
+      ? { ...nextUser, role: normalizeRole(nextUser.role) }
+      : null;
 
-    if (nextUser) {
-      localStorage.setItem("user", JSON.stringify(nextUser));
+    setUser(normalizedUser);
+
+    if (normalizedUser) {
+      localStorage.setItem("user", JSON.stringify(normalizedUser));
     } else {
       localStorage.removeItem("user");
     }
@@ -70,7 +84,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (savedUser) {
       try {
-        setUser(JSON.parse(savedUser));
+        const parsedUser = JSON.parse(savedUser) as User;
+        setUser({ ...parsedUser, role: normalizeRole(parsedUser.role) });
       } catch {
         localStorage.removeItem("user");
       }
@@ -96,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     closeLogin();
 
     // 🔥 IMPORTANT: use window.location (force redirect)
-    const role = loggedInUser.role;
+    const role = normalizeRole(loggedInUser.role);
 
     if (role === "admin") {
       window.location.href = "/dashboard/admin";
@@ -122,7 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     closeLogin();
 
-    const role = registeredUser.role;
+    const role = normalizeRole(registeredUser.role);
 
     if (role === "admin") {
       window.location.href = "/dashboard/admin";

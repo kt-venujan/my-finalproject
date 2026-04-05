@@ -61,6 +61,14 @@ export default function DieticianDashboard() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const prevAlertCount = useRef(0);
+  const accessIssueHandled = useRef(false);
+
+  const normalizeRole = (role?: string) => {
+    const value = String(role || "").trim().toLowerCase();
+    if (value === "dietitian") return "dietician";
+    if (value === "customer") return "user";
+    return value;
+  };
 
   // PROFILE FORM
   const [specialization, setSpecialization] = useState("");
@@ -98,8 +106,28 @@ export default function DieticianDashboard() {
         toast.success("New payment received!");
       }
       prevAlertCount.current = newAlerts.length;
-    } catch (err) {
-      console.error("Fetch bookings error:", err);
+    } catch (err: any) {
+      const status = err?.response?.status;
+
+      if (status === 401 || status === 403) {
+        setBookings([]);
+
+        if (!accessIssueHandled.current) {
+          accessIssueHandled.current = true;
+          if (status === 401) {
+            toast.info("Session expired. Please login again.");
+            logout();
+            return;
+          }
+
+          toast.error("Dietician access required for this dashboard.");
+          router.replace("/");
+        }
+
+        return;
+      }
+
+      console.warn("Fetch bookings failed:", err?.response?.data?.message || err?.message || err);
     }
   };
 
@@ -119,12 +147,24 @@ export default function DieticianDashboard() {
   };
 
   useEffect(() => {
+    if (!user) return;
+
+    if (normalizeRole(user.role) !== "dietician") {
+      if (!accessIssueHandled.current) {
+        accessIssueHandled.current = true;
+        toast.error("Dietician access required for this dashboard.");
+      }
+      router.replace("/");
+      return;
+    }
+
+    accessIssueHandled.current = false;
     fetchBookings();
     fetchProfile();
+
     const interval = setInterval(fetchBookings, 6000);
     return () => clearInterval(interval);
-    // eslint-disable-next-line
-  }, []);
+  }, [user, router]);
 
   useEffect(() => {
     if (!user) return;

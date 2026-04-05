@@ -140,6 +140,7 @@ export default function AIDietAssistantPage() {
   const [selectedLikeFoods, setSelectedLikeFoods] = useState<string[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const chatBodyRef = useRef<HTMLDivElement | null>(null);
   const current = questions[step];
 
   useEffect(() => {
@@ -154,6 +155,16 @@ export default function AIDietAssistantPage() {
       },
     ]);
   }, []);
+
+  useEffect(() => {
+    const chatBody = chatBodyRef.current;
+    if (!chatBody) return;
+
+    chatBody.scrollTo({
+      top: chatBody.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages, loading, completed]);
 
   const pushAiMessage = (text: string) => {
     setMessages((prev) => [...prev, { sender: "ai", text }]);
@@ -463,7 +474,7 @@ ${
             </p>
           </div>
 
-          <div className="study-chat-body">
+          <div ref={chatBodyRef} className="study-chat-body">
             {messages.map((msg, i) => (
               <div key={i} className={`study-chat-bubble ${msg.sender}`}>
                 <pre>{msg.text}</pre>
@@ -477,13 +488,24 @@ ${
             )}
 
             {completed && !loading && (
-              <div className="after-plan-actions">
-                <Link href="/dietician" className="after-plan-btn primary">
-                  Book Dietician
-                </Link>
+              <div className="after-plan-flow" data-scroll-reveal>
+                <p className="after-plan-title">Your plan is ready. Choose the next step.</p>
+                <p className="after-plan-text">
+                  Continue with expert guidance or compare memberships before you proceed.
+                </p>
 
-                <Link href="/kitchen" className="after-plan-btn secondary">
-                  Go to Kitchen
+                <div className="after-plan-actions">
+                  <Link href="/dietician" className="after-plan-btn primary">
+                    Book Dietician Now
+                  </Link>
+
+                  <Link href="/pricing" className="after-plan-btn secondary">
+                    See Pricing Plans
+                  </Link>
+                </div>
+
+                <Link href="/kitchen" className="after-plan-link">
+                  Need prepared healthy meals too? Explore Kitchen options.
                 </Link>
               </div>
             )}

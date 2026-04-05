@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { usePathname } from "next/navigation"; // ✅ ADD
 import { resolveBackendAssetUrl } from "@/lib/assetUrl";
@@ -44,6 +44,7 @@ export default function Navbar() {
   const pathname = usePathname(); // ✅ GET CURRENT PATH
   const isDashboardRoute = pathname.startsWith("/dashboard");
   const [showServices, setShowServices] = useState(false);
+  const servicesCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [userActions, setUserActions] = useState<UserAction[]>([]);
   const { user, openLogin } = useAuth();
@@ -69,6 +70,40 @@ export default function Navbar() {
       minute: "2-digit",
     });
   };
+
+  const clearServicesCloseTimer = () => {
+    if (servicesCloseTimerRef.current) {
+      clearTimeout(servicesCloseTimerRef.current);
+      servicesCloseTimerRef.current = null;
+    }
+  };
+
+  const openServicesMenu = () => {
+    clearServicesCloseTimer();
+    setShowServices(true);
+  };
+
+  const closeServicesMenu = (delay = 0) => {
+    clearServicesCloseTimer();
+
+    if (delay <= 0) {
+      setShowServices(false);
+      return;
+    }
+
+    servicesCloseTimerRef.current = setTimeout(() => {
+      setShowServices(false);
+      servicesCloseTimerRef.current = null;
+    }, delay);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (servicesCloseTimerRef.current) {
+        clearTimeout(servicesCloseTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!user || user.role !== "user") {
@@ -180,22 +215,40 @@ export default function Navbar() {
           <Link href="/">Home</Link>
 
           {/* SERVICES DROPDOWN */}
-          <div className="nav-dropdown">
+          <div
+            className="nav-dropdown"
+            onMouseEnter={openServicesMenu}
+            onMouseLeave={() => closeServicesMenu(180)}
+            onFocus={openServicesMenu}
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                closeServicesMenu();
+              }
+            }}
+          >
             <button
               type="button"
               className="nav-dropdown-btn"
-              onClick={() => setShowServices(!showServices)} // ✅ FIXED
+              aria-expanded={showServices}
+              onClick={() => {
+                clearServicesCloseTimer();
+                setShowServices((prev) => !prev);
+              }}
             >
               Services
             </button>
 
             {showServices && (
-              <div className="dropdown-menu">
+              <div
+                className="dropdown-menu"
+                onMouseEnter={openServicesMenu}
+                onMouseLeave={() => closeServicesMenu(180)}
+              >
                 {services.map((item) => (
                   <Link
                     key={item.name}
                     href={item.href}
-                    onClick={() => setShowServices(false)}
+                    onClick={() => closeServicesMenu()}
                   >
                     {item.name}
                   </Link>
