@@ -188,6 +188,13 @@ const buildDieticianLineItems = ({ dieticianName, consultationFee, serviceFee })
   ];
 };
 
+const buildPaymentSummary = (session, fallbackCurrency = "lkr") => ({
+  sessionId: session?.id || "",
+  paymentStatus: session?.payment_status || "pending",
+  amountTotal: Number(session?.amount_total || 0) / 100,
+  currency: String(session?.currency || fallbackCurrency || "lkr").toUpperCase(),
+});
+
 const resolveDieticianPricing = async (dieticianUserId) => {
   const profile = await DieticianProfile.findOne({ user: dieticianUserId });
   const consultationFee = Math.max(0, Number(profile?.price || 1500));
@@ -220,7 +227,7 @@ export const createCheckoutSession = async (req, res) => {
       mode: "payment",
       payment_method_types: ["card"],
       line_items: buildLineItems(normalizedItems),
-      success_url: `${FRONTEND_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${FRONTEND_URL}/payment/success?type=order&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${FRONTEND_URL}/checkout?cancelled=true`,
       customer_email: req.user.email,
       metadata: {
@@ -305,7 +312,7 @@ export const createDieticianCheckoutSession = async (req, res) => {
         consultationFee,
         serviceFee,
       }),
-      success_url: `${FRONTEND_URL}/payment/${booking._id}?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${FRONTEND_URL}/payment/success?type=dietician&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${FRONTEND_URL}/payment/${booking._id}?cancelled=true`,
       customer_email: req.user.email,
       metadata: {
@@ -344,12 +351,12 @@ export const confirmCheckout = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    const order = await KitchenOrder.findById(orderId);
+    const order = await KitchenOrder.findById(orderId).populate("user", "username email");
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    if (order.user.toString() !== req.user._id.toString()) {
+    if (order.user?._id?.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Access denied" });
     }
 
@@ -387,7 +394,11 @@ export const confirmCheckout = async (req, res) => {
       }
     }
 
-    return res.status(200).json({ success: true, order });
+    return res.status(200).json({
+      success: true,
+      order,
+      paymentSummary: buildPaymentSummary(session, order.currency),
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -412,18 +423,24 @@ export const confirmDieticianCheckout = async (req, res) => {
       return res.status(400).json({ message: "Invalid checkout session" });
     }
 
-    const booking = await Booking.findById(bookingId);
+    const booking = await Booking.findById(bookingId)
+      .populate("dietician", "username email")
+      .populate("user", "username email");
 
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
 
-    if (booking.user.toString() !== req.user._id.toString()) {
+    if (booking.user?._id?.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Access denied" });
     }
 
     if (booking.paymentStatus === "paid") {
-      return res.status(200).json({ success: true, booking });
+      return res.status(200).json({
+        success: true,
+        booking,
+        paymentSummary: buildPaymentSummary(session),
+      });
     }
 
     if (session.payment_status !== "paid") {
@@ -435,7 +452,11 @@ export const confirmDieticianCheckout = async (req, res) => {
     booking.dieticianAlertSeen = false;
     await booking.save();
 
-    return res.status(200).json({ success: true, booking });
+    return res.status(200).json({
+      success: true,
+      booking,
+      paymentSummary: buildPaymentSummary(session),
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

@@ -18,18 +18,6 @@ const HERO_SLIDES = [
     description:
       "Achieve your nutrition goals with customized meal plans, expert dietician advice, and a healthier lifestyle tailored for you.",
   },
-  {
-    image: "/meal.jpg",
-    title: "Eat Smart With Guided Meal Plans",
-    description:
-      "Build better habits with meal plans prepared around your goals, taste, and everyday routine.",
-  },
-  {
-    image: "/track.jpg",
-    title: "Track Progress And Stay Consistent",
-    description:
-      "Follow your daily nutrition journey with expert support and clear progress insights that keep you on track.",
-  },
 ];
 
 const HERO_ORBIT_ITEMS = [

@@ -2,6 +2,7 @@
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import type { AxiosError } from "axios";
 import { toast } from "react-toastify";
 import api from "@/lib/axios";
 
@@ -14,8 +15,12 @@ export default function PaymentPage() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
-  const [confirming, setConfirming] = useState(false);
   const [message, setMessage] = useState("");
+
+  const getApiErrorMessage = (err: unknown, fallback: string) => {
+    const error = err as AxiosError<{ message?: string; error?: string }>;
+    return error?.response?.data?.message || error?.response?.data?.error || fallback;
+  };
 
   useEffect(() => {
     if (cancelled) {
@@ -27,23 +32,9 @@ export default function PaymentPage() {
   useEffect(() => {
     if (!sessionId) return;
 
-    const confirmPayment = async () => {
-      try {
-        setConfirming(true);
-        await api.get(`/payments/stripe/confirm-dietician?sessionId=${sessionId}`);
-        setMessage("Payment successful. Booking confirmed and dietician notified.");
-        toast.success("Payment Successful");
-      } catch (err: any) {
-        const errorMessage = err?.response?.data?.message || "Payment confirmation failed";
-        setMessage(errorMessage);
-        toast.error(errorMessage);
-      } finally {
-        setConfirming(false);
-      }
-    };
-
-    confirmPayment();
-  }, [sessionId]);
+    const encodedSession = encodeURIComponent(sessionId);
+    router.replace(`/payment/success?type=dietician&session_id=${encodedSession}`);
+  }, [sessionId, router]);
 
   const handlePayment = async () => {
     try {
@@ -59,16 +50,14 @@ export default function PaymentPage() {
       }
 
       toast.error("Unable to start Stripe checkout.");
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Payment failed");
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, "Payment failed"));
     } finally {
       setLoading(false);
     }
   };
 
-  const statusText = confirming
-    ? "Confirming payment..."
-    : message || "Complete your payment securely with Stripe.";
+  const statusText = message || "Complete your payment securely with Stripe.";
 
   return (
     <div className="payment-page">
@@ -101,7 +90,7 @@ export default function PaymentPage() {
           </div>
         </div>
 
-        <button className="pay-btn" onClick={handlePayment} disabled={loading || confirming}>
+        <button className="pay-btn" onClick={handlePayment} disabled={loading}>
           {loading ? "Redirecting..." : "Pay with Stripe"}
         </button>
 

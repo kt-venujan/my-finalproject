@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { AxiosError } from "axios";
 import api from "@/lib/axios";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "react-toastify";
 import { FiCoffee, FiEdit2, FiPlus, FiTag, FiX } from "react-icons/fi";
 
 type Food = {
@@ -18,6 +21,8 @@ type Category = {
 };
 
 export default function FoodPage() {
+  const { user } = useAuth();
+
   const [foods, setFoods] = useState<Food[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -38,6 +43,13 @@ export default function FoodPage() {
 
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [editCatName, setEditCatName] = useState("");
+
+  const getApiErrorMessage = (error: unknown, fallback: string) => {
+    const axiosError = error as AxiosError<{ message?: string; error?: string }>;
+    return axiosError?.response?.data?.message || axiosError?.response?.data?.error || fallback;
+  };
+
+  const isAdmin = user?.role === "admin";
 
   const fetchFoods = async () => {
     try {
@@ -60,13 +72,17 @@ export default function FoodPage() {
   };
 
   useEffect(() => {
+    if (!user || !isAdmin) {
+      return;
+    }
+
     const timeoutId = setTimeout(() => {
       fetchFoods();
       fetchCategories();
     }, 0);
 
     return () => clearTimeout(timeoutId);
-  }, []);
+  }, [user, isAdmin]);
 
   const resetFoodCreateForm = () => {
     setName("");
@@ -81,6 +97,11 @@ export default function FoodPage() {
   };
 
   const saveFood = async () => {
+    if (!isAdmin) {
+      toast.error("Admin access only");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("name", name);
     formData.append("price", price);
@@ -92,25 +113,67 @@ export default function FoodPage() {
       formData.append("image", image);
     }
 
-    await api.post("/admin/foods", formData);
-    resetFoodCreateForm();
-    fetchFoods();
+    try {
+      await api.post("/admin/foods", formData);
+      resetFoodCreateForm();
+      fetchFoods();
+      toast.success("Food added");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Unable to add food"));
+    }
   };
 
   const saveCategory = async () => {
-    await api.post("/categories/create", { name: catName });
-    resetCategoryCreateForm();
-    fetchCategories();
+    if (!isAdmin) {
+      toast.error("Admin access only");
+      return;
+    }
+
+    const name = catName.trim();
+    if (!name) {
+      toast.error("Category name is required");
+      return;
+    }
+
+    try {
+      await api.post("/categories/create", { name });
+      resetCategoryCreateForm();
+      fetchCategories();
+      toast.success("Category added");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Unable to add category"));
+    }
   };
 
   const deleteFood = async (id: string) => {
-    await api.delete(`/admin/foods/${id}`);
-    fetchFoods();
+    if (!isAdmin) {
+      toast.error("Admin access only");
+      return;
+    }
+
+    try {
+      await api.delete(`/admin/foods/${id}`);
+      fetchFoods();
+      toast.success("Food deleted");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Unable to delete food"));
+    }
   };
 
   const deleteCategory = async (id: string) => {
-    await api.delete(`/categories/${id}`);
-    fetchCategories();
+    if (!isAdmin) {
+      toast.error("Admin access only");
+      return;
+    }
+
+    try {
+      await api.delete(`/categories/${id}`);
+      fetchCategories();
+      fetchFoods();
+      toast.success("Category deleted");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Unable to delete category"));
+    }
   };
 
   const resolveImage = (path?: string) => {
@@ -131,10 +194,26 @@ export default function FoodPage() {
 
   const saveCategoryEdit = async () => {
     if (!editingCategoryId) return;
+    if (!isAdmin) {
+      toast.error("Admin access only");
+      return;
+    }
 
-    await api.put(`/categories/${editingCategoryId}`, { name: editCatName });
-    closeCategoryModal();
-    fetchCategories();
+    const name = editCatName.trim();
+    if (!name) {
+      toast.error("Category name is required");
+      return;
+    }
+
+    try {
+      await api.put(`/categories/${editingCategoryId}`, { name });
+      closeCategoryModal();
+      fetchCategories();
+      fetchFoods();
+      toast.success("Category updated");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Unable to update category"));
+    }
   };
 
   const openFoodModal = (selected: Food) => {
@@ -157,6 +236,10 @@ export default function FoodPage() {
 
   const saveFoodEdit = async () => {
     if (!editingFoodId) return;
+    if (!isAdmin) {
+      toast.error("Admin access only");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("name", editFoodName);
@@ -169,10 +252,26 @@ export default function FoodPage() {
       formData.append("image", editFoodImage);
     }
 
-    await api.put(`/admin/foods/${editingFoodId}`, formData);
-    closeFoodModal();
-    fetchFoods();
+    try {
+      await api.put(`/admin/foods/${editingFoodId}`, formData);
+      closeFoodModal();
+      fetchFoods();
+      toast.success("Food updated");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Unable to update food"));
+    }
   };
+
+  if (user && !isAdmin) {
+    return (
+      <section className="adm-section">
+        <div className="adm-panel">
+          <h3 className="adm-subtitle">Admin Access Required</h3>
+          <p>You are signed in without admin role. Category and food management is restricted.</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="adm-section">
