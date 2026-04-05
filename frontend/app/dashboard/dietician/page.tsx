@@ -15,6 +15,7 @@ import {
   FiClock,
   FiDollarSign,
   FiFileText,
+  FiHome,
   FiMessageCircle,
   FiPhone,
   FiSearch,
@@ -515,6 +516,14 @@ export default function DieticianDashboard() {
           </form>
 
           <div className="dd-topbar-right">
+            <button
+              className="dd-topbar-notify dd-topbar-home"
+              onClick={() => router.push("/")}
+              aria-label="Back to home"
+              title="Back to home"
+            >
+              <FiHome />
+            </button>
             <button
               className="dd-topbar-notify"
               onClick={() => setActive("notify")}

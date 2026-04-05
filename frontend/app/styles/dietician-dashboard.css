@@ -87,6 +87,17 @@
   justify-content: center;
   cursor: pointer;
 }
+
+.dd-topbar-home {
+  background: linear-gradient(135deg, rgba(139, 12, 46, 0.45), rgba(255, 77, 109, 0.28));
+  border-color: rgba(255, 120, 148, 0.4);
+  color: #ffd7e1;
+}
+
+.dd-topbar-home:hover {
+  border-color: rgba(255, 120, 148, 0.72);
+  color: #ffffff;
+}
 .dd-topbar-badge {
   position: absolute;
   top: -6px;

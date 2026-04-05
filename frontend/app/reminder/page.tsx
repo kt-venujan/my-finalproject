@@ -402,9 +402,6 @@ export default function ReminderPage() {
           </article>
         </section>
 
-        <div className="floating-ai-btn" title="AI Assistant">
-          ✦
-        </div>
       </section>
 
       {showAlert && (
