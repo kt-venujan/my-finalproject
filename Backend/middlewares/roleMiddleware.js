@@ -7,6 +7,7 @@ const allowRoles = (...roles) => {
     const normalizeRole = (role) => {
       const value = String(role || "").trim().toLowerCase();
       if (value === "customer") return "user";
+      if (value === "dietitian") return "dietician";
       return value;
     };
 

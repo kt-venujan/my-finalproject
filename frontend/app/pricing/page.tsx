@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   FiCheck,
@@ -429,6 +430,21 @@ export default function PricingPage() {
           >
             Talk To Our Team
           </button>
+
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              href="/dietician"
+              className="inline-flex items-center justify-center rounded-xl border border-[#ffd4e0]/35 bg-[#2a0614]/75 px-4 py-2.5 text-sm font-semibold text-[#ffe8ef] transition hover:border-[#ffb8cb]/60 hover:bg-[#3a091b]"
+            >
+              Book Dietician Now
+            </Link>
+            <Link
+              href="/ai-assistant"
+              className="inline-flex items-center justify-center rounded-xl border border-[#ffd4e0]/25 bg-transparent px-4 py-2.5 text-sm font-semibold text-[#ffd7e3] transition hover:border-[#ffd4e0]/50 hover:text-white"
+            >
+              Try AI Assistant First
+            </Link>
+          </div>
         </div>
       </section>
     </main>

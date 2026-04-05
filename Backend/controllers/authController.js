@@ -28,6 +28,13 @@ const hashOtp = (otp) => {
     .digest("hex");
 };
 
+const normalizeRole = (role) => {
+  const value = String(role || "").trim().toLowerCase();
+  if (value === "customer") return "user";
+  if (value === "dietitian") return "dietician";
+  return value;
+};
+
 // ================= REGISTER =================
 export const register = async (req, res) => {
   try {
@@ -43,7 +50,8 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "Passwords do not match" });
     }
 
-    const safeRole = ALLOWED_ROLES.includes(role) ? role : "user";
+    const requestedRole = normalizeRole(role);
+    const safeRole = ALLOWED_ROLES.includes(requestedRole) ? requestedRole : "user";
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
