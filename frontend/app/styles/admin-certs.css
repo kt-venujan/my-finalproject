@@ -83,3 +83,63 @@
   padding: 8px 18px; border: 1px solid #ddd; border-radius: 8px;
   background: transparent; cursor: pointer; font-size: 13px;
 }
+
+@media (max-width: 900px) {
+  .adm-cert-page {
+    padding: 16px;
+    max-width: 100%;
+  }
+
+  .adm-cert-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .adm-cert-card {
+    align-items: flex-start;
+  }
+
+  .adm-cert-actions {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .adm-cert-page {
+    padding: 12px;
+  }
+
+  .adm-cert-header h1 {
+    font-size: 21px;
+  }
+
+  .adm-cert-card {
+    padding: 14px;
+  }
+
+  .adm-cert-info {
+    width: 100%;
+  }
+
+  .adm-cert-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .adm-cert-view-btn,
+  .adm-cert-approve-btn,
+  .adm-cert-reject-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .adm-reject-modal {
+    padding: 18px;
+  }
+
+  .adm-reject-btns {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}

@@ -203,8 +203,8 @@ export default function Navbar() {
           <Image
             src="/logo.png"
             alt="Dietara Logo"
-            width={42}
-            height={42}
+            width={50}
+            height={50}
             className="navbar-logo"
           />
           <span>Dietara</span>

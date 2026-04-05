@@ -450,6 +450,15 @@ export default function DieticianDashboard() {
           <span>Dietara</span>
         </div>
 
+        <button
+          type="button"
+          className="dd-back-home-btn"
+          onClick={() => router.push("/")}
+        >
+          <FiHome />
+          Back to Home
+        </button>
+
         <ul className="dd-nav">
           {([
             { id: "settings", icon: <FiSettings />, label: "My Profile" },

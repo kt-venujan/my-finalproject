@@ -8,6 +8,28 @@
   top: 0; left: 0; height: 100vh; z-index: 100;
 }
 .dd-logo { padding: 0 24px 24px; font-size: 22px; font-weight: 800; color: #ff4d6d; }
+.dd-back-home-btn {
+  margin: 0 24px 16px;
+  width: calc(100% - 48px);
+  border-radius: 10px;
+  border: 1px solid #2f3342;
+  background: #1a1d2a;
+  color: #dce3f5;
+  padding: 9px 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: 0.2s;
+}
+.dd-back-home-btn:hover {
+  border-color: rgba(255, 120, 148, 0.72);
+  color: #fff;
+  background: rgba(139, 12, 46, 0.22);
+}
 .dd-nav { list-style: none; padding: 0; margin: 0; flex: 1; }
 .dd-nav-item {
   display: flex; align-items: center; gap: 12px; padding: 12px 24px;

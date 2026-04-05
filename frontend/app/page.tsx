@@ -255,7 +255,7 @@ export default function HomePage() {
               </div>
 
               <div className="mx-auto flex h-80 w-80 items-center justify-center rounded-full border border-[#ff7894]/30 bg-[radial-gradient(circle_at_center,#390715_0%,#17040c_65%,#0f0208_100%)] shadow-[0_0_48px_rgba(255,84,126,0.3)] sm:h-96 sm:w-96">
-                <div className="relative h-44 w-44 sm:h-52 sm:w-52">
+                <div className="relative h-52 w-52 sm:h-60 sm:w-60">
                   <Image
                     src="/logo.png"
                     alt="Dietara Logo"
