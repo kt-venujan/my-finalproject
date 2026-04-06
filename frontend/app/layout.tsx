@@ -66,14 +66,14 @@ export default function RootLayout({
           {/* ROUTE TRANSITION LOADER */}
           <NavigationLoader />
 
-          {/* GLOBAL SCROLL ANIMATIONS */}
-          <ScrollReveal />
-
           {/* GLOBAL FLOATING AI CHATBOT */}
           <FloatingAIAssistant />
 
           {/*  PAGE CONTENT */}
           <PageTransition>{children}</PageTransition>
+
+          {/* GLOBAL SCROLL ANIMATIONS */}
+          <ScrollReveal />
 
           {/* FOOTER */}
           <Footer />
