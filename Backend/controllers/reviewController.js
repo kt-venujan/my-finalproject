@@ -1,6 +1,7 @@
 import Review from "../models/Review.js";
 import DieticianProfile from "../models/DieticianProfile.js";
 import Booking from "../models/Booking.js";
+import { getBookingWindowState } from "../utils/bookingSchedule.js";
 
 // ============================================================
 // SUBMIT REVIEW
@@ -22,6 +23,14 @@ export const submitReview = async (req, res) => {
     if (!booking.dieticianApproved) {
       return res.status(400).json({ message: "Booking not yet approved" });
     }
+
+    const windowState = getBookingWindowState(booking);
+    if (!windowState.hasEnded) {
+      return res.status(400).json({
+        message: "You can submit a review only after the consultation slot is finished",
+      });
+    }
+
     if (booking.reviewSubmitted) {
       return res.status(400).json({ message: "Review already submitted" });
     }

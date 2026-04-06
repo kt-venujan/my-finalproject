@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import api from "@/lib/axios";
 import { toast } from "react-toastify";
 import { FiAward, FiCheckCircle, FiClock, FiFileText, FiXCircle } from "react-icons/fi";
+
+const LOAD_PROFILES_ERROR_TOAST_ID = "admin-dieticians-load-error";
 
 type Profile = {
   _id: string;
@@ -20,23 +22,35 @@ type Profile = {
 export default function AdminDieticiansPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("pending");
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [processing, setProcessing] = useState<string | null>(null);
 
-  const fetchProfiles = async () => {
+  const fetchProfiles = useCallback(async () => {
     try {
+      setLoadError("");
       const res = await api.get("/dieticians/admin/all");
       setProfiles(res.data);
-    } catch (err) {
-      toast.error("Failed to load dietician profiles");
+      if (toast.isActive(LOAD_PROFILES_ERROR_TOAST_ID)) {
+        toast.dismiss(LOAD_PROFILES_ERROR_TOAST_ID);
+      }
+    } catch (err: any) {
+      const message = err?.response?.data?.message || "Failed to load dietician profiles";
+      setLoadError(message);
+
+      if (!toast.isActive(LOAD_PROFILES_ERROR_TOAST_ID)) {
+        toast.error(message, { toastId: LOAD_PROFILES_ERROR_TOAST_ID });
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchProfiles(); }, []);
+  useEffect(() => {
+    fetchProfiles();
+  }, [fetchProfiles]);
 
   const handleApprove = async (profileId: string) => {
     setProcessing(profileId);
@@ -135,6 +149,8 @@ export default function AdminDieticiansPage() {
 
       {loading ? (
         <div className="adm-cert-loading">Loading profiles...</div>
+      ) : loadError ? (
+        <div className="adm-cert-empty">{loadError}</div>
       ) : filtered.length === 0 ? (
         <div className="adm-cert-empty">No profiles in this category</div>
       ) : (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { LoginInput, RegisterInput } from "@/types/auth";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -17,6 +17,8 @@ export default function AuthCard() {
   const initialRole: RegisterInput["role"] =
     initialRoleParam === "dietician" || initialRoleParam === "dietitian"
       ? "dietician"
+      : initialRoleParam === "admin"
+        ? "admin"
       : initialRoleParam === "kitchen"
         ? "kitchen"
         : "user";
@@ -56,15 +58,10 @@ export default function AuthCard() {
   });
 
   const { login, register, forgotPassword, resetPassword } = useAuth();
-  const router = useRouter();
 
   const getApiErrorMessage = (error: unknown, fallback: string) => {
     const axiosError = error as AxiosError<{ message?: string }>;
     return axiosError?.response?.data?.message || fallback;
-  };
-
-  const goDashboard = () => {
-    router.replace("/dashboard");
   };
 
   const clearMessages = () => {
@@ -144,7 +141,6 @@ export default function AuthCard() {
 
       setSuccessMessage("Login successful ✅");
       toast.success("Login successful ✅");
-      goDashboard();
     } catch (error: unknown) {
       const backendMessage = getApiErrorMessage(error, "").toLowerCase();
       const axiosError = error as AxiosError<{ message?: string }>;
@@ -199,7 +195,6 @@ export default function AuthCard() {
 
       setSuccessMessage("Registration successful ✅");
       toast.success("Registration successful ✅");
-      goDashboard();
     } catch (error: unknown) {
       const message = getApiErrorMessage(error, "Registration failed");
       setErrorMessage(message);
@@ -475,6 +470,7 @@ export default function AuthCard() {
                 <option value="user">Register as User</option>
                 <option value="dietician">Register as Dietician</option>
                 <option value="kitchen">Register as Kitchen Staff</option>
+                <option value="admin">Register as Admin</option>
               </select>
 
               <div className="password-input-wrap">

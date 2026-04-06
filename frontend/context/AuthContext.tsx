@@ -43,6 +43,11 @@ const normalizeRole = (role?: string): User["role"] => {
   return "user";
 };
 
+const getPostAuthRedirectPath = (role: User["role"]) => {
+  if (role === "admin") return "/dashboard/admin";
+  return "/";
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -110,18 +115,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     closeLogin();
 
-    // 🔥 IMPORTANT: use window.location (force redirect)
     const role = normalizeRole(loggedInUser.role);
 
-    if (role === "admin") {
-      window.location.href = "/dashboard/admin";
-    } else if (role === "dietician") {
-      window.location.href = "/dashboard/dietician";
-    } else if (role === "kitchen") {
-      window.location.href = "/dashboard/kitchen";
-    } else {
-      window.location.href = "/dashboard/user";
-    }
+    window.location.href = getPostAuthRedirectPath(role);
 
     return loggedInUser;
   };
@@ -139,15 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const role = normalizeRole(registeredUser.role);
 
-    if (role === "admin") {
-      window.location.href = "/dashboard/admin";
-    } else if (role === "dietician") {
-      window.location.href = "/dashboard/dietician";
-    } else if (role === "kitchen") {
-      window.location.href = "/dashboard/kitchen";
-    } else {
-      window.location.href = "/dashboard/user";
-    }
+    window.location.href = getPostAuthRedirectPath(role);
 
     return registeredUser;
   };

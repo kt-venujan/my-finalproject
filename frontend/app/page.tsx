@@ -9,7 +9,7 @@ import BMICalculator from "@/components/BMICalculator";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/axios";
 import { motion } from "framer-motion";
-import { FiActivity, FiShield, FiTrendingUp, FiUserCheck } from "react-icons/fi";
+import { FiActivity, FiAlertTriangle, FiShield, FiTrendingUp, FiUserCheck } from "react-icons/fi";
 
 const HERO_SLIDES = [
   {
@@ -296,7 +296,10 @@ export default function HomePage() {
         {/* ===== ALLERGY ===== */}
         <section className="allergy-section">
           <div className="allergy-box">
-            <h3>⚠️ Allergy &amp; Health Notice</h3>
+            <h3>
+              <FiAlertTriangle className="allergy-heading-icon" aria-hidden="true" />
+              Allergy &amp; Health Notice
+            </h3>
             <p>If you are aware of any food allergies, please inform us clearly before using our services.</p>
             <p>If you are unsure, we recommend submitting an allergy report or consulting a medical professional.</p>
             <p>SmartDiet Hub is not responsible for any allergic reactions caused due to missing or incorrect information.</p>

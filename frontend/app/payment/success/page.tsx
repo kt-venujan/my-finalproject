@@ -157,10 +157,10 @@ export default function PaymentSuccessPage() {
   }, [payload]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-cyan-50 px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mx-auto w-full max-w-5xl">
-        <div className="rounded-3xl border border-emerald-100 bg-white/90 p-6 shadow-[0_22px_80px_rgba(16,185,129,0.18)] backdrop-blur sm:p-8">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-emerald-100 pb-6">
+    <main className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-cyan-50 px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-6xl">
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_20px_70px_rgba(15,23,42,0.1)] sm:p-8">
+          <header className="flex flex-col gap-4 border-b border-slate-200 pb-6 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold tracking-wide text-emerald-800">
                 Payment Confirmed
@@ -173,11 +173,11 @@ export default function PaymentSuccessPage() {
               </p>
             </div>
 
-            <div className="rounded-2xl bg-slate-900 px-4 py-3 text-right text-white">
+            <div className="w-full rounded-2xl bg-slate-950 px-4 py-3 text-left text-white lg:w-[420px] lg:text-right">
               <p className="text-xs uppercase tracking-wide text-slate-300">Reference</p>
-              <p className="text-sm font-semibold">{headerNote || "Pending"}</p>
+              <p className="mt-1 break-all text-sm font-semibold leading-relaxed">{headerNote || "Pending"}</p>
             </div>
-          </div>
+          </header>
 
           {loading && (
             <div className="py-16 text-center">
@@ -208,17 +208,30 @@ export default function PaymentSuccessPage() {
           )}
 
           {!loading && !error && payload?.type === "order" && (
-            <section className="mt-8 grid gap-6 lg:grid-cols-[1.15fr,0.85fr]">
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <section className="mt-8 grid gap-6 xl:grid-cols-5">
+              <article className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm xl:col-span-3">
                 <h2 className="text-lg font-semibold text-slate-900">Order Details</h2>
-                <div className="mt-4 grid gap-3 text-sm text-slate-700 sm:grid-cols-2">
-                  <p><span className="font-semibold">Order ID:</span> {payload.order._id}</p>
-                  <p><span className="font-semibold">Order Status:</span> {payload.order.status}</p>
-                  <p><span className="font-semibold">Payment Status:</span> {payload.order.paymentStatus}</p>
-                  <p><span className="font-semibold">Placed At:</span> {formatDateTime(payload.order.createdAt)}</p>
-                </div>
 
-                <div className="mt-5 space-y-3">
+                <dl className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 sm:col-span-2">
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Order ID</dt>
+                    <dd className="mt-1 break-all text-sm font-semibold text-slate-900">{payload.order._id}</dd>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Order Status</dt>
+                    <dd className="mt-1 text-sm font-semibold capitalize text-slate-900">{payload.order.status}</dd>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Payment Status</dt>
+                    <dd className="mt-1 text-sm font-semibold capitalize text-slate-900">{payload.order.paymentStatus}</dd>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 sm:col-span-2">
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Placed At</dt>
+                    <dd className="mt-1 text-sm font-semibold text-slate-900">{formatDateTime(payload.order.createdAt)}</dd>
+                  </div>
+                </dl>
+
+                <div className="space-y-3">
                   {payload.order.items?.map((item, idx) => (
                     <div
                       key={`${item.name}-${idx}`}
@@ -240,17 +253,16 @@ export default function PaymentSuccessPage() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </article>
 
-              <div className="space-y-4">
+              <aside className="space-y-4 xl:col-span-2">
                 <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
                   <h3 className="text-sm font-semibold uppercase tracking-wide text-emerald-700">Payment Summary</h3>
                   <p className="mt-3 text-3xl font-bold text-emerald-800">
                     {formatMoney(payload.paymentSummary?.amountTotal ?? payload.order.subtotal, payload.paymentSummary?.currency)}
                   </p>
-                  <p className="mt-1 text-sm text-emerald-700">
-                    Stripe Session: {payload.paymentSummary?.sessionId || "-"}
-                  </p>
+                  <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-emerald-700">Stripe Session</p>
+                  <p className="mt-1 break-all text-sm text-emerald-700">{payload.paymentSummary?.sessionId || "-"}</p>
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-white p-5">
@@ -273,65 +285,77 @@ export default function PaymentSuccessPage() {
                     </Link>
                   </div>
                 </div>
-              </div>
+              </aside>
             </section>
           )}
 
           {!loading && !error && payload?.type === "dietician" && (
-            <section className="mt-8 grid gap-6 lg:grid-cols-[1.15fr,0.85fr]">
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <section className="mt-8 grid gap-6 xl:grid-cols-5">
+              <article className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm xl:col-span-3">
                 <h2 className="text-lg font-semibold text-slate-900">Consultation Details</h2>
-                <div className="mt-4 grid gap-3 text-sm text-slate-700 sm:grid-cols-2">
-                  <p><span className="font-semibold">Booking ID:</span> {payload.booking._id}</p>
-                  <p><span className="font-semibold">Consultation Mode:</span> {payload.booking.mode || "-"}</p>
-                  <p><span className="font-semibold">Date:</span> {payload.booking.date || "-"}</p>
-                  <p><span className="font-semibold">Time:</span> {payload.booking.time || "-"}</p>
-                  <p><span className="font-semibold">Booking Status:</span> {payload.booking.status || "-"}</p>
-                  <p><span className="font-semibold">Payment Status:</span> {payload.booking.paymentStatus || "-"}</p>
-                </div>
 
-                <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-                  <p className="font-semibold text-slate-900">Dietician</p>
-                  <p className="mt-1">{payload.booking.dietician?.username || "Not available"}</p>
-                  <p className="text-slate-600">{payload.booking.dietician?.email || "-"}</p>
-                </div>
-              </div>
+                <dl className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 sm:col-span-2">
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Booking ID</dt>
+                    <dd className="mt-1 break-all text-sm font-semibold text-slate-900">{payload.booking._id}</dd>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Consultation Mode</dt>
+                    <dd className="mt-1 text-sm font-semibold capitalize text-slate-900">{payload.booking.mode || "-"}</dd>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Date</dt>
+                    <dd className="mt-1 text-sm font-semibold text-slate-900">{payload.booking.date || "-"}</dd>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Time</dt>
+                    <dd className="mt-1 text-sm font-semibold text-slate-900">{payload.booking.time || "-"}</dd>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Booking Status</dt>
+                    <dd className="mt-1 text-sm font-semibold capitalize text-slate-900">{payload.booking.status || "-"}</dd>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 sm:col-span-2">
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Payment Status</dt>
+                    <dd className="mt-1 text-sm font-semibold capitalize text-slate-900">{payload.booking.paymentStatus || "-"}</dd>
+                  </div>
+                </dl>
 
-              <div className="space-y-4">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Dietician</p>
+                  <p className="mt-1 font-semibold text-slate-900">{payload.booking.dietician?.username || "Not available"}</p>
+                  <p className="break-all text-slate-600">{payload.booking.dietician?.email || "-"}</p>
+                </div>
+              </article>
+
+              <aside className="space-y-4 xl:col-span-2">
                 <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-5">
                   <h3 className="text-sm font-semibold uppercase tracking-wide text-cyan-700">Payment Summary</h3>
                   <p className="mt-3 text-3xl font-bold text-cyan-800">
                     {formatMoney(payload.paymentSummary?.amountTotal, payload.paymentSummary?.currency)}
                   </p>
-                  <p className="mt-1 text-sm text-cyan-700">
-                    Stripe Session: {payload.paymentSummary?.sessionId || "-"}
-                  </p>
+                  <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-cyan-700">Stripe Session</p>
+                  <p className="mt-1 break-all text-sm text-cyan-700">{payload.paymentSummary?.sessionId || "-"}</p>
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-white p-5">
                   <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-600">Next Steps</h3>
                   <p className="mt-2 text-sm text-slate-700">
-                    Track booking updates in your dashboard, or open your consultation call room.
+                    Your dietician has been alerted by email and dashboard notification. Communication will unlock after dietician approval for your selected mode ({payload.booking.mode || "consultation"}).
                   </p>
                   <div className="mt-4 flex flex-wrap gap-3">
                     <Link
-                      href={`/call/${payload.booking._id}`}
-                      className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
-                    >
-                      Open Call Room
-                    </Link>
-                    <Link
                       href="/dashboard/user"
-                      className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
+                      className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
                     >
                       User Dashboard
                     </Link>
                   </div>
                 </div>
-              </div>
+              </aside>
             </section>
           )}
-        </div>
+        </section>
       </div>
     </main>
   );

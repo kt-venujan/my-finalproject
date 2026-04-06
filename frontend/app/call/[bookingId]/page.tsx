@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { FiArrowLeft, FiMic, FiMicOff, FiPhoneOff, FiVideo, FiVideoOff } from "react-icons/fi";
 import api from "@/lib/axios";
 import { useAuth } from "@/context/AuthContext";
+import { BookingSessionWindow, getBookingTimeMeta } from "@/lib/bookingTiming";
 
 type BookingSession = {
   bookingId: string;
@@ -16,6 +17,7 @@ type BookingSession = {
   mode?: string;
   user?: { _id?: string; username?: string; email?: string };
   dietician?: { _id?: string; username?: string; email?: string };
+  sessionWindow?: Partial<BookingSessionWindow>;
 };
 
 type JitsiApi = {
@@ -91,6 +93,8 @@ export default function CallPage() {
   const jitsiNodeRef = useRef<HTMLDivElement | null>(null);
   const apiRef = useRef<JitsiApi | null>(null);
   const observerRef = useRef<MutationObserver | null>(null);
+  const endTimeoutRef = useRef<number | null>(null);
+  const autoEndedRef = useRef(false);
 
   const [session, setSession] = useState<BookingSession | null>(null);
   const [loading, setLoading] = useState(true);
@@ -124,9 +128,28 @@ export default function CallPage() {
       }
 
       try {
-        const res = await api.get<BookingSession>(`/bookings/${bookingId}/session`);
+        const res = await api.get<BookingSession>(`/bookings/${bookingId}/session?type=call`);
         const nextSession = res.data;
         setSession(nextSession);
+
+        const timeState = getBookingTimeMeta(
+          nextSession.date,
+          nextSession.time,
+          new Date(),
+          nextSession.sessionWindow
+        );
+
+        if (timeState.hasEnded) {
+          throw new Error("Consultation slot has already finished.");
+        }
+
+        if (!timeState.canJoin) {
+          throw new Error("Consultation opens 10 minutes before start time.");
+        }
+
+        if (String(nextSession.mode || "").trim().toLowerCase() === "chat") {
+          throw new Error("This booking is chat-only. Open the chat room instead.");
+        }
 
         if (!nextSession.jitsiJwt) {
           throw new Error("Secure call token was not issued. Enable Jitsi JWT on the backend.");
@@ -186,10 +209,28 @@ export default function CallPage() {
         }
 
         jitsi.addListener("readyToClose", () => {
-          router.push(dashboardHref);
+          if (!autoEndedRef.current) {
+            router.push(dashboardHref);
+          }
         });
 
         apiRef.current = jitsi;
+
+        if (timeState.endAt) {
+          const endAtMs = new Date(timeState.endAt).getTime();
+          if (!Number.isNaN(endAtMs) && endAtMs > Date.now()) {
+            endTimeoutRef.current = window.setTimeout(() => {
+              autoEndedRef.current = true;
+              if (apiRef.current) {
+                apiRef.current.executeCommand("hangup");
+                apiRef.current.dispose();
+                apiRef.current = null;
+              }
+              setError("Consultation slot ended. This call was closed automatically.");
+              setSession(null);
+            }, endAtMs - Date.now());
+          }
+        }
       } catch (err: unknown) {
         const message =
           (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
@@ -207,6 +248,11 @@ export default function CallPage() {
       if (observerRef.current) {
         observerRef.current.disconnect();
         observerRef.current = null;
+      }
+
+      if (endTimeoutRef.current) {
+        window.clearTimeout(endTimeoutRef.current);
+        endTimeoutRef.current = null;
       }
 
       if (apiRef.current) {
@@ -258,7 +304,7 @@ export default function CallPage() {
         <section className="rounded-3xl border border-[#ff9dbc]/20 bg-gradient-to-b from-[#1a0913] to-[#0c050a] p-4 sm:p-6 shadow-[0_20px_70px_rgba(0,0,0,0.45)]">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Dietician Video Consultation</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Dietician Consultation Call</h1>
               <p className="mt-1 max-w-full break-all text-xs sm:text-sm text-white/70">
                 {session ? `Room: ${session.roomName}` : "Preparing secure Jitsi room..."}
               </p>

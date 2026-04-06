@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "@/context/AuthContext";
 import { resolveBackendAssetUrl } from "@/lib/assetUrl";
 import {
+  FiAlertCircle,
   FiAward,
   FiBarChart2,
   FiBell,
@@ -23,8 +24,11 @@ import {
   FiLock,
   FiTrash2,
   FiUpload,
+  FiVideo,
+  FiX,
   FiXCircle,
 } from "react-icons/fi";
+import { BookingSessionWindow, getBookingTimeMeta, getBookingTimingMessage } from "@/lib/bookingTiming";
 
 type Booking = {
   _id: string;
@@ -36,6 +40,7 @@ type Booking = {
   dieticianAlertSeen: boolean;
   dieticianApproved: boolean;
   user: { _id: string; username: string; email: string };
+  sessionWindow?: Partial<BookingSessionWindow>;
 };
 
 type Profile = {
@@ -57,7 +62,6 @@ type NavTab = "dashboard" | "bookings" | "verify" | "notify" | "settings";
 type SettingsPanel = "account" | "security" | "delete";
 
 export default function DieticianDashboard() {
-  const WHATSAPP_NUMBER = "94779895456";
   const { user, logout, setAuthUser } = useAuth();
   const router = useRouter();
 
@@ -98,16 +102,42 @@ export default function DieticianDashboard() {
   const [deleteOtpSending, setDeleteOtpSending] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [deleteOtp, setDeleteOtp] = useState("");
+  const [clockTick, setClockTick] = useState(Date.now());
+  const [showHelpPopup, setShowHelpPopup] = useState(false);
+  const [showRetryVerificationForm, setShowRetryVerificationForm] = useState(false);
+  const shownReminderToastsRef = useRef<Set<string>>(new Set());
+
+  const supportEmail = "support@dietara.com";
+  const supportPhone = "+94 77 123 4567";
+  const whatsappSupportLink = "https://wa.me/94771234567";
 
   const resolveAvatar = (avatar?: string) => {
     return resolveBackendAssetUrl(avatar);
   };
 
-  const openWhatsAppChat = (booking: Booking) => {
-    const message = `Hello, I would like to start chat regarding booking ${booking._id} with ${booking.user?.username || "my client"} on ${booking.date} at ${booking.time}.`;
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+  const normalizeConsultationMode = (mode?: string) => String(mode || "").trim().toLowerCase();
+  const isChatMode = (mode?: string) => normalizeConsultationMode(mode) === "chat";
+  const isCallMode = (mode?: string) => {
+    const normalized = normalizeConsultationMode(mode);
+    return normalized === "voice" || normalized === "video";
   };
+
+  const getModeMeta = (mode?: string) => {
+    const normalized = normalizeConsultationMode(mode);
+    if (normalized === "chat") {
+      return { label: "Chat", icon: <FiMessageCircle /> };
+    }
+    if (normalized === "voice") {
+      return { label: "Voice", icon: <FiPhone /> };
+    }
+    if (normalized === "video") {
+      return { label: "Video", icon: <FiVideo /> };
+    }
+    return { label: String(mode || "Consultation"), icon: <FiMessageCircle /> };
+  };
+
+  const getBookingTimeState = (booking: Booking) =>
+    getBookingTimeMeta(booking.date, booking.time, new Date(clockTick), booking.sessionWindow);
 
   // ===================== FETCH BOOKINGS =====================
   const fetchBookings = async () => {
@@ -177,9 +207,49 @@ export default function DieticianDashboard() {
     fetchBookings();
     fetchProfile();
 
-    const interval = setInterval(fetchBookings, 6000);
-    return () => clearInterval(interval);
+    const bookingsInterval = setInterval(fetchBookings, 6000);
+    const clockInterval = setInterval(() => setClockTick(Date.now()), 30_000);
+
+    return () => {
+      clearInterval(bookingsInterval);
+      clearInterval(clockInterval);
+    };
   }, [user, router]);
+
+  useEffect(() => {
+    bookings.forEach((booking) => {
+      if (booking.paymentStatus !== "paid" || !booking.dieticianApproved) return;
+
+      const timeState = getBookingTimeMeta(
+        booking.date,
+        booking.time,
+        new Date(clockTick),
+        booking.sessionWindow
+      );
+
+      if (timeState.hasEnded) return;
+
+      if (timeState.isThirtyMinuteReminder) {
+        const key = `${booking._id}-30`;
+        if (!shownReminderToastsRef.current.has(key)) {
+          shownReminderToastsRef.current.add(key);
+          toast.info(
+            `Reminder: ${booking.user?.username || "Client"} booking starts in about 30 minutes.`
+          );
+        }
+      }
+
+      if (timeState.isTenMinuteReminder) {
+        const key = `${booking._id}-10`;
+        if (!shownReminderToastsRef.current.has(key)) {
+          shownReminderToastsRef.current.add(key);
+          toast.info(
+            `Session opening soon: ${booking.user?.username || "Client"} booking is within 10 minutes.`
+          );
+        }
+      }
+    });
+  }, [bookings, clockTick]);
 
   useEffect(() => {
     if (!user) return;
@@ -194,7 +264,7 @@ export default function DieticianDashboard() {
     setApprovingId(bookingId);
     try {
       await api.put(`/bookings/${bookingId}/approve`, {});
-      toast.success("Booking approved! Call/Chat unlocked.");
+      toast.success("Booking approved! Selected communication mode unlocked.");
       fetchBookings();
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Approval failed");
@@ -206,6 +276,18 @@ export default function DieticianDashboard() {
   // ===================== CERTIFICATE UPLOAD =====================
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const certificateStatus = profile?.certificateStatus || "not_uploaded";
+    const mustUploadCertificate =
+      certificateStatus === "not_uploaded" ||
+      certificateStatus === "rejected" ||
+      !profile?.certificateUrl;
+
+    if (mustUploadCertificate && !certFile) {
+      toast.error("Please upload a certificate file before submitting.");
+      return;
+    }
+
     setUploading(true);
     try {
       const formData = new FormData();
@@ -222,6 +304,7 @@ export default function DieticianDashboard() {
       toast.success(certFile ? "Profile updated! Certificate submitted for review." : "Profile updated!");
       fetchProfile();
       setCertFile(null);
+      setShowRetryVerificationForm(false);
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Update failed");
     } finally {
@@ -254,16 +337,60 @@ export default function DieticianDashboard() {
       )
     : bookings;
 
-  const filteredNotifications = normalizedSearch
-    ? bookings.filter(
-        (b) =>
-          !b.dieticianAlertSeen &&
-          [b.user?.username, b.date, b.time, b.mode]
-            .join(" ")
-            .toLowerCase()
-            .includes(normalizedSearch)
+  const paymentNotifications = bookings.filter((b) => !b.dieticianAlertSeen);
+
+  const timingNotifications = bookings
+    .map((booking) => {
+      if (booking.paymentStatus !== "paid" || !booking.dieticianApproved) return null;
+
+      const timeState = getBookingTimeState(booking);
+      if (timeState.hasEnded) return null;
+
+      if (timeState.isThirtyMinuteReminder) {
+        return {
+          id: `${booking._id}-30`,
+          booking,
+          message: "30-minute reminder sent. Session starts soon.",
+        };
+      }
+
+      if (timeState.state === "countdown") {
+        return {
+          id: `${booking._id}-countdown`,
+          booking,
+          message: `Countdown active: ${timeState.minutesUntilStart} minutes until unlock.`,
+        };
+      }
+
+      if (timeState.state === "joinable") {
+        return {
+          id: `${booking._id}-joinable`,
+          booking,
+          message: `Session is live now. Ends in about ${timeState.minutesUntilEnd} minutes.`,
+        };
+      }
+
+      return null;
+    })
+    .filter(Boolean) as Array<{ id: string; booking: Booking; message: string }>;
+
+  const filteredPaymentNotifications = normalizedSearch
+    ? paymentNotifications.filter((b) =>
+        [b.user?.username, b.date, b.time, b.mode]
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedSearch)
       )
-    : bookings.filter((b) => !b.dieticianAlertSeen);
+    : paymentNotifications;
+
+  const filteredTimingNotifications = normalizedSearch
+    ? timingNotifications.filter((entry) =>
+        [entry.booking.user?.username, entry.booking.date, entry.booking.time, entry.booking.mode, entry.message]
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedSearch)
+      )
+    : timingNotifications;
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -274,7 +401,7 @@ export default function DieticianDashboard() {
       return;
     }
 
-    if (filteredNotifications.length > 0) {
+    if (filteredPaymentNotifications.length > 0 || filteredTimingNotifications.length > 0) {
       setActive("notify");
       return;
     }
@@ -311,6 +438,17 @@ export default function DieticianDashboard() {
   };
 
   const ci = certStatusInfo();
+  const certificateStatus = profile?.certificateStatus || "not_uploaded";
+  const isVerificationRejected = certificateStatus === "rejected";
+  const isVerificationLocked = certificateStatus === "pending" || certificateStatus === "approved";
+  const showVerificationForm =
+    !profile || certificateStatus === "not_uploaded" || (isVerificationRejected && showRetryVerificationForm);
+
+  useEffect(() => {
+    if (active !== "verify") {
+      setShowRetryVerificationForm(false);
+    }
+  }, [active]);
 
   const handleAvatarChange = (file: File | null) => {
     setAccountAvatarFile(file);
@@ -614,7 +752,11 @@ export default function DieticianDashboard() {
               </div>
               {profile?.certificateStatus !== "approved" && (
                 <button className="dd-cert-action-btn" onClick={() => setActive("verify")}>
-                  {profile?.certificateStatus === "not_uploaded" || !profile ? "Upload Certificate" : "View Status"}
+                  {!profile || profile?.certificateStatus === "not_uploaded"
+                    ? "Upload Certificate"
+                    : profile?.certificateStatus === "rejected"
+                      ? "Re-upload Certificate"
+                      : "View Status"}
                 </button>
               )}
             </div>
@@ -655,7 +797,12 @@ export default function DieticianDashboard() {
               </div>
             ) : (
               <div className="dd-bookings-list">
-                {filteredBookings.map((b) => (
+                {filteredBookings.map((b) => {
+                  const timeState = getBookingTimeState(b);
+                  const timingMessage = getBookingTimingMessage(timeState, "dietician");
+                  const modeMeta = getModeMeta(b.mode);
+
+                  return (
                   <div key={b._id} className={`dd-booking-card ${!b.dieticianAlertSeen ? "new-alert" : ""}`}>
                     <div className="dd-booking-top">
                       <div className="dd-booking-avatar">{b.user?.username?.[0]?.toUpperCase()}</div>
@@ -667,8 +814,8 @@ export default function DieticianDashboard() {
                           {b.date}
                           <span className="dd-inline-icon"><FiClock /></span>
                           {b.time}
-                          <span className="dd-inline-icon"><FiMessageCircle /></span>
-                          {b.mode}
+                          <span className="dd-inline-icon">{modeMeta.icon}</span>
+                          {modeMeta.label}
                         </p>
                       </div>
                       <div className="dd-booking-badges">
@@ -704,25 +851,51 @@ export default function DieticianDashboard() {
                       {/* CALL / CHAT — only if approved */}
                       {b.dieticianApproved && (
                         <>
-                          <button
-                            className="dd-action-btn call"
-                            onClick={() => router.push(`/call/${b._id}`)}
-                          >
-                            <FiPhone className="dd-action-icon" />
-                            Call
-                          </button>
-                          <button
-                            className="dd-action-btn chat"
-                            onClick={() => openWhatsAppChat(b)}
-                          >
-                            <FiMessageCircle className="dd-action-icon" />
-                            Start Chat
-                          </button>
+                          {timeState.canJoin && isCallMode(b.mode) && (
+                            <button
+                              className="dd-action-btn call"
+                              onClick={() => router.push(`/call/${b._id}`)}
+                            >
+                              <FiPhone className="dd-action-icon" />
+                              Call
+                            </button>
+                          )}
+                          {timeState.canJoin && isChatMode(b.mode) && (
+                            <button
+                              className="dd-action-btn chat"
+                              onClick={() => router.push(`/chat/${b._id}`)}
+                            >
+                              <FiMessageCircle className="dd-action-icon" />
+                              Start Chat
+                            </button>
+                          )}
+
+                          {!timeState.canJoin && (
+                            <p className={`dd-timing-note ${timeState.hasEnded ? "ended" : ""}`}>
+                              <FiAlertCircle className="dd-action-icon" />
+                              {timingMessage}
+                            </p>
+                          )}
+
+                          {timeState.isThirtyMinuteReminder && (
+                            <p className="dd-time-banner reminder">
+                              <FiBell className="dd-action-icon" />
+                              30-minute reminder: consultation starts soon.
+                            </p>
+                          )}
+
+                          {timeState.state === "countdown" && (
+                            <p className="dd-time-banner countdown">
+                              <FiClock className="dd-action-icon" />
+                              Countdown: {timeState.minutesUntilStart} minutes until unlock.
+                            </p>
+                          )}
                         </>
                       )}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -757,83 +930,113 @@ export default function DieticianDashboard() {
               </div>
             </div>
 
-            {/* Profile + Cert form */}
-            <form className="dd-profile-form" onSubmit={handleProfileSubmit}>
-              <h2>Profile Information</h2>
-
-              <div className="dd-form-grid">
-                <div className="dd-form-field">
-                  <label>Specialization *</label>
-                  <input
-                    required
-                    value={specialization}
-                    onChange={(e) => setSpecialization(e.target.value)}
-                    placeholder="e.g. Weight Loss, Diabetes"
-                  />
-                </div>
-
-                <div className="dd-form-field">
-                  <label>Experience (years)</label>
-                  <input
-                    type="number"
-                    value={experience}
-                    onChange={(e) => setExperience(e.target.value)}
-                    placeholder="5"
-                    min="0"
-                  />
-                </div>
-
-                <div className="dd-form-field">
-                  <label>Consultation Price (Rs.)</label>
-                  <input
-                    type="number"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    placeholder="1500"
-                    min="0"
-                  />
-                </div>
+            {isVerificationLocked && (
+              <div className="rounded-2xl border border-[#322430] bg-[#1a1a24] p-5 text-sm text-[#cdbfc7]">
+                <p className="font-semibold text-[#ffe2ea]">
+                  {certificateStatus === "approved"
+                    ? "Your certificate is approved. Profile and verification edits are now locked in this section."
+                    : "Your certificate is under review. Profile and verification edits are hidden until admin completes verification."}
+                </p>
+                <p className="mt-2 text-[#b9a6af]">
+                  {certificateStatus === "approved"
+                    ? "If you need to change certificate details later, contact support."
+                    : "You can track status here and re-upload only if verification fails."}
+                </p>
               </div>
+            )}
 
-              <div className="dd-form-field full">
-                <label>Bio</label>
-                <textarea
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Tell patients about your expertise..."
-                  rows={3}
-                />
+            {isVerificationRejected && !showRetryVerificationForm && (
+              <div className="rounded-2xl border border-[#6c2338] bg-[#2a121b] p-5 text-sm text-[#f8d6df]">
+                <p className="font-semibold">Verification failed. You can now update your profile details and re-upload a new certificate.</p>
+                <button
+                  type="button"
+                  className="mt-4 inline-flex items-center gap-2 rounded-xl border border-[#ff9eb5]/40 bg-[#8b0c2e] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#a1133a]"
+                  onClick={() => setShowRetryVerificationForm(true)}
+                >
+                  <FiUpload />
+                  Re-upload &amp; Edit Profile
+                </button>
               </div>
+            )}
 
-              <div className="dd-form-field full">
-                <label>Upload Certificate (PDF / Image)</label>
-                <div className="dd-upload-zone" onClick={() => document.getElementById("cert-input")?.click()}>
-                  <input
-                    id="cert-input"
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    style={{ display: "none" }}
-                    onChange={(e) => setCertFile(e.target.files?.[0] || null)}
-                  />
-                  {certFile ? (
-                    <p className="dd-upload-file">
-                      <FiFileText className="dd-upload-file-icon" />
-                      {certFile.name}
-                    </p>
-                  ) : (
-                    <>
-                      <p className="dd-upload-icon"><FiUpload /></p>
-                      <p>Click to upload certificate</p>
-                      <p className="dd-upload-hint">PDF, JPG, PNG — max 5MB</p>
-                    </>
-                  )}
+            {showVerificationForm && (
+              <form className="dd-profile-form" onSubmit={handleProfileSubmit}>
+                <h2>{isVerificationRejected ? "Update Profile & Re-upload" : "Profile Information"}</h2>
+
+                <div className="dd-form-grid">
+                  <div className="dd-form-field">
+                    <label>Specialization *</label>
+                    <input
+                      required
+                      value={specialization}
+                      onChange={(e) => setSpecialization(e.target.value)}
+                      placeholder="e.g. Weight Loss, Diabetes"
+                    />
+                  </div>
+
+                  <div className="dd-form-field">
+                    <label>Experience (years)</label>
+                    <input
+                      type="number"
+                      value={experience}
+                      onChange={(e) => setExperience(e.target.value)}
+                      placeholder="5"
+                      min="0"
+                    />
+                  </div>
+
+                  <div className="dd-form-field">
+                    <label>Consultation Price (Rs.)</label>
+                    <input
+                      type="number"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      placeholder="1500"
+                      min="0"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <button type="submit" className="dd-submit-btn" disabled={uploading}>
-                {uploading ? "Saving..." : "Save Profile & Submit"}
-              </button>
-            </form>
+                <div className="dd-form-field full">
+                  <label>Bio</label>
+                  <textarea
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Tell patients about your expertise..."
+                    rows={3}
+                  />
+                </div>
+
+                <div className="dd-form-field full">
+                  <label>{isVerificationRejected ? "Re-upload Certificate (Required)" : "Upload Certificate (PDF / Image)"}</label>
+                  <div className="dd-upload-zone" onClick={() => document.getElementById("cert-input")?.click()}>
+                    <input
+                      id="cert-input"
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      style={{ display: "none" }}
+                      onChange={(e) => setCertFile(e.target.files?.[0] || null)}
+                    />
+                    {certFile ? (
+                      <p className="dd-upload-file">
+                        <FiFileText className="dd-upload-file-icon" />
+                        {certFile.name}
+                      </p>
+                    ) : (
+                      <>
+                        <p className="dd-upload-icon"><FiUpload /></p>
+                        <p>{isVerificationRejected ? "Click to re-upload certificate" : "Click to upload certificate"}</p>
+                        <p className="dd-upload-hint">PDF, JPG, PNG — max 5MB</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <button type="submit" className="dd-submit-btn" disabled={uploading}>
+                  {uploading ? "Saving..." : isVerificationRejected ? "Update & Re-submit for Review" : "Save Profile & Submit"}
+                </button>
+              </form>
+            )}
           </div>
         )}
 
@@ -847,25 +1050,41 @@ export default function DieticianDashboard() {
               </h1>
             </div>
 
-            {filteredNotifications.length === 0 ? (
+            {filteredPaymentNotifications.length === 0 && filteredTimingNotifications.length === 0 ? (
               <div className="dd-empty"><p>No new notifications</p></div>
             ) : (
               <div className="dd-notify-list">
-                {filteredNotifications.map((b) => (
-                    <div key={b._id} className="dd-notify-item">
-                      <span className="dd-notify-icon"><FiDollarSign /></span>
-                      <div>
-                        <p><strong>{b.user?.username}</strong> has paid for a consultation</p>
-                        <p className="dd-notify-time">{b.date} at {b.time}</p>
-                      </div>
-                      <button
-                        className="dd-approve-btn small"
-                        onClick={() => { setActive("bookings"); }}
-                      >
-                        View
-                      </button>
+                {filteredPaymentNotifications.map((b) => (
+                  <div key={b._id} className="dd-notify-item">
+                    <span className="dd-notify-icon"><FiDollarSign /></span>
+                    <div>
+                      <p><strong>{b.user?.username}</strong> has paid for a {b.mode || "consultation"}</p>
+                      <p className="dd-notify-time">{b.date} at {b.time}</p>
                     </div>
-                  ))}
+                    <button
+                      className="dd-approve-btn small"
+                      onClick={() => { setActive("bookings"); }}
+                    >
+                      View
+                    </button>
+                  </div>
+                ))}
+
+                {filteredTimingNotifications.map((entry) => (
+                  <div key={entry.id} className="dd-notify-item timing">
+                    <span className="dd-notify-icon"><FiClock /></span>
+                    <div>
+                      <p><strong>{entry.booking.user?.username}</strong> · {entry.message}</p>
+                      <p className="dd-notify-time">{entry.booking.date} at {entry.booking.time}</p>
+                    </div>
+                    <button
+                      className="dd-approve-btn small"
+                      onClick={() => { setActive("bookings"); }}
+                    >
+                      Open
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -1071,7 +1290,59 @@ export default function DieticianDashboard() {
           </div>
         )}
 
+        <div className="dd-help-strip">
+          <button
+            type="button"
+            className="dd-help-trigger"
+            onClick={() => setShowHelpPopup(true)}
+          >
+            Did you miss the booking or have complaints/reviews? Click to get help.
+          </button>
+        </div>
+
       </main>
+
+      {showHelpPopup && (
+        <div
+          className="dd-help-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowHelpPopup(false);
+            }
+          }}
+        >
+          <div className="dd-help-modal">
+            <button
+              type="button"
+              className="dd-help-close"
+              onClick={() => setShowHelpPopup(false)}
+              aria-label="Close help"
+            >
+              <FiX />
+            </button>
+            <h3>Support Help</h3>
+            <p className="dd-help-text">
+              If a consultation is missed or you need to report complaints and review issues, use the details below.
+            </p>
+            <div className="dd-help-details">
+              <p>
+                <strong>Email:</strong> {supportEmail}
+              </p>
+              <p>
+                <strong>Mobile:</strong> {supportPhone}
+              </p>
+            </div>
+            <a
+              href={whatsappSupportLink}
+              target="_blank"
+              rel="noreferrer"
+              className="dd-help-whatsapp"
+            >
+              Open WhatsApp Support
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -5,6 +5,8 @@ import User from "../models/User.js";
 import BundleOffer from "../models/BundleOffer.js";
 import Booking from "../models/Booking.js";
 import DieticianProfile from "../models/DieticianProfile.js";
+import sendEmail from "../utils/sendEmail.js";
+import { getBookingWindowState } from "../utils/bookingSchedule.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2024-04-10",
@@ -208,6 +210,40 @@ const resolveDieticianPricing = async (dieticianUserId) => {
   };
 };
 
+const sendDieticianPaidBookingAlert = async (booking) => {
+  try {
+    const dieticianEmail = booking?.dietician?.email;
+    if (!dieticianEmail) return;
+
+    const mode = String(booking?.mode || "consultation").trim().toLowerCase();
+    const readableMode = mode === "chat" ? "chat consultation" : "call consultation";
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1f2937;">
+        <h2 style="margin: 0 0 12px; color: #8b0c2e;">New Paid Booking Alert</h2>
+        <p>Hello ${booking?.dietician?.username || "Dietician"},</p>
+        <p>A customer has completed payment for a ${readableMode}.</p>
+        <ul style="padding-left: 18px;">
+          <li><strong>Client:</strong> ${booking?.user?.username || "-"} (${booking?.user?.email || "-"})</li>
+          <li><strong>Date:</strong> ${booking?.date || "-"}</li>
+          <li><strong>Time:</strong> ${booking?.time || "-"}</li>
+          <li><strong>Mode:</strong> ${booking?.mode || "-"}</li>
+          <li><strong>Booking ID:</strong> ${booking?._id || "-"}</li>
+        </ul>
+        <p>Please open your dietician dashboard and approve this appointment to unlock communication.</p>
+      </div>
+    `;
+
+    await sendEmail({
+      to: dieticianEmail,
+      subject: "New paid consultation booking",
+      html,
+    });
+  } catch (error) {
+    console.error("Dietician paid booking email failed:", error?.message || error);
+  }
+};
+
 export const createCheckoutSession = async (req, res) => {
   try {
     const { items, saveCard } = req.body;
@@ -290,6 +326,10 @@ export const createDieticianCheckoutSession = async (req, res) => {
         paymentStatus: "pending",
         dieticianAlertSeen: true,
         dieticianApproved: false,
+        reminder30MinSentToUser: false,
+        reminder30MinSentToDietician: false,
+        reminder30MinSentAt: null,
+        sessionCompletedAt: null,
       });
 
       booking = await Booking.findById(booking._id).populate("dietician", "username email");
@@ -297,6 +337,11 @@ export const createDieticianCheckoutSession = async (req, res) => {
 
     if (!booking?.dietician) {
       return res.status(400).json({ message: "Invalid dietician for booking" });
+    }
+
+    const windowState = getBookingWindowState(booking);
+    if (windowState.hasEnded) {
+      return res.status(400).json({ message: "Cannot pay for a finished consultation slot" });
     }
 
     const dieticianUserId = booking.dietician?._id || booking.dietician;
@@ -443,6 +488,11 @@ export const confirmDieticianCheckout = async (req, res) => {
       });
     }
 
+    const windowState = getBookingWindowState(booking);
+    if (windowState.hasEnded) {
+      return res.status(400).json({ message: "Cannot pay for a finished consultation slot" });
+    }
+
     if (session.payment_status !== "paid") {
       return res.status(400).json({ message: "Payment not completed yet" });
     }
@@ -450,7 +500,12 @@ export const confirmDieticianCheckout = async (req, res) => {
     booking.paymentStatus = "paid";
     booking.status = "confirmed";
     booking.dieticianAlertSeen = false;
+    booking.reminder30MinSentToUser = false;
+    booking.reminder30MinSentToDietician = false;
+    booking.reminder30MinSentAt = null;
+    booking.sessionCompletedAt = null;
     await booking.save();
+    await sendDieticianPaidBookingAlert(booking);
 
     return res.status(200).json({
       success: true,

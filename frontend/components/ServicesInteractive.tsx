@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { FiArrowUpRight, FiLock, FiUserPlus } from "react-icons/fi";
 import { toast } from "react-toastify";
+import { useAuth } from "@/context/AuthContext";
 
 type ServiceItem = {
   title: string;
@@ -16,6 +17,7 @@ type ServiceItem = {
 
 export default function ServicesInteractive() {
   const router = useRouter();
+  const { user } = useAuth();
   const [active, setActive] = useState(0);
 
   const services: ServiceItem[] = [
@@ -103,19 +105,21 @@ export default function ServicesInteractive() {
                       {service.desc}
                     </p>
 
-                    <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-[#ffe4ea]">
-                      {service.requiresAuth ? (
-                        <>
-                          <FiLock className="h-4 w-4" />
-                          Login required
-                        </>
-                      ) : (
-                        <>
-                          <FiUserPlus className="h-4 w-4" />
-                          Public access
-                        </>
-                      )}
-                    </div>
+                    {!user && (
+                      <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-[#ffe4ea]">
+                        {service.requiresAuth ? (
+                          <>
+                            <FiLock className="h-4 w-4" />
+                            Login required
+                          </>
+                        ) : (
+                          <>
+                            <FiUserPlus className="h-4 w-4" />
+                            Public access
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15 text-white transition group-hover:bg-white/25">

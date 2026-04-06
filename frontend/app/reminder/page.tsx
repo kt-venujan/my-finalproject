@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { FiActivity, FiCoffee, FiDroplet } from "react-icons/fi";
 
 type MealStatus = "done" | "upcoming" | "missed";
 
@@ -177,8 +178,8 @@ export default function ReminderPage() {
         lastWaterReminder === null ||
         nowTimestamp - lastWaterReminder >= intervalMs
       ) {
-        showBrowserNotification("Water Reminder 💧", "Time to drink some water.");
-        await triggerAlert("💧 Time to drink water!");
+        showBrowserNotification("Water Reminder", "Time to drink some water.");
+        await triggerAlert("Time to drink water.");
         setLastWaterReminder(nowTimestamp);
       }
 
@@ -189,10 +190,10 @@ export default function ReminderPage() {
           !notifiedMeals.includes(meal.name)
         ) {
           showBrowserNotification(
-            `${meal.name} Reminder 🍽️`,
+            `${meal.name} Reminder`,
             `It's time for ${meal.name}.`
           );
-          await triggerAlert(`🍽️ It's time for ${meal.name}!`);
+          await triggerAlert(`It's time for ${meal.name}.`);
           setNotifiedMeals((prev) => [...prev, meal.name]);
         }
       }
@@ -204,86 +205,109 @@ export default function ReminderPage() {
     return () => clearInterval(interval);
   }, [lastWaterReminder, meals, notifiedMeals, waterInterval]);
 
+  const mealStatusDotClass = (status: MealStatus) => {
+    if (status === "done") return "bg-emerald-400";
+    if (status === "missed") return "bg-rose-400";
+    return "bg-amber-300";
+  };
+
+  const mealStatusPillClass = (status: MealStatus) => {
+    if (status === "done") return "bg-emerald-500/20 text-emerald-200 border-emerald-300/30";
+    if (status === "missed") return "bg-rose-500/20 text-rose-200 border-rose-300/30";
+    return "bg-amber-400/20 text-amber-100 border-amber-200/30";
+  };
+
   return (
-    <main className="reminder-page">
+    <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,#1a050d_0%,#14050a_42%,#090204_100%)] px-4 pb-12 pt-28 sm:px-6 lg:px-8">
       <audio ref={audioRef} src="/sounds/alert.mp3" preload="auto" />
 
-      <div className="reminder-bg-glow reminder-bg-glow-1" />
-      <div className="reminder-bg-glow reminder-bg-glow-2" />
+      <div className="pointer-events-none absolute -left-16 top-28 h-72 w-72 rounded-full bg-[#ff6f97]/20 blur-3xl" />
+      <div className="pointer-events-none absolute -right-20 top-16 h-80 w-80 rounded-full bg-[#ff8fa3]/20 blur-3xl" />
 
-      <section className="reminder-shell">
-        <header className="reminder-hero">
-          <div className="hero-left">
-            <div className="hero-badge">Smart Reminder System</div>
-            <h1>
-              Your Daily <span>Health Reminders</span>
+      <section className="relative mx-auto w-full max-w-7xl space-y-7">
+        <header className="grid gap-6 rounded-3xl border border-[#ff7894]/25 bg-[rgba(52,7,24,0.72)] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl lg:grid-cols-[1.2fr_0.8fr] lg:items-center lg:p-8">
+          <div className="space-y-4">
+            <span className="inline-flex w-fit rounded-full border border-[#ff9eb5]/40 bg-[#ff9eb5]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-[#ffdce5]">
+              Smart Reminder System
+            </span>
+
+            <h1 className="text-3xl font-extrabold leading-tight text-white sm:text-4xl lg:text-5xl">
+              Your Daily <span className="text-[#ffb7c8]">Health Reminders</span>
             </h1>
-            <p>
-              Water intake, meal timing and weight loss reminders in a premium
-              futuristic UI.
+
+            <p className="max-w-xl text-sm leading-relaxed text-[#ffdce5]/85 sm:text-base">
+              Water intake, meal timing and weight progress reminders in one aligned dashboard, fully optimized for everyday consistency.
             </p>
-            <div className="live-time-box">Current Time: {currentTime || "--:--"}</div>
+
+            <div className="inline-flex items-center rounded-xl border border-[#ff9eb5]/30 bg-[rgba(20,5,10,0.65)] px-4 py-2 text-sm font-semibold text-[#ffdce5]">
+              Current Time: <span className="ml-2 text-white">{currentTime || "--:--"}</span>
+            </div>
           </div>
 
-          <div className="hero-orb-wrap">
-            <div className="hero-orb-core" />
-            <div className="hero-orb-ring hero-orb-ring-1" />
-            <div className="hero-orb-ring hero-orb-ring-2" />
-            <div className="hero-orb-ring hero-orb-ring-3" />
+          <div className="flex items-center justify-center">
+            <div className="relative h-52 w-52 sm:h-60 sm:w-60">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#ff7894]/30 to-[#ff9eb5]/20 blur-md" />
+              <div className="absolute inset-5 rounded-full border border-[#ffb7c8]/60" />
+              <div className="absolute inset-0 animate-pulse rounded-full border border-[#ffdce5]/25" />
+              <div className="absolute inset-9 animate-pulse rounded-full border border-[#ff9eb5]/30" />
+              <div className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ff9eb5] shadow-[0_0_30px_rgba(255,130,170,0.75)]" />
+            </div>
           </div>
         </header>
 
-        <section className="top-status-grid">
-          <div className="mini-card">
-            <span className="mini-label">Today&apos;s Focus</span>
-            <strong>Consistency</strong>
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="rounded-2xl border border-[#ff7894]/25 bg-[rgba(52,7,24,0.72)] p-4 text-[#ffe7ed] backdrop-blur-md">
+            <p className="text-xs uppercase tracking-[0.12em] text-[#ffb7c8]/80">Today&apos;s Focus</p>
+            <p className="mt-2 text-lg font-semibold">Consistency</p>
           </div>
 
-          <div className="mini-card">
-            <span className="mini-label">Next Reminder</span>
-            <strong>{nextMeal ? `${nextMeal.name} - ${nextMeal.time}` : "All Done"}</strong>
+          <div className="rounded-2xl border border-[#ff7894]/25 bg-[rgba(52,7,24,0.72)] p-4 text-[#ffe7ed] backdrop-blur-md">
+            <p className="text-xs uppercase tracking-[0.12em] text-[#ffb7c8]/80">Next Reminder</p>
+            <p className="mt-2 text-lg font-semibold">{nextMeal ? `${nextMeal.name} - ${nextMeal.time}` : "All Done"}</p>
           </div>
 
-          <div className="mini-card">
-            <span className="mini-label">Weight Goal</span>
-            <strong>{weightGoal} kg</strong>
+          <div className="rounded-2xl border border-[#ff7894]/25 bg-[rgba(52,7,24,0.72)] p-4 text-[#ffe7ed] backdrop-blur-md">
+            <p className="text-xs uppercase tracking-[0.12em] text-[#ffb7c8]/80">Weight Goal</p>
+            <p className="mt-2 text-lg font-semibold">{weightGoal} kg</p>
           </div>
         </section>
 
-        <section className="reminder-grid">
-          <article className="reminder-card water-card">
-            <div className="card-top">
+        <section className="grid gap-6 xl:grid-cols-3">
+          <article className="flex h-full flex-col rounded-3xl border border-[#ff7894]/25 bg-[rgba(52,7,24,0.72)] p-6 text-[#ffe7ed] shadow-[0_14px_40px_rgba(0,0,0,0.3)] backdrop-blur-xl">
+            <div className="mb-5 flex items-center justify-between gap-4">
               <div>
-                <span className="card-kicker">Hydration</span>
-                <h2>Water Intake</h2>
+                <p className="text-xs uppercase tracking-[0.12em] text-[#ffb7c8]/80">Hydration</p>
+                <h2 className="mt-2 text-2xl font-bold text-white">Water Intake</h2>
               </div>
-              <div className="glow-icon">💧</div>
-            </div>
-
-            <div className="big-stat-row">
-              <div>
-                <h3>{waterIntake.toFixed(2)}L</h3>
-                <p>of {waterGoal}L goal</p>
-              </div>
-              <div className="circle-stat">
-                <span>{Math.round(waterPercent)}%</span>
+              <div className="grid h-11 w-11 place-items-center rounded-xl bg-[#ff9eb5]/20 text-[#ffdce5]">
+                <FiDroplet className="h-5 w-5" />
               </div>
             </div>
 
-            <div className="progress-track">
+            <div className="mb-5 flex items-center justify-between gap-4">
+              <div>
+                <h3 className="text-3xl font-extrabold text-white">{waterIntake.toFixed(2)}L</h3>
+                <p className="text-sm text-[#ffdce5]/75">of {waterGoal}L goal</p>
+              </div>
+              <div className="grid h-16 w-16 place-items-center rounded-full border border-[#ffb7c8]/35 bg-[#ff9eb5]/10 text-sm font-semibold text-[#ffdce5]">
+                {Math.round(waterPercent)}%
+              </div>
+            </div>
+
+            <div className="h-3 overflow-hidden rounded-full bg-[rgba(20,5,10,0.8)]">
               <div
-                className="progress-fill water-fill"
+                className="h-full rounded-full bg-gradient-to-r from-[#ff9eb5] to-[#ff7894]"
                 style={{ width: `${waterPercent}%` }}
               />
             </div>
 
-            <div className="water-setting-row">
-              <label htmlFor="waterInterval">Reminder Interval</label>
+            <div className="mt-5 flex items-center justify-between gap-3">
+              <label htmlFor="waterInterval" className="text-sm font-medium text-[#ffdce5]">Reminder Interval</label>
               <select
                 id="waterInterval"
                 value={waterInterval}
                 onChange={(e) => setWaterInterval(Number(e.target.value))}
-                className="reminder-select"
+                className="rounded-lg border border-[#ff9eb5]/30 bg-[rgba(20,5,10,0.75)] px-3 py-2 text-sm text-white outline-none transition focus:border-[#ffb7c8]"
               >
                 <option value={20}>20 mins</option>
                 <option value={30}>30 mins</option>
@@ -291,124 +315,142 @@ export default function ReminderPage() {
               </select>
             </div>
 
-            <div className="sub-info-row">
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-[#ffdce5]/75">
               <span>Auto reminder every {waterInterval} mins</span>
               <span>Small steps matter</span>
             </div>
 
-            <div className="action-row">
-              <button className="primary-btn-reminder" onClick={handleDrinkWater}>
+            <div className="mt-auto grid gap-3 pt-6 sm:grid-cols-2">
+              <button
+                className="rounded-xl bg-[#ff9eb5] px-4 py-2.5 text-sm font-semibold text-[#1a050d] transition hover:bg-[#ffb7c8]"
+                onClick={handleDrinkWater}
+              >
                 Drink Now
               </button>
-              <button className="secondary-btn-reminder" onClick={handleResetWater}>
+              <button
+                className="rounded-xl border border-[#ff9eb5]/30 bg-[rgba(255,158,181,0.08)] px-4 py-2.5 text-sm font-semibold text-[#ffe7ed] transition hover:bg-[rgba(255,158,181,0.16)]"
+                onClick={handleResetWater}
+              >
                 Reset
               </button>
             </div>
           </article>
 
-          <article className="reminder-card meal-card">
-            <div className="card-top">
+          <article className="flex h-full flex-col rounded-3xl border border-[#ff7894]/25 bg-[rgba(52,7,24,0.72)] p-6 text-[#ffe7ed] shadow-[0_14px_40px_rgba(0,0,0,0.3)] backdrop-blur-xl">
+            <div className="mb-5 flex items-center justify-between gap-4">
               <div>
-                <span className="card-kicker">Nutrition</span>
-                <h2>Meal Time Reminder</h2>
+                <p className="text-xs uppercase tracking-[0.12em] text-[#ffb7c8]/80">Nutrition</p>
+                <h2 className="mt-2 text-2xl font-bold text-white">Meal Time Reminder</h2>
               </div>
-              <div className="glow-icon">🍽️</div>
+              <div className="grid h-11 w-11 place-items-center rounded-xl bg-[#ff9eb5]/20 text-[#ffdce5]">
+                <FiCoffee className="h-5 w-5" />
+              </div>
             </div>
 
-            <div className="meal-list">
+            <div className="space-y-3">
               {meals.map((meal) => (
-                <div className="meal-item-neo" key={meal.name}>
-                  <div className="meal-left">
-                    <div
-                      className={`meal-status-dot ${
-                        meal.status === "done"
-                          ? "status-done"
-                          : meal.status === "missed"
-                          ? "status-missed"
-                          : "status-upcoming"
-                      }`}
-                    />
+                <div
+                  className="grid gap-3 rounded-2xl border border-[#ff9eb5]/20 bg-[rgba(20,5,10,0.55)] p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                  key={meal.name}
+                >
+                  <div className="flex min-w-0 items-start gap-3">
+                    <div className={`mt-2 h-2.5 w-2.5 shrink-0 rounded-full ${mealStatusDotClass(meal.status)}`} />
                     <div>
-                      <h4>{meal.name}</h4>
+                      <h4 className="text-base font-semibold text-white">{meal.name}</h4>
 
                       <input
                         type="time"
                         value={meal.time}
                         onChange={(e) => handleMealTimeChange(meal.name, e.target.value)}
-                        className="time-input"
+                        className="mt-1 rounded-lg border border-[#ff9eb5]/25 bg-[rgba(20,5,10,0.75)] px-3 py-1.5 text-sm text-[#ffe7ed] outline-none transition focus:border-[#ffb7c8]"
                       />
                     </div>
                   </div>
 
-                  <div className="meal-right">
-                    <span className="meal-status-pill">{meal.status}</span>
+                  <div className="flex flex-col items-start gap-2 sm:items-end">
+                    <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold capitalize ${mealStatusPillClass(meal.status)}`}>
+                      {meal.status}
+                    </span>
 
-                    {meal.status !== "done" && (
-                      <button
-                        className="tiny-action-btn"
-                        onClick={() => markMealDone(meal.name)}
-                      >
-                        Done
-                      </button>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {meal.status !== "done" && (
+                        <button
+                          className="min-w-16 rounded-lg bg-emerald-400/20 px-3 py-1.5 text-xs font-semibold text-emerald-100 transition hover:bg-emerald-400/30"
+                          onClick={() => markMealDone(meal.name)}
+                        >
+                          Done
+                        </button>
+                      )}
 
-                    {meal.status === "upcoming" && (
-                      <button
-                        className="tiny-action-btn"
-                        onClick={() => markMealMissed(meal.name)}
-                      >
-                        Miss
-                      </button>
-                    )}
+                      {meal.status === "upcoming" && (
+                        <button
+                          className="min-w-16 rounded-lg bg-rose-400/20 px-3 py-1.5 text-xs font-semibold text-rose-100 transition hover:bg-rose-400/30"
+                          onClick={() => markMealMissed(meal.name)}
+                        >
+                          Miss
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           </article>
 
-          <article className="reminder-card weight-card">
-            <div className="card-top">
+          <article className="flex h-full flex-col rounded-3xl border border-[#ff7894]/25 bg-[rgba(52,7,24,0.72)] p-6 text-[#ffe7ed] shadow-[0_14px_40px_rgba(0,0,0,0.3)] backdrop-blur-xl">
+            <div className="mb-5 flex items-center justify-between gap-4">
               <div>
-                <span className="card-kicker">Progress</span>
-                <h2>Weight Loss Goal</h2>
+                <p className="text-xs uppercase tracking-[0.12em] text-[#ffb7c8]/80">Progress</p>
+                <h2 className="mt-2 text-2xl font-bold text-white">Weight Loss Goal</h2>
               </div>
-              <div className="glow-icon">⚖️</div>
-            </div>
-
-            <div className="weight-panel">
-              <div className="weight-box">
-                <span>Current</span>
-                <strong>{currentWeight.toFixed(1)} kg</strong>
-              </div>
-
-              <div className="weight-box">
-                <span>Target</span>
-                <strong>{weightGoal} kg</strong>
+              <div className="grid h-11 w-11 place-items-center rounded-xl bg-[#ff9eb5]/20 text-[#ffdce5]">
+                <FiActivity className="h-5 w-5" />
               </div>
             </div>
 
-            <div className="weight-highlight">
-              <p>You are</p>
-              <h3>{weightDifference} kg away</h3>
-              <span>Stay on track with your meals and water intake</span>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl border border-[#ff9eb5]/20 bg-[rgba(20,5,10,0.55)] p-4">
+                <p className="text-xs uppercase tracking-[0.08em] text-[#ffb7c8]/80">Current</p>
+                <p className="mt-2 text-2xl font-bold text-white">{currentWeight.toFixed(1)} kg</p>
+              </div>
+
+              <div className="rounded-2xl border border-[#ff9eb5]/20 bg-[rgba(20,5,10,0.55)] p-4">
+                <p className="text-xs uppercase tracking-[0.08em] text-[#ffb7c8]/80">Target</p>
+                <p className="mt-2 text-2xl font-bold text-white">{weightGoal} kg</p>
+              </div>
             </div>
 
-            <div className="action-row">
-              <button className="primary-btn-reminder" onClick={handleWeightUpdate}>
+            <div className="mt-4 rounded-2xl border border-[#ff9eb5]/30 bg-[rgba(255,120,148,0.12)] p-4">
+              <p className="text-sm text-[#ffdce5]">You are</p>
+              <h3 className="mt-1 text-3xl font-extrabold text-white">{weightDifference} kg away</h3>
+              <p className="mt-1 text-xs text-[#ffdce5]/75">Stay on track with your meals and water intake</p>
+            </div>
+
+            <div className="mt-auto grid gap-3 pt-6 sm:grid-cols-2">
+              <button
+                className="rounded-xl bg-[#ff9eb5] px-4 py-2.5 text-sm font-semibold text-[#1a050d] transition hover:bg-[#ffb7c8]"
+                onClick={handleWeightUpdate}
+              >
                 Update Progress
               </button>
-              <button className="secondary-btn-reminder">View Plan</button>
+              <button className="rounded-xl border border-[#ff9eb5]/30 bg-[rgba(255,158,181,0.08)] px-4 py-2.5 text-sm font-semibold text-[#ffe7ed] transition hover:bg-[rgba(255,158,181,0.16)]">
+                View Plan
+              </button>
             </div>
           </article>
         </section>
-
       </section>
 
       {showAlert && (
-        <div className="alert-overlay">
-          <div className="alert-popup">
-            <h2>{alertMessage}</h2>
-            <button onClick={() => setShowAlert(false)}>Close</button>
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/65 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-2xl border border-[#ff9eb5]/35 bg-[rgba(26,5,13,0.95)] p-5 text-center shadow-2xl">
+            <h2 className="text-lg font-bold text-white">{alertMessage}</h2>
+            <button
+              onClick={() => setShowAlert(false)}
+              className="mt-4 rounded-xl bg-[#ff9eb5] px-4 py-2 text-sm font-semibold text-[#1a050d] transition hover:bg-[#ffb7c8]"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
