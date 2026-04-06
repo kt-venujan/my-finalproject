@@ -141,6 +141,7 @@ function RatingModal({
 }
 
 export default function UserDashboard() {
+  const WHATSAPP_NUMBER = "94779895456";
   const { user, logout, setAuthUser } = useAuth();
   const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -169,6 +170,12 @@ export default function UserDashboard() {
 
   const resolveAvatar = (avatar?: string) => {
     return resolveBackendAssetUrl(avatar);
+  };
+
+  const openWhatsAppChat = (booking: Booking) => {
+    const message = `Hello, I would like to start chat regarding booking ${booking._id} with ${booking.dietician?.username || "my dietician"} on ${booking.date} at ${booking.time}.`;
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   };
 
   const fetchBookings = async () => {
@@ -737,10 +744,10 @@ export default function UserDashboard() {
                           </button>
                           <button
                             className="ud-action-btn chat"
-                            onClick={() => router.push(`/chat/${b._id}`)}
+                            onClick={() => openWhatsAppChat(b)}
                           >
                             <FiMessageCircle className="ud-action-icon" />
-                            Chat
+                            Start Chat
                           </button>
                           {!b.reviewSubmitted && (
                             <button

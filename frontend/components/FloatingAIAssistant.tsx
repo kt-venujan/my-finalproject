@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { FiChevronUp, FiMessageCircle } from "react-icons/fi";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties, type MouseEvent } from "react";
+import { toast } from "react-toastify";
+import { useAuth } from "@/context/AuthContext";
 
 const floatingStackStyle: CSSProperties = {
   position: "fixed",
@@ -64,6 +66,8 @@ const scrollTopStyle: CSSProperties = {
 
 export default function FloatingAIAssistant() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user } = useAuth();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
@@ -82,6 +86,15 @@ export default function FloatingAIAssistant() {
 
   const handleScrollTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleOpenAssistant = (event: MouseEvent<HTMLAnchorElement>) => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (user || token) return;
+
+    event.preventDefault();
+    toast.info("Please login to use the AI Diet Assistant.");
+    router.push("/login");
   };
 
   return (
@@ -103,6 +116,7 @@ export default function FloatingAIAssistant() {
         href="/ai-assistant"
         className="floating-ai-chatbot-shell"
         style={chatbotStyle}
+        onClick={handleOpenAssistant}
         aria-label="Open AI Diet Assistant"
         title="Start AI Diet Assistant"
       >

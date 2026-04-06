@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, JSX } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
 import { toast } from "react-toastify";
@@ -57,6 +57,7 @@ type NavTab = "dashboard" | "bookings" | "verify" | "notify" | "settings";
 type SettingsPanel = "account" | "security" | "delete";
 
 export default function DieticianDashboard() {
+  const WHATSAPP_NUMBER = "94779895456";
   const { user, logout, setAuthUser } = useAuth();
   const router = useRouter();
 
@@ -100,6 +101,12 @@ export default function DieticianDashboard() {
 
   const resolveAvatar = (avatar?: string) => {
     return resolveBackendAssetUrl(avatar);
+  };
+
+  const openWhatsAppChat = (booking: Booking) => {
+    const message = `Hello, I would like to start chat regarding booking ${booking._id} with ${booking.user?.username || "my client"} on ${booking.date} at ${booking.time}.`;
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   };
 
   // ===================== FETCH BOOKINGS =====================
@@ -706,10 +713,10 @@ export default function DieticianDashboard() {
                           </button>
                           <button
                             className="dd-action-btn chat"
-                            onClick={() => router.push(`/chat/${b._id}`)}
+                            onClick={() => openWhatsAppChat(b)}
                           >
                             <FiMessageCircle className="dd-action-icon" />
-                            Chat
+                            Start Chat
                           </button>
                         </>
                       )}

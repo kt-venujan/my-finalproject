@@ -22,7 +22,7 @@ export default function ServicesInteractive() {
     {
       title: "AI Diet Assistant",
       desc: "Generate personalized diet plans using AI.",
-      image: "/ai.jpg",
+      image: "/new.jpeg",
       link: "/ai-assistant",
       requiresAuth: true,
     },
