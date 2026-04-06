@@ -43,6 +43,7 @@ const services = [
 export default function Navbar() {
   const pathname = usePathname(); // ✅ GET CURRENT PATH
   const isDashboardRoute = pathname.startsWith("/dashboard");
+  const isPaymentSuccessRoute = pathname === "/payment/success";
   const [showServices, setShowServices] = useState(false);
   const servicesCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
@@ -190,7 +191,7 @@ export default function Navbar() {
     return "/dashboard/user";
   };
 
-  if (isDashboardRoute) {
+  if (isDashboardRoute || isPaymentSuccessRoute) {
     return null;
   }
 

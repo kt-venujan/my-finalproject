@@ -6,6 +6,15 @@ import { toast } from "react-toastify";
 import BookingModal from "@/components/BookingModal";
 import api from "@/lib/axios";
 import { useAuth } from "@/context/AuthContext";
+import {
+  FiAward,
+  FiCheckCircle,
+  FiDollarSign,
+  FiSearch,
+  FiShield,
+  FiStar,
+  FiUsers,
+} from "react-icons/fi";
 
 type Dietician = {
   _id: string;
@@ -29,12 +38,10 @@ function StarRating({ rating }: { rating: number }) {
   return (
     <span className="flex items-center gap-[2px] mb-3 text-base">
       {Array.from({ length: 5 }, (_, i) => (
-        <span 
-          key={i} 
-          className={i < full ? "text-amber-500" : i === full && half ? "text-amber-500" : "text-neutral-700"}
-        >
-          ★
-        </span>
+        <FiStar
+          key={i}
+          className={i < full || (i === full && half) ? "text-amber-500" : "text-neutral-700"}
+        />
       ))}
       <span className="text-[13px] text-white/60 ml-1.5">{rating > 0 ? rating.toFixed(1) : "New"}</span>
     </span>
@@ -158,7 +165,10 @@ export default function DieticianPage() {
               <p className="text-white/70 text-xs md:text-sm mt-1 uppercase tracking-widest font-semibold">Verified</p>
             </div>
             <div className="text-center">
-              <h3 className="text-[32px] md:text-4xl font-extrabold text-[#ff4d6d]">4.8★</h3>
+              <h3 className="text-[32px] md:text-4xl font-extrabold text-[#ff4d6d] inline-flex items-center gap-2">
+                4.8
+                <FiStar className="h-8 w-8" />
+              </h3>
               <p className="text-white/70 text-xs md:text-sm mt-1 uppercase tracking-widest font-semibold">Avg Rating</p>
             </div>
           </div>
@@ -205,7 +215,9 @@ export default function DieticianPage() {
       {/* FILTERS + SEARCH */}
       <div className="pt-12 pb-8 px-10 flex flex-col md:flex-row gap-6 items-center justify-between max-w-7xl mx-auto">
         <div className="relative w-full md:max-w-md">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">🔍</span>
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
+            <FiSearch className="h-5 w-5" />
+          </span>
           <input
             className="w-full pl-12 pr-4 py-3.5 border-2 border-[#2a2a2a] rounded-2xl bg-[#1a1a1a] text-white text-[15px] outline-none focus:border-[#8b0c2e] focus:bg-[#222] transition-colors shadow-inner"
             placeholder="Search by name or specialization..."
@@ -224,7 +236,12 @@ export default function DieticianPage() {
                 }`}
               onClick={() => setFilter(f)}
             >
-              {f === "available" ? "● Available" : f === "verified" ? "✅ Verified" : "All Dieticians"}
+              <span className="inline-flex items-center gap-2">
+                {f === "available" && <FiCheckCircle className="h-4 w-4" />}
+                {f === "verified" && <FiShield className="h-4 w-4" />}
+                {f === "all" && <FiUsers className="h-4 w-4" />}
+                {f === "available" ? "Available" : f === "verified" ? "Verified" : "All Dieticians"}
+              </span>
             </button>
           ))}
         </div>
@@ -266,9 +283,17 @@ export default function DieticianPage() {
                   )}
                 </div>
                 <div className="flex flex-col gap-2 items-end">
-                  {d.isVerified && <span className="py-1 px-3 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#16a34a]/10 text-green-400 border border-[#16a34a]/20">✅ Verified</span>}
+                  {d.isVerified && (
+                    <span className="py-1 px-3 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#16a34a]/10 text-green-400 border border-[#16a34a]/20 inline-flex items-center gap-1.5">
+                      <FiShield className="h-3 w-3" />
+                      Verified
+                    </span>
+                  )}
                   <span className={`py-1 px-3 rounded-full text-[10px] font-bold uppercase tracking-wider border ${d.isAvailable ? "bg-[#16a34a]/10 text-green-400 border-[#16a34a]/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>
-                    {d.isAvailable ? "● Available" : "○ Busy"}
+                    <span className="inline-flex items-center gap-1.5">
+                      {d.isAvailable ? <FiCheckCircle className="h-3 w-3" /> : <FiShield className="h-3 w-3" />}
+                      {d.isAvailable ? "Available" : "Busy"}
+                    </span>
                   </span>
                 </div>
               </div>
@@ -292,13 +317,13 @@ export default function DieticianPage() {
                 <div className="flex items-center gap-1.5 text-[14px] text-white/60 font-medium">
                   {d.experience > 0 && (
                     <>
-                      <span className="text-lg">🎓</span>
+                      <FiAward className="h-5 w-5 text-[#ff9fb5]" />
                       <span>{d.experience} yrs</span>
                     </>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 text-[16px] text-[#ff4d6d] font-bold">
-                  <span className="text-lg">💰</span>
+                  <FiDollarSign className="h-5 w-5" />
                   <span>Rs. {(d.price || 1500).toLocaleString()}</span>
                 </div>
               </div>

@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { FiArrowLeft, FiMessageSquare, FiPhone, FiRefreshCw } from "react-icons/fi";
+import { FiArrowLeft, FiMessageSquare, FiRefreshCw } from "react-icons/fi";
 import api from "@/lib/axios";
 import { useAuth } from "@/context/AuthContext";
+import { BookingSessionWindow, getBookingTimeMeta } from "@/lib/bookingTiming";
 
 type BookingSession = {
   bookingId: string;
@@ -16,6 +17,7 @@ type BookingSession = {
   mode?: string;
   user?: { _id?: string; username?: string; email?: string };
   dietician?: { _id?: string; username?: string; email?: string };
+  sessionWindow?: Partial<BookingSessionWindow>;
 };
 
 type JitsiApi = {
@@ -90,6 +92,8 @@ export default function ChatPage() {
   const jitsiNodeRef = useRef<HTMLDivElement | null>(null);
   const apiRef = useRef<JitsiApi | null>(null);
   const observerRef = useRef<MutationObserver | null>(null);
+  const endTimeoutRef = useRef<number | null>(null);
+  const autoEndedRef = useRef(false);
 
   const [session, setSession] = useState<BookingSession | null>(null);
   const [loading, setLoading] = useState(true);
@@ -121,9 +125,24 @@ export default function ChatPage() {
       }
 
       try {
-        const res = await api.get<BookingSession>(`/bookings/${bookingId}/session`);
+        const res = await api.get<BookingSession>(`/bookings/${bookingId}/session?type=chat`);
         const nextSession = res.data;
         setSession(nextSession);
+
+        const timeState = getBookingTimeMeta(
+          nextSession.date,
+          nextSession.time,
+          new Date(),
+          nextSession.sessionWindow
+        );
+
+        if (timeState.hasEnded) {
+          throw new Error("Consultation slot has already finished.");
+        }
+
+        if (!timeState.canJoin) {
+          throw new Error("Consultation opens 10 minutes before start time.");
+        }
 
         if (!nextSession.jitsiJwt) {
           throw new Error("Secure chat token was not issued. Enable Jitsi JWT on the backend.");
@@ -179,10 +198,28 @@ export default function ChatPage() {
         });
 
         jitsi.addListener("readyToClose", () => {
-          router.push(dashboardHref);
+          if (!autoEndedRef.current) {
+            router.push(dashboardHref);
+          }
         });
 
         apiRef.current = jitsi;
+
+        if (timeState.endAt) {
+          const endAtMs = new Date(timeState.endAt).getTime();
+          if (!Number.isNaN(endAtMs) && endAtMs > Date.now()) {
+            endTimeoutRef.current = window.setTimeout(() => {
+              autoEndedRef.current = true;
+              if (apiRef.current) {
+                apiRef.current.executeCommand("hangup");
+                apiRef.current.dispose();
+                apiRef.current = null;
+              }
+              setError("Consultation slot ended. This chat was closed automatically.");
+              setSession(null);
+            }, endAtMs - Date.now());
+          }
+        }
       } catch (err: unknown) {
         const message =
           (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
@@ -200,6 +237,11 @@ export default function ChatPage() {
       if (observerRef.current) {
         observerRef.current.disconnect();
         observerRef.current = null;
+      }
+
+      if (endTimeoutRef.current) {
+        window.clearTimeout(endTimeoutRef.current);
+        endTimeoutRef.current = null;
       }
 
       if (apiRef.current) {
@@ -234,15 +276,6 @@ export default function ChatPage() {
             >
               <FiRefreshCw className="h-4 w-4" />
               Toggle chat panel
-            </button>
-
-            <button
-              type="button"
-              onClick={() => router.push(`/call/${bookingId}`)}
-              className="inline-flex items-center gap-2 rounded-xl border border-[#ff95b4]/35 bg-[#2c0f1d] px-3 py-2 text-xs sm:text-sm text-[#ffdce7] transition hover:bg-[#3a1324]"
-            >
-              <FiPhone className="h-4 w-4" />
-              Switch to Call
             </button>
           </div>
         </div>

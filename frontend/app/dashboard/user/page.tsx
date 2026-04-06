@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
 import { useAuth } from "@/context/AuthContext";
@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import Link from "next/link";
 import {
   FiActivity,
+  FiAlertCircle,
   FiBarChart2,
   FiBell,
   FiCalendar,
@@ -32,7 +33,9 @@ import {
   FiTrash2,
   FiUser,
   FiUserCheck,
+  FiX,
 } from "react-icons/fi";
+import { BookingSessionWindow, getBookingTimeMeta, getBookingTimingMessage } from "@/lib/bookingTiming";
 
 type Booking = {
   _id: string;
@@ -44,6 +47,7 @@ type Booking = {
   dieticianApproved: boolean;
   reviewSubmitted: boolean;
   dietician: { _id: string; username: string; email: string };
+  sessionWindow?: Partial<BookingSessionWindow>;
 };
 
 type KitchenOrder = {
@@ -141,7 +145,6 @@ function RatingModal({
 }
 
 export default function UserDashboard() {
-  const WHATSAPP_NUMBER = "94779895456";
   const { user, logout, setAuthUser } = useAuth();
   const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -167,16 +170,27 @@ export default function UserDashboard() {
   const [deleteOtpSending, setDeleteOtpSending] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [deleteOtp, setDeleteOtp] = useState("");
+  const [clockTick, setClockTick] = useState(Date.now());
+  const [showHelpPopup, setShowHelpPopup] = useState(false);
+  const shownReminderToastsRef = useRef<Set<string>>(new Set());
+
+  const supportEmail = "support@dietara.com";
+  const supportPhone = "+94 77 123 4567";
+  const whatsappSupportLink = "https://wa.me/94771234567";
 
   const resolveAvatar = (avatar?: string) => {
     return resolveBackendAssetUrl(avatar);
   };
 
-  const openWhatsAppChat = (booking: Booking) => {
-    const message = `Hello, I would like to start chat regarding booking ${booking._id} with ${booking.dietician?.username || "my dietician"} on ${booking.date} at ${booking.time}.`;
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+  const normalizeConsultationMode = (mode?: string) => String(mode || "").trim().toLowerCase();
+  const isChatMode = (mode?: string) => normalizeConsultationMode(mode) === "chat";
+  const isCallMode = (mode?: string) => {
+    const normalized = normalizeConsultationMode(mode);
+    return normalized === "voice" || normalized === "video";
   };
+
+  const getBookingTimeState = (booking: Booking) =>
+    getBookingTimeMeta(booking.date, booking.time, new Date(clockTick), booking.sessionWindow);
 
   const fetchBookings = async () => {
     try {
@@ -190,7 +204,55 @@ export default function UserDashboard() {
   useEffect(() => {
     fetchBookings();
     fetchKitchenOrders();
+
+    const bookingsRefreshTimer = window.setInterval(() => {
+      fetchBookings();
+    }, 60_000);
+
+    const clockTimer = window.setInterval(() => {
+      setClockTick(Date.now());
+    }, 30_000);
+
+    return () => {
+      window.clearInterval(bookingsRefreshTimer);
+      window.clearInterval(clockTimer);
+    };
   }, []);
+
+  useEffect(() => {
+    bookings.forEach((booking) => {
+      if (booking.paymentStatus !== "paid" || !booking.dieticianApproved) return;
+
+      const timeState = getBookingTimeMeta(
+        booking.date,
+        booking.time,
+        new Date(clockTick),
+        booking.sessionWindow
+      );
+
+      if (timeState.hasEnded) return;
+
+      if (timeState.isThirtyMinuteReminder) {
+        const key = `${booking._id}-30`;
+        if (!shownReminderToastsRef.current.has(key)) {
+          shownReminderToastsRef.current.add(key);
+          toast.info(
+            `Reminder: ${booking.dietician?.username || "Dietician"} session starts in about 30 minutes.`
+          );
+        }
+      }
+
+      if (timeState.isTenMinuteReminder) {
+        const key = `${booking._id}-10`;
+        if (!shownReminderToastsRef.current.has(key)) {
+          shownReminderToastsRef.current.add(key);
+          toast.info(
+            `Session opening soon: ${booking.dietician?.username || "Dietician"} booking is within 10 minutes.`
+          );
+        }
+      }
+    });
+  }, [bookings, clockTick]);
 
   useEffect(() => {
     if (!user) return;
@@ -709,7 +771,11 @@ export default function UserDashboard() {
               </div>
             ) : (
               <div className="ud-bookings-list">
-                {filteredBookings.map((b) => (
+                {filteredBookings.map((b) => {
+                  const timeState = getBookingTimeState(b);
+                  const timingMessage = getBookingTimingMessage(timeState, "user");
+
+                  return (
                   <div key={b._id} className={`ud-booking-card ${b.dieticianApproved ? "approved" : ""}`}>
                     <div className="ud-booking-top">
                       <div className="ud-booking-avatar">{b.dietician?.username?.[0]?.toUpperCase()}</div>
@@ -727,7 +793,7 @@ export default function UserDashboard() {
                       <div className="ud-booking-pills">
                         <span className={`ud-pill ${b.paymentStatus}`}>{b.paymentStatus}</span>
                         <span className={`ud-pill ${b.status}`}>{b.status}</span>
-                        {b.dieticianApproved && <span className="ud-pill approved">✅ Approved</span>}
+                        {b.dieticianApproved && <span className="ud-pill approved">Approved</span>}
                       </div>
                     </div>
 
@@ -735,21 +801,46 @@ export default function UserDashboard() {
                       {/* CALL / CHAT — only if dietician approved */}
                       {b.dieticianApproved ? (
                         <>
-                          <button
-                            className="ud-action-btn call"
-                            onClick={() => router.push(`/call/${b._id}`)}
-                          >
-                            <FiPhone className="ud-action-icon" />
-                            Call
-                          </button>
-                          <button
-                            className="ud-action-btn chat"
-                            onClick={() => openWhatsAppChat(b)}
-                          >
-                            <FiMessageCircle className="ud-action-icon" />
-                            Start Chat
-                          </button>
-                          {!b.reviewSubmitted && (
+                          {timeState.canJoin && isCallMode(b.mode) && (
+                            <button
+                              className="ud-action-btn call"
+                              onClick={() => router.push(`/call/${b._id}`)}
+                            >
+                              <FiPhone className="ud-action-icon" />
+                              Call
+                            </button>
+                          )}
+                          {timeState.canJoin && isChatMode(b.mode) && (
+                            <button
+                              className="ud-action-btn chat"
+                              onClick={() => router.push(`/chat/${b._id}`)}
+                            >
+                              <FiMessageCircle className="ud-action-icon" />
+                              Start Chat
+                            </button>
+                          )}
+                          {!timeState.canJoin && (
+                            <p className={`ud-waiting ${timeState.hasEnded ? "ended" : ""}`}>
+                              <FiAlertCircle className="ud-action-icon" />
+                              {timingMessage}
+                            </p>
+                          )}
+
+                          {timeState.isThirtyMinuteReminder && (
+                            <p className="ud-time-banner reminder">
+                              <FiBell className="ud-action-icon" />
+                              30-minute reminder: your consultation starts soon.
+                            </p>
+                          )}
+
+                          {timeState.state === "countdown" && (
+                            <p className="ud-time-banner countdown">
+                              <FiClock className="ud-action-icon" />
+                              Countdown: {timeState.minutesUntilStart} minutes until session unlock.
+                            </p>
+                          )}
+
+                          {!b.reviewSubmitted && timeState.hasEnded && (
                             <button
                               className="ud-action-btn review"
                               onClick={() => setReviewBooking(b)}
@@ -757,6 +848,12 @@ export default function UserDashboard() {
                               <FiStar className="ud-action-icon" />
                               Rate
                             </button>
+                          )}
+                          {!b.reviewSubmitted && !timeState.hasEnded && (
+                            <span className="ud-action-btn rated pending-review">
+                              <FiClock className="ud-action-icon" />
+                              Rating available after session ends
+                            </span>
                           )}
                           {b.reviewSubmitted && (
                             <span className="ud-action-btn rated">
@@ -769,7 +866,7 @@ export default function UserDashboard() {
                         <>
                           <p className="ud-waiting">
                             {b.paymentStatus === "paid"
-                              ? "Waiting for dietician approval..."
+                              ? "Waiting for dietician approval to unlock your selected mode..."
                               : "Payment required"}
                           </p>
                           {b.paymentStatus !== "paid" && (
@@ -785,7 +882,8 @@ export default function UserDashboard() {
                       )}
                     </div>
                   </div>
-                ))}
+                );
+              })}
               </div>
             )}
           </div>
@@ -1066,7 +1164,59 @@ export default function UserDashboard() {
           </div>
         )}
 
+        <div className="ud-help-strip">
+          <button
+            type="button"
+            className="ud-help-trigger"
+            onClick={() => setShowHelpPopup(true)}
+          >
+            Did you miss the booking or have complaints/reviews? Click to get help.
+          </button>
+        </div>
+
       </main>
+
+      {showHelpPopup && (
+        <div
+          className="ud-help-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowHelpPopup(false);
+            }
+          }}
+        >
+          <div className="ud-help-modal">
+            <button
+              type="button"
+              className="ud-help-close"
+              onClick={() => setShowHelpPopup(false)}
+              aria-label="Close help"
+            >
+              <FiX />
+            </button>
+            <h3>Support Help</h3>
+            <p className="ud-help-text">
+              If you missed a consultation, or want to raise complaints or review issues, use the details below.
+            </p>
+            <div className="ud-help-details">
+              <p>
+                <strong>Email:</strong> {supportEmail}
+              </p>
+              <p>
+                <strong>Mobile:</strong> {supportPhone}
+              </p>
+            </div>
+            <a
+              href={whatsappSupportLink}
+              target="_blank"
+              rel="noreferrer"
+              className="ud-help-whatsapp"
+            >
+              Open WhatsApp Support
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* RATING MODAL */}
       {reviewBooking && (

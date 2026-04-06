@@ -1834,8 +1834,17 @@
 .allergy-box h3 {
   font-size: 26px;
   margin-bottom: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 
   color: #8b0c2e; /* maroon heading */
+}
+
+.allergy-heading-icon {
+  width: 24px;
+  height: 24px;
+  color: #b45309;
 }
 
 .allergy-box p {

@@ -49,8 +49,28 @@ const bookingSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    reminder30MinSentToUser: {
+      type: Boolean,
+      default: false,
+    },
+
+    reminder30MinSentToDietician: {
+      type: Boolean,
+      default: false,
+    },
+
+    reminder30MinSentAt: {
+      type: Date,
+      default: null,
+    },
+
+    sessionCompletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
 
-export default mongoose.model("Booking", bookingSchema);
+export default mongoose.model("Booking", bookingSchema);
