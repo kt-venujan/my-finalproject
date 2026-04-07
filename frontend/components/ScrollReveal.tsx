@@ -35,9 +35,13 @@ export default function ScrollReveal() {
 
       animate(
         elements,
-        { opacity: 1 },
         {
-          duration: 0.52,
+          opacity: [0, 1],
+          y: [22, 0],
+          filter: ["blur(6px)", "blur(0px)"],
+        },
+        {
+          duration: 0.6,
           ease: [0.22, 1, 0.36, 1],
           delay: stagger(0.07),
         }
@@ -45,6 +49,8 @@ export default function ScrollReveal() {
 
       elements.forEach((element) => {
         revealedElements.add(element);
+        element.style.transform = "none";
+        element.style.filter = "none";
         element.style.willChange = "auto";
         observer?.unobserve(element);
       });
@@ -54,6 +60,8 @@ export default function ScrollReveal() {
       if (prefersReducedMotion) {
         elements.forEach((element) => {
           element.style.opacity = "1";
+          element.style.transform = "none";
+          element.style.filter = "none";
         });
         return;
       }
@@ -66,7 +74,9 @@ export default function ScrollReveal() {
           rect.top < window.innerHeight * 0.92 && rect.bottom > window.innerHeight * 0.05;
 
         element.style.opacity = "0";
-        element.style.willChange = "opacity";
+        element.style.transform = "translate3d(0, 22px, 0)";
+        element.style.filter = "blur(6px)";
+        element.style.willChange = "opacity, transform, filter";
 
         if (alreadyVisible) {
           revealElements([element]);

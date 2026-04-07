@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { AxiosError } from "axios";
+import { createPortal } from "react-dom";
 import { toast } from "react-toastify";
 import api from "@/lib/axios";
 import {
@@ -30,6 +32,7 @@ interface BookingModalProps {
 }
 
 export default function BookingModal({ dietician, onClose }: BookingModalProps) {
+  const [isMounted, setIsMounted] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -38,8 +41,18 @@ export default function BookingModal({ dietician, onClose }: BookingModalProps) 
   const [bookingId, setBookingId] = useState<string | null>(null);
 
   const price = dietician.price || 1500;
-  const serviceFee = 200;
+  const serviceFeeByMode: Record<"chat" | "voice" | "video", number> = {
+    chat: 200,
+    voice: 200,
+    video: 350,
+  };
+  const serviceFee = serviceFeeByMode[mode];
   const total = price + serviceFee;
+
+  const getApiErrorMessage = (err: unknown, fallback: string) => {
+    const error = err as AxiosError<{ message?: string; error?: string }>;
+    return error?.response?.data?.message || error?.response?.data?.error || fallback;
+  };
 
   const getDayName = (dateStr: string) => {
     if (!dateStr) return "";
@@ -86,14 +99,20 @@ export default function BookingModal({ dietician, onClose }: BookingModalProps) 
       }
 
       toast.error("Unable to start Stripe checkout.");
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Payment failed. Please try again.");
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, "Payment failed. Please try again."));
     } finally {
       setLoading(false);
     }
   };
 
-  return (
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return null;
+
+  const modalNode = (
     <div className="fixed inset-0 bg-black/55 backdrop-blur-[8px] z-[9999] flex items-center justify-center p-5 animate-in fade-in duration-200" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="bg-white text-black rounded-[24px] w-full max-w-[560px] max-h-[90vh] overflow-y-auto shadow-[0_20px_60px_rgba(0,0,0,0.25)] animate-in slide-in-from-bottom-8 duration-300">
 
@@ -182,8 +201,8 @@ export default function BookingModal({ dietician, onClose }: BookingModalProps) 
                 <span>Rs. {price.toLocaleString()}</span>
               </div>
               <div className="flex justify-between py-1.5 text-[14px] text-black">
-                <span>Service Fee</span>
-                <span>Rs. {serviceFee}</span>
+                <span>Service Fee ({mode === "video" ? "Video" : "Chat/Voice"})</span>
+                <span>Rs. {serviceFee.toLocaleString()}</span>
               </div>
               <div className="flex justify-between py-1.5 text-[14px] text-black border-t border-[#e0d5da] mt-2 pt-3 font-bold !text-[16px]">
                 <span>Total</span>
@@ -218,6 +237,14 @@ export default function BookingModal({ dietician, onClose }: BookingModalProps) 
                 <span className="inline-flex items-center gap-2"><FiCalendar className="h-4 w-4 text-[#8b0c2e]" />{date} ({getDayName(date)})</span>
                 <span className="inline-flex items-center gap-2"><FiClock className="h-4 w-4 text-[#8b0c2e]" />{time}</span>
               </div>
+              <div className="flex justify-between py-1.5 text-[14px] text-[#555]">
+                <span>Consultation Fee</span>
+                <span>Rs. {price.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between py-1.5 text-[14px] text-black">
+                <span>Service Fee ({mode === "video" ? "Video" : "Chat/Voice"})</span>
+                <span>Rs. {serviceFee.toLocaleString()}</span>
+              </div>
               <div className="flex justify-between py-1.5 text-[14px] text-black border-t border-[#e0d5da] mt-2 pt-3 font-bold !text-[16px]">
                 <span>Total Amount</span>
                 <span>Rs. {total.toLocaleString()}</span>
@@ -237,4 +264,6 @@ export default function BookingModal({ dietician, onClose }: BookingModalProps) 
       </div>
     </div>
   );
+
+  return createPortal(modalNode, document.body);
 }

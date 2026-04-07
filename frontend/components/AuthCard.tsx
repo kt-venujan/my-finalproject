@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { LoginInput, RegisterInput } from "@/types/auth";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaGoogle } from "react-icons/fa";
 import { toast } from "react-toastify";
 import type { AxiosError } from "axios";
 import api from "@/lib/axios";
@@ -13,6 +13,9 @@ type ResetStep = "request" | "verify" | "reset";
 
 export default function AuthCard() {
   const searchParams = useSearchParams();
+  const oauthStatus = searchParams.get("oauth");
+  const oauthReason = searchParams.get("reason");
+  const oauthToastShown = useRef(false);
   const initialRoleParam = (searchParams.get("role") || "").toLowerCase();
   const initialRole: RegisterInput["role"] =
     initialRoleParam === "dietician" || initialRoleParam === "dietitian"
@@ -59,6 +62,9 @@ export default function AuthCard() {
 
   const { login, register, forgotPassword, resetPassword } = useAuth();
 
+  const googleAuthUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
+
   const getApiErrorMessage = (error: unknown, fallback: string) => {
     const axiosError = error as AxiosError<{ message?: string }>;
     return axiosError?.response?.data?.message || fallback;
@@ -68,6 +74,36 @@ export default function AuthCard() {
     setErrorMessage("");
     setSuccessMessage("");
   };
+
+  useEffect(() => {
+    if (oauthStatus !== "failed" || oauthToastShown.current) {
+      return;
+    }
+
+    oauthToastShown.current = true;
+    setIsActive(false);
+    setShowResetFlow(false);
+
+    let message =
+      "Google sign-in failed. Add this redirect URI in Google Cloud: http://localhost:5000/api/auth/google/callback";
+    let toastMessage = "Google sign-in failed";
+
+    if (oauthReason === "invalid_client_secret" || oauthReason === "invalid_client") {
+      message =
+        "Google client secret is invalid. Update GOOGLE_CLIENT_SECRET in Backend/.env with the secret from the same OAuth client ID.";
+      toastMessage = "Google sign-in failed (invalid client secret)";
+    } else if (oauthReason === "redirect_uri_mismatch") {
+      message =
+        "Redirect URI mismatch. Add this exact URI in Google Cloud: http://localhost:5000/api/auth/google/callback";
+      toastMessage = "Google sign-in failed (redirect URI mismatch)";
+    } else if (oauthReason === "oauth_denied") {
+      message = "Google sign-in was canceled. Please try again.";
+      toastMessage = "Google sign-in canceled";
+    }
+
+    setErrorMessage(message);
+    toast.error(toastMessage);
+  }, [oauthReason, oauthStatus]);
 
   const openResetFlow = (prefillEmail = "") => {
     setShowResetFlow(true);
@@ -330,6 +366,11 @@ export default function AuthCard() {
     await handleResetPasswordSubmit();
   };
 
+  const handleGoogleSignIn = () => {
+    const origin = window.location.origin;
+    window.location.href = `${googleAuthUrl}/auth/google?origin=${encodeURIComponent(origin)}`;
+  };
+
   return (
     <div className={`auth-card-container ${isActive ? "active" : ""} ${showResetFlow ? "reset-mode" : ""}`}>
       {showResetFlow ? (
@@ -541,6 +582,20 @@ export default function AuthCard() {
               <button type="submit" disabled={loading}>
                 {loading ? "Please wait..." : "Register"}
               </button>
+
+              <div className="auth-social-actions">
+                <div className="auth-divider">or</div>
+
+                <button
+                  type="button"
+                  className="google-auth-btn"
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
+                >
+                  <FaGoogle aria-hidden="true" />
+                  Continue with Google
+                </button>
+              </div>
             </form>
           </div>
 
@@ -603,6 +658,20 @@ export default function AuthCard() {
               <button type="submit" disabled={loading}>
                 {loading ? "Please wait..." : "Login"}
               </button>
+
+              <div className="auth-social-actions">
+                <div className="auth-divider">or</div>
+
+                <button
+                  type="button"
+                  className="google-auth-btn"
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
+                >
+                  <FaGoogle aria-hidden="true" />
+                  Continue with Google
+                </button>
+              </div>
             </form>
           </div>
 
