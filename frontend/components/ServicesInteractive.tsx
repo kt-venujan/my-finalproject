@@ -17,7 +17,7 @@ type ServiceItem = {
 
 export default function ServicesInteractive() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, openLogin } = useAuth();
   const [active, setActive] = useState(0);
 
   const services: ServiceItem[] = [
@@ -68,6 +68,9 @@ export default function ServicesInteractive() {
 
     if (!token) {
       toast.error("Please login first!");
+      window.setTimeout(() => {
+        openLogin();
+      }, 180);
       return;
     }
 

@@ -33,6 +33,9 @@ const SIZE_MULTIPLIERS = {
   large: 1.5,
 };
 const DIETICIAN_SERVICE_FEE = Number(process.env.DIETICIAN_SERVICE_FEE || 200);
+const DIETICIAN_VIDEO_SERVICE_FEE = Number(
+  process.env.DIETICIAN_VIDEO_SERVICE_FEE || 350
+);
 
 const createHttpError = (status, message) => {
   const error = new Error(message);
@@ -165,7 +168,21 @@ const normalizeOrderItems = async (rawItems = []) => {
   return { normalizedItems, subtotal };
 };
 
-const buildDieticianLineItems = ({ dieticianName, consultationFee, serviceFee }) => {
+const normalizeConsultationMode = (mode) =>
+  String(mode || "").trim().toLowerCase();
+
+const resolveServiceFeeByMode = (mode) => {
+  const normalizedMode = normalizeConsultationMode(mode);
+  return normalizedMode === "video"
+    ? Math.max(0, DIETICIAN_VIDEO_SERVICE_FEE)
+    : Math.max(0, DIETICIAN_SERVICE_FEE);
+};
+
+const buildDieticianLineItems = ({ dieticianName, consultationFee, serviceFee, mode }) => {
+  const normalizedMode = normalizeConsultationMode(mode);
+  const serviceLabel =
+    normalizedMode === "video" ? "Dietara Service Fee (Video)" : "Dietara Service Fee";
+
   return [
     {
       price_data: {
@@ -181,7 +198,7 @@ const buildDieticianLineItems = ({ dieticianName, consultationFee, serviceFee })
       price_data: {
         currency: "lkr",
         product_data: {
-          name: "Dietara Service Fee",
+          name: serviceLabel,
         },
         unit_amount: Math.round(Number(serviceFee || 0) * 100),
       },
@@ -197,10 +214,10 @@ const buildPaymentSummary = (session, fallbackCurrency = "lkr") => ({
   currency: String(session?.currency || fallbackCurrency || "lkr").toUpperCase(),
 });
 
-const resolveDieticianPricing = async (dieticianUserId) => {
+const resolveDieticianPricing = async (dieticianUserId, mode) => {
   const profile = await DieticianProfile.findOne({ user: dieticianUserId });
   const consultationFee = Math.max(0, Number(profile?.price || 1500));
-  const serviceFee = Math.max(0, DIETICIAN_SERVICE_FEE);
+  const serviceFee = resolveServiceFeeByMode(mode);
   const total = Number((consultationFee + serviceFee).toFixed(2));
 
   return {
@@ -346,7 +363,10 @@ export const createDieticianCheckoutSession = async (req, res) => {
 
     const dieticianUserId = booking.dietician?._id || booking.dietician;
 
-    const { consultationFee, serviceFee, total } = await resolveDieticianPricing(dieticianUserId);
+    const { consultationFee, serviceFee, total } = await resolveDieticianPricing(
+      dieticianUserId,
+      booking.mode
+    );
     const dieticianName = booking.dietician?.username || "Dietician";
 
     const session = await stripe.checkout.sessions.create({
@@ -356,6 +376,7 @@ export const createDieticianCheckoutSession = async (req, res) => {
         dieticianName,
         consultationFee,
         serviceFee,
+        mode: booking.mode,
       }),
       success_url: `${FRONTEND_URL}/payment/success?type=dietician&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${FRONTEND_URL}/payment/${booking._id}?cancelled=true`,
