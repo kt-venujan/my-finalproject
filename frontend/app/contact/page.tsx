@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import Navbar from "@/components/Navbar";
+import { useState, type FormEvent } from "react";
+import { isAxiosError } from "axios";
+import { toast } from "react-toastify";
+import api from "@/lib/axios";
 import "./contact.css";
 
 export default function ContactPage() {
@@ -9,44 +11,64 @@ export default function ContactPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
 
-  const sendMessage = async () => {
+  const sendMessage = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const cleanName = name.trim();
+    const cleanEmail = email.trim();
+    const cleanMessage = message.trim();
+
+    if (!cleanName || !cleanEmail || !cleanMessage) {
+      return toast.error("Please fill in all fields");
+    }
+
+    if (!/^\S+@\S+\.\S+$/.test(cleanEmail)) {
+      return toast.error("Please enter a valid email address");
+    }
 
     try {
+      setSending(true);
 
-      const res = await fetch("http://localhost:5000/api/contact/send",{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-          name,
-          email,
-          message
-        })
+      const res = await api.post("/contact/send", {
+        name: cleanName,
+        email: cleanEmail,
+        message: cleanMessage,
       });
 
-      const data = await res.json();
+      const data = res.data;
 
       if(data.success){
-        alert("Message sent successfully!");
+        toast.success("Message sent successfully!");
 
         setName("");
         setEmail("");
         setMessage("");
+        return;
       }
 
-    } catch (error) {
-      console.log(error);
-      alert("Something went wrong");
+      toast.error(data?.message || "Unable to send message");
+
+    } catch (error: unknown) {
+      let serverMessage: string | undefined;
+
+      if (isAxiosError(error)) {
+        const responseData = error.response?.data as
+          | { message?: string; error?: string }
+          | undefined;
+        serverMessage = responseData?.message || responseData?.error;
+      }
+
+      toast.error(serverMessage || "Something went wrong");
+    } finally {
+      setSending(false);
     }
 
   };
 
   return (
     <>
-      <Navbar />
-
       <div className="contact-page">
 
         <div className="contact-container">
@@ -79,7 +101,7 @@ export default function ContactPage() {
           </div>
 
           {/* FORM */}
-          <div className="contact-right">
+          <form className="contact-right" onSubmit={sendMessage}>
 
             <div className="form-row">
               <input
@@ -87,6 +109,7 @@ export default function ContactPage() {
                 placeholder="Name"
                 value={name}
                 onChange={(e)=>setName(e.target.value)}
+                disabled={sending}
               />
 
               <input
@@ -94,6 +117,7 @@ export default function ContactPage() {
                 placeholder="Email"
                 value={email}
                 onChange={(e)=>setEmail(e.target.value)}
+                disabled={sending}
               />
             </div>
 
@@ -101,22 +125,23 @@ export default function ContactPage() {
               placeholder="Message"
               value={message}
               onChange={(e)=>setMessage(e.target.value)}
-            ></textarea>
+              disabled={sending}
+            />
 
-            <button className="send-btn" onClick={sendMessage}>
-              Send Message
+            <button className="send-btn" type="submit" disabled={sending}>
+              {sending ? "Sending..." : "Send Message"}
             </button>
 
-          </div>
+          </form>
 
         </div>
 
         {/* FOOD IMAGES */}
         <div className="food-gallery">
-          <img src="/food1.jpg" />
-          <img src="/food2.jpg" />
-          <img src="/food3.jpg" />
-          <img src="/food4.jpg" />
+          <img src="/food1.jpg" alt="Healthy meal preview 1" />
+          <img src="/food2.jpg" alt="Healthy meal preview 2" />
+          <img src="/food3.jpg" alt="Healthy meal preview 3" />
+          <img src="/food4.jpg" alt="Healthy meal preview 4" />
         </div>
 
       </div>

@@ -7,7 +7,7 @@ import session from "express-session";
 import cookieParser from "cookie-parser";
 import path from "path";
 
-dotenv.config();
+dotenv.config({ override: true });
 
 import "./config/passport.js";
 import connectDB from "./config/db.js";
@@ -49,7 +49,20 @@ app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: (origin, callback) => {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      const isLocalhost = /^http:\/\/localhost:\d+$/.test(origin);
+      if (isLocalhost) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );

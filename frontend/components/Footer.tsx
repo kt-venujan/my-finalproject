@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useState, type FormEvent } from "react";
 import { usePathname } from "next/navigation";
+import { isAxiosError } from "axios";
 import api from "@/lib/axios";
 import { toast } from "react-toastify";
 import {
   FaFacebookF,
   FaInstagram,
-  FaTwitter,
-  FaLinkedinIn,
 } from "react-icons/fa";
 
 export default function Footer() {
@@ -20,21 +20,33 @@ export default function Footer() {
     return null;
   }
 
-  const handleSubscribe = async () => {
-    if (!email || !email.includes("@")) {
-      return toast.error("Valid email enter please");
+  const handleSubscribe = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const cleanEmail = email.trim();
+
+    if (!cleanEmail || !/^\S+@\S+\.\S+$/.test(cleanEmail)) {
+      return toast.error("Please enter a valid email address");
     }
 
     try {
       setLoading(true);
 
-      await api.post("/newsletter/subscribe", { email });
+      await api.post("/newsletter/subscribe", { email: cleanEmail });
 
       toast.success("Subscribed successfully 🎉");
       setEmail("");
-    } catch (err) {
-      console.log(err);
-      toast.error("Server error");
+    } catch (error: unknown) {
+      let message = "Unable to subscribe right now";
+
+      if (isAxiosError(error)) {
+        const responseData = error.response?.data as
+          | { message?: string; error?: string }
+          | undefined;
+        message = responseData?.message || responseData?.error || message;
+      }
+
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -53,10 +65,10 @@ export default function Footer() {
 
           {/* SOCIAL ICONS */}
           <div className="social-icons">
-            <a href="https://facebook.com" target="_blank">
+            <a href="https://facebook.com" target="_blank" rel="noreferrer">
               <FaFacebookF />
             </a>
-            <a href="https://instagram.com" target="_blank">
+            <a href="https://instagram.com" target="_blank" rel="noreferrer">
               <FaInstagram />
             </a>
           </div>
@@ -64,18 +76,18 @@ export default function Footer() {
 
         <div className="footer-col">
           <h4>Quick Links</h4>
-          <p>About</p>
-          <p>Services</p>
-          <p>Dashboard</p>
-          <p>Contact</p>
+          <p><Link href="/">About</Link></p>
+          <p><Link href="/dietician">Services</Link></p>
+          <p><Link href="/dashboard">Dashboard</Link></p>
+          <p><Link href="/contact">Contact</Link></p>
         </div>
 
         <div className="footer-col">
           <h4>Services</h4>
-          <p>AI Diet Plans</p>
-          <p>Dietician Support</p>
-          <p>Meal Tracking</p>
-          <p>Healthy Kitchen</p>
+          <p><Link href="/ai-assistant">AI Diet Plans</Link></p>
+          <p><Link href="/dietician">Dietician Support</Link></p>
+          <p><Link href="/meal-tracking">Meal Tracking</Link></p>
+          <p><Link href="/kitchen">Healthy Kitchen</Link></p>
         </div>
 
         <div className="footer-col">
@@ -85,18 +97,19 @@ export default function Footer() {
           <p>✉ support@dietara.com</p>
 
           {/* ✅ SUBSCRIBE MOVED HERE */}
-          <div className="subscribe-box" style={{ marginTop: "12px" }}>
+          <form className="subscribe-box" style={{ marginTop: "12px" }} onSubmit={handleSubscribe}>
             <input
               type="email"
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
             />
 
-            <button onClick={handleSubscribe} disabled={loading}>
+            <button type="submit" disabled={loading}>
               {loading ? "..." : "Subscribe"}
             </button>
-          </div>
+          </form>
         </div>
       </div>
 

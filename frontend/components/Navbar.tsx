@@ -34,8 +34,8 @@ type UserAction = {
 
 const services = [
   { name: "AI Diet Assistant", href: "/ai-assistant" },
-  { name: "Dietician Consultation", href: "/services#dietician" },
-  { name: "Dietary Kitchen", href: "/services#kitchen" },
+  { name: "Dietician Consultation", href: "/dietician" },
+  { name: "Dietary Kitchen", href: "/kitchen" },
   { name: "Meal Tracking", href: "/meal-tracking" },
   { name: "Reminders", href: "/reminder" },
 ];

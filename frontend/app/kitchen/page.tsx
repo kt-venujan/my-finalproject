@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiGrid } from "react-icons/fi";
-import { useRouter } from "next/navigation";
+import { FiGrid, FiShoppingCart } from "react-icons/fi";
+import { usePathname, useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
 import api from "@/lib/axios";
 
 type PlanType = "weekly" | "monthly";
@@ -102,6 +103,7 @@ const featuredMeals = [
 
 export default function KitchenPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const [categories, setCategories] = useState<Category[]>([]);
   const [foods, setFoods] = useState<Food[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -120,6 +122,7 @@ export default function KitchenPage() {
   const [bundleSelection, setBundleSelection] = useState<
     Record<string, { quantity: number; size: SizeType }>
   >({});
+  const [isClient, setIsClient] = useState(false);
 
   const [foodsModalOpen, setFoodsModalOpen] = useState(false);
   const [cartModalOpen, setCartModalOpen] = useState(false);
@@ -182,6 +185,10 @@ export default function KitchenPage() {
   }, [cart]);
 
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
     const interval = setInterval(() => {
       setActiveMealIndex((prev) => (prev + 1) % featuredMeals.length);
     }, 4200);
@@ -212,6 +219,10 @@ export default function KitchenPage() {
     setFoodsModalOpen(false);
     setSelectedCategory(null);
     setFoods([]);
+  };
+
+  const toggleCartModal = () => {
+    setCartModalOpen((prev) => !prev);
   };
 
   const getCartKey = (foodId: string, size: SizeType, bundleOfferId?: string) => {
@@ -368,6 +379,306 @@ export default function KitchenPage() {
   );
 
   const activeMeal = featuredMeals[activeMealIndex];
+  const showKitchenFloatingCart = pathname.startsWith("/kitchen");
+  const floatingCartNode =
+    isClient && showKitchenFloatingCart
+      ? createPortal(
+          <button
+            className={`floating-cart-btn kitchen-floating-cart-btn ${cartModalOpen ? "is-open" : ""}`}
+            type="button"
+            onClick={toggleCartModal}
+            aria-label={`Open cart with ${totalCartCount} items, total Rs. ${totalAmount}`}
+            title={cartModalOpen ? "Close cart" : "Open cart"}
+          >
+            <FiShoppingCart size={20} />
+          </button>,
+          document.body
+        )
+      : null;
+
+  const cartModalNode =
+    isClient && cartModalOpen
+      ? createPortal(
+          <div
+            className="modal-overlay"
+            onClick={() => setCartModalOpen(false)}
+          >
+            <div className="cart-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <div>
+                  <h3>My Cart</h3>
+                  <p>
+                    {totalCartCount} item{totalCartCount === 1 ? "" : "s"} added
+                  </p>
+                </div>
+
+                <button
+                  className="modal-close"
+                  onClick={() => setCartModalOpen(false)}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {cart.length === 0 ? (
+                <div className="modal-empty">Your cart is empty.</div>
+              ) : (
+                <>
+                  <div className="cart-modal-list">
+                    {cart.map((item) => (
+                      <div key={item.cartKey} className="cart-modal-row">
+                        <div className="cart-modal-row__left">
+                          <img
+                            src={getImageUrl(item.image)}
+                            alt={item.name}
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).src =
+                                "/hero-food.jpg";
+                            }}
+                          />
+
+                          <div>
+                            <h4>{item.name}</h4>
+                            <p>{item.categoryName || "Category"}</p>
+                            {item.bundleOfferName && (
+                              <p>
+                                Bundle: {item.bundleOfferName} ({item.discountPercent || 0}% off)
+                              </p>
+                            )}
+                            <span>Rs. {item.price ?? 0}</span>
+                          </div>
+                        </div>
+
+                        <div className="cart-modal-row__right">
+                          <div className="qty-box">
+                            <button onClick={() => decreaseQty(item.cartKey)}>-</button>
+                            <span>{item.quantity}</span>
+                            <button onClick={() => increaseQty(item.cartKey)}>+</button>
+                          </div>
+
+                          <strong>Rs. {(item.price ?? 0) * item.quantity}</strong>
+
+                          <button
+                            className="remove-btn"
+                            onClick={() => removeItem(item.cartKey)}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="cart-modal-footer">
+                    <div className="cart-summary">
+                      <div>
+                        <span>Total Items</span>
+                        <strong>{totalCartCount}</strong>
+                      </div>
+
+                      <div>
+                        <span>Total Amount</span>
+                        <strong>Rs. {totalAmount}</strong>
+                      </div>
+                    </div>
+
+                    <div className="cart-footer-actions">
+                      <button
+                        className="ghost-cart-btn"
+                        onClick={() => setCartModalOpen(false)}
+                      >
+                        Continue Shopping
+                      </button>
+
+                      <button className="clear-cart-btn" onClick={clearCart}>
+                        Clear Cart
+                      </button>
+
+                      <button
+                        className="checkout-btn"
+                        onClick={() => {
+                          setCartModalOpen(false);
+                          router.push("/checkout");
+                        }}
+                      >
+                        Checkout
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>,
+          document.body
+        )
+      : null;
+
+  const foodsModalNode =
+    isClient && foodsModalOpen
+      ? createPortal(
+          <div className="modal-overlay" onClick={closeFoodsModal}>
+            <div className="foods-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <div>
+                  <h3>{selectedCategory?.name || "Foods"}</h3>
+                  <p>
+                    {planType === "weekly" ? "Weekly Plan" : "Monthly Plan"} foods
+                  </p>
+                </div>
+
+                <button className="modal-close" onClick={closeFoodsModal}>
+                  ✕
+                </button>
+              </div>
+
+              {loadingFoods ? (
+                <div className="modal-empty">Loading foods...</div>
+              ) : foods.length === 0 ? (
+                <div className="modal-empty">No foods found for this category.</div>
+              ) : (
+                <div className="foods-grid-v2">
+                  {foods.map((food) => (
+                    <div key={food._id} className="food-card-v2">
+                      <div className="food-card-v2__image">
+                        <img
+                          src={getImageUrl(food.image)}
+                          alt={food.name}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src =
+                              "/hero-food.jpg";
+                          }}
+                        />
+                      </div>
+
+                      <div className="food-card-v2__body">
+                        <h4>{food.name}</h4>
+
+                        <div className="food-card-v2__meta">
+                          <span>{food.calories ?? 0} kcal</span>
+                          <strong>Rs. {food.price ?? 0}</strong>
+                        </div>
+
+                        <div className="food-card-v2__nutrition">
+                          <span>P: {food.protein ?? 0}g</span>
+                          <span>C: {food.carbs ?? 0}g</span>
+                          <span>F: {food.fat ?? 0}g</span>
+                        </div>
+
+                        <button
+                          className="food-card-v2__btn"
+                          onClick={() => addToCart(food)}
+                        >
+                          Add to Cart
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>,
+          document.body
+        )
+      : null;
+
+  const bundleModalNode =
+    isClient && bundleModalOpen && selectedBundle
+      ? createPortal(
+          <div className="modal-overlay" onClick={() => setBundleModalOpen(false)}>
+            <div className="foods-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <div>
+                  <h3>{selectedBundle.name}</h3>
+                  <p>{selectedBundle.discountPercent}% discount for {selectedBundle.planType} plan</p>
+                </div>
+                <button className="modal-close" onClick={() => setBundleModalOpen(false)}>
+                  ✕
+                </button>
+              </div>
+
+              <div className="bundle-customize-list">
+                {selectedBundle.items.map((rule) => {
+                  const food = rule.food;
+                  if (!food?._id) return null;
+
+                  const selected = bundleSelection[food._id] || {
+                    quantity: rule.defaultQty || 1,
+                    size: (rule.allowedSizes?.[0] || "small") as SizeType,
+                  };
+
+                  return (
+                    <div key={food._id} className="bundle-custom-row">
+                      <div className="bundle-custom-food">
+                        <img
+                          src={getImageUrl(food.image)}
+                          alt={food.name}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = "/hero-food.jpg";
+                          }}
+                        />
+                        <div>
+                          <h4>{food.name}</h4>
+                          <p>Base Rs. {food.price ?? 0}</p>
+                          <p>
+                            Qty range {rule.minQty} - {rule.maxQty}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="bundle-custom-controls">
+                        <input
+                          type="number"
+                          min={rule.minQty}
+                          max={rule.maxQty}
+                          value={selected.quantity}
+                          onChange={(e) =>
+                            setBundleSelection((prev) => ({
+                              ...prev,
+                              [food._id]: {
+                                ...selected,
+                                quantity: Number(e.target.value || 0),
+                              },
+                            }))
+                          }
+                        />
+
+                        <select
+                          value={selected.size}
+                          onChange={(e) =>
+                            setBundleSelection((prev) => ({
+                              ...prev,
+                              [food._id]: {
+                                ...selected,
+                                size: e.target.value as SizeType,
+                              },
+                            }))
+                          }
+                        >
+                          {rule.allowedSizes.map((size) => (
+                            <option key={size} value={size}>
+                              {size}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="bundle-custom-footer">
+                <button className="ghost-cart-btn" onClick={() => setBundleModalOpen(false)}>
+                  Cancel
+                </button>
+                <button className="checkout-btn" onClick={addBundleToCart}>
+                  Add Bundle to Cart
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )
+      : null;
 
   return (
     <>
@@ -601,7 +912,7 @@ export default function KitchenPage() {
                             <h3 className="min-w-0 text-3xl font-semibold leading-tight text-white break-words">
                               {offer.name}
                             </h3>
-                            <span className="shrink-0 rounded-full bg-[#4f8a43]/35 px-3 py-1 text-xs font-bold text-[#e3f7dd]">
+                            <span className="shrink-0 rounded-full bg-[#a90f3e]/35 px-3 py-1 text-xs font-bold text-[#ffe2ec]">
                               {offer.discountPercent}% OFF
                             </span>
                           </div>
@@ -612,7 +923,7 @@ export default function KitchenPage() {
                           <p className="mt-2 text-sm text-white/75">{offer.items.length} foods included</p>
 
                           <button
-                            className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-br from-[#4f8a43] to-[#3f7435] px-4 py-3 text-lg font-bold text-white transition hover:brightness-110"
+                            className="bundle-offer-action-btn"
                             onClick={() => openBundleModal(offer)}
                           >
                             Customize Bundle
@@ -627,285 +938,13 @@ export default function KitchenPage() {
           </div>
         </section>
 
-        <button
-          className="floating-cart-btn"
-          type="button"
-          onClick={() => setCartModalOpen(true)}
-        >
-          Cart ({totalCartCount}) • Rs. {totalAmount}
-        </button>
+        {floatingCartNode}
 
-        {foodsModalOpen && (
-          <div className="modal-overlay" onClick={closeFoodsModal}>
-            <div className="foods-modal" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <div>
-                  <h3>{selectedCategory?.name || "Foods"}</h3>
-                  <p>
-                    {planType === "weekly" ? "Weekly Plan" : "Monthly Plan"} foods
-                  </p>
-                </div>
+        {foodsModalNode}
 
-                <button className="modal-close" onClick={closeFoodsModal}>
-                  ✕
-                </button>
-              </div>
+        {cartModalNode}
 
-              {loadingFoods ? (
-                <div className="modal-empty">Loading foods...</div>
-              ) : foods.length === 0 ? (
-                <div className="modal-empty">No foods found for this category.</div>
-              ) : (
-                <div className="foods-grid-v2">
-                  {foods.map((food) => (
-                    <div key={food._id} className="food-card-v2">
-                      <div className="food-card-v2__image">
-                        <img
-                          src={getImageUrl(food.image)}
-                          alt={food.name}
-                          onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).src =
-                              "/hero-food.jpg";
-                          }}
-                        />
-                      </div>
-
-                      <div className="food-card-v2__body">
-                        <h4>{food.name}</h4>
-
-                        <div className="food-card-v2__meta">
-                          <span>{food.calories ?? 0} kcal</span>
-                          <strong>Rs. {food.price ?? 0}</strong>
-                        </div>
-
-                        <div className="food-card-v2__nutrition">
-                          <span>P: {food.protein ?? 0}g</span>
-                          <span>C: {food.carbs ?? 0}g</span>
-                          <span>F: {food.fat ?? 0}g</span>
-                        </div>
-
-                        <button
-                          className="food-card-v2__btn"
-                          onClick={() => addToCart(food)}
-                        >
-                          Add to Cart
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {cartModalOpen && (
-          <div
-            className="modal-overlay"
-            onClick={() => setCartModalOpen(false)}
-          >
-            <div className="cart-modal" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <div>
-                  <h3>My Cart</h3>
-                  <p>
-                    {totalCartCount} item{totalCartCount === 1 ? "" : "s"} added
-                  </p>
-                </div>
-
-                <button
-                  className="modal-close"
-                  onClick={() => setCartModalOpen(false)}
-                >
-                  ✕
-                </button>
-              </div>
-
-              {cart.length === 0 ? (
-                <div className="modal-empty">Your cart is empty.</div>
-              ) : (
-                <>
-                  <div className="cart-modal-list">
-                    {cart.map((item) => (
-                      <div key={item.cartKey} className="cart-modal-row">
-                        <div className="cart-modal-row__left">
-                          <img
-                            src={getImageUrl(item.image)}
-                            alt={item.name}
-                            onError={(e) => {
-                              (e.currentTarget as HTMLImageElement).src =
-                                "/hero-food.jpg";
-                            }}
-                          />
-
-                          <div>
-                            <h4>{item.name}</h4>
-                            <p>{item.categoryName || "Category"}</p>
-                            {item.bundleOfferName && (
-                              <p>
-                                Bundle: {item.bundleOfferName} ({item.discountPercent || 0}% off)
-                              </p>
-                            )}
-                            <span>Rs. {item.price ?? 0}</span>
-                          </div>
-                        </div>
-
-                        <div className="cart-modal-row__right">
-                          <div className="qty-box">
-                            <button onClick={() => decreaseQty(item.cartKey)}>-</button>
-                            <span>{item.quantity}</span>
-                            <button onClick={() => increaseQty(item.cartKey)}>+</button>
-                          </div>
-
-                          <strong>Rs. {(item.price ?? 0) * item.quantity}</strong>
-
-                          <button
-                            className="remove-btn"
-                            onClick={() => removeItem(item.cartKey)}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="cart-modal-footer">
-                    <div className="cart-summary">
-                      <div>
-                        <span>Total Items</span>
-                        <strong>{totalCartCount}</strong>
-                      </div>
-
-                      <div>
-                        <span>Total Amount</span>
-                        <strong>Rs. {totalAmount}</strong>
-                      </div>
-                    </div>
-
-                    <div className="cart-footer-actions">
-                      <button
-                        className="ghost-cart-btn"
-                        onClick={() => setCartModalOpen(false)}
-                      >
-                        Continue Shopping
-                      </button>
-
-                      <button className="clear-cart-btn" onClick={clearCart}>
-                        Clear Cart
-                      </button>
-
-                      <button
-                        className="checkout-btn"
-                        onClick={() => {
-                          setCartModalOpen(false);
-                          router.push("/checkout");
-                        }}
-                      >
-                        Checkout
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        )}
-
-        {bundleModalOpen && selectedBundle && (
-          <div className="modal-overlay" onClick={() => setBundleModalOpen(false)}>
-            <div className="foods-modal" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <div>
-                  <h3>{selectedBundle.name}</h3>
-                  <p>{selectedBundle.discountPercent}% discount for {selectedBundle.planType} plan</p>
-                </div>
-                <button className="modal-close" onClick={() => setBundleModalOpen(false)}>
-                  ✕
-                </button>
-              </div>
-
-              <div className="bundle-customize-list">
-                {selectedBundle.items.map((rule) => {
-                  const food = rule.food;
-                  if (!food?._id) return null;
-
-                  const selected = bundleSelection[food._id] || {
-                    quantity: rule.defaultQty || 1,
-                    size: (rule.allowedSizes?.[0] || "small") as SizeType,
-                  };
-
-                  return (
-                    <div key={food._id} className="bundle-custom-row">
-                      <div className="bundle-custom-food">
-                        <img
-                          src={getImageUrl(food.image)}
-                          alt={food.name}
-                          onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).src = "/hero-food.jpg";
-                          }}
-                        />
-                        <div>
-                          <h4>{food.name}</h4>
-                          <p>Base Rs. {food.price ?? 0}</p>
-                          <p>
-                            Qty range {rule.minQty} - {rule.maxQty}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="bundle-custom-controls">
-                        <input
-                          type="number"
-                          min={rule.minQty}
-                          max={rule.maxQty}
-                          value={selected.quantity}
-                          onChange={(e) =>
-                            setBundleSelection((prev) => ({
-                              ...prev,
-                              [food._id]: {
-                                ...selected,
-                                quantity: Number(e.target.value || 0),
-                              },
-                            }))
-                          }
-                        />
-
-                        <select
-                          value={selected.size}
-                          onChange={(e) =>
-                            setBundleSelection((prev) => ({
-                              ...prev,
-                              [food._id]: {
-                                ...selected,
-                                size: e.target.value as SizeType,
-                              },
-                            }))
-                          }
-                        >
-                          {rule.allowedSizes.map((size) => (
-                            <option key={size} value={size}>
-                              {size}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="bundle-custom-footer">
-                <button className="ghost-cart-btn" onClick={() => setBundleModalOpen(false)}>
-                  Cancel
-                </button>
-                <button className="checkout-btn" onClick={addBundleToCart}>
-                  Add Bundle to Cart
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {bundleModalNode}
       </main>
     </>
   );
