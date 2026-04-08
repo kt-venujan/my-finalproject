@@ -35,10 +35,14 @@ export default function BookingModal({ dietician, onClose }: BookingModalProps) 
   const [isMounted, setIsMounted] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
   const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+  const [selectedSlot, setSelectedSlot] = useState("");
+  const [isCustomTime, setIsCustomTime] = useState(false);
+  const [customTime, setCustomTime] = useState("");
   const [mode, setMode] = useState<"chat" | "voice" | "video">("chat");
   const [loading, setLoading] = useState(false);
   const [bookingId, setBookingId] = useState<string | null>(null);
+
+  const selectedTime = isCustomTime ? customTime : selectedSlot;
 
   const price = dietician.price || 1500;
   const serviceFeeByMode: Record<"chat" | "voice" | "video", number> = {
@@ -71,7 +75,7 @@ export default function BookingModal({ dietician, onClose }: BookingModalProps) 
   };
 
   const handleScheduleNext = () => {
-    if (!date || !time) {
+    if (!date || !selectedTime) {
       toast.error("Please select a date and time");
       return;
     }
@@ -85,7 +89,7 @@ export default function BookingModal({ dietician, onClose }: BookingModalProps) 
         bookingId,
         dieticianId: dietician.user?._id || dietician._id,
         date,
-        time,
+        time: selectedTime,
         mode,
       });
 
@@ -163,14 +167,39 @@ export default function BookingModal({ dietician, onClose }: BookingModalProps) 
                 ).map((slot) => (
                   <button
                     key={slot}
-                    className={`px-[18px] py-2.5 border-2 rounded-xl cursor-pointer text-[14px] font-semibold transition-colors duration-200 ${time === slot ? "bg-[#8b0c2e] text-white border-[#8b0c2e]" : "bg-[#fafafa] border-[#e8e8e8] text-[#333] hover:border-[#8b0c2e] hover:text-[#8b0c2e]"}`}
-                    onClick={() => setTime(slot)}
+                    className={`px-[18px] py-2.5 border-2 rounded-xl cursor-pointer text-[14px] font-semibold transition-colors duration-200 ${!isCustomTime && selectedSlot === slot ? "bg-[#8b0c2e] text-white border-[#8b0c2e]" : "bg-[#fafafa] border-[#e8e8e8] text-[#333] hover:border-[#8b0c2e] hover:text-[#8b0c2e]"}`}
+                    onClick={() => {
+                      setSelectedSlot(slot);
+                      setIsCustomTime(false);
+                    }}
                     type="button"
                   >
                     {slot}
                   </button>
                 ))}
+
+                <button
+                  type="button"
+                  className={`px-[18px] py-2.5 border-2 rounded-xl cursor-pointer text-[14px] font-semibold transition-colors duration-200 ${isCustomTime ? "bg-[#8b0c2e] text-white border-[#8b0c2e]" : "bg-[#fafafa] border-[#e8e8e8] text-[#333] hover:border-[#8b0c2e] hover:text-[#8b0c2e]"}`}
+                  onClick={() => setIsCustomTime(true)}
+                >
+                  Custom Time
+                </button>
               </div>
+
+              {isCustomTime && (
+                <div className="mt-3">
+                  <input
+                    type="time"
+                    className="w-full px-3.5 py-3 border-2 border-[#e8e8e8] rounded-xl text-[14px] outline-none transition-colors duration-200 bg-[#fafafa] focus:border-[#8b0c2e]"
+                    value={customTime}
+                    onChange={(e) => setCustomTime(e.target.value)}
+                  />
+                  <p className="mt-1.5 text-[12px] text-[#666]">
+                    Pick any convenient time if the listed slots do not fit.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Mode */}
@@ -235,7 +264,7 @@ export default function BookingModal({ dietician, onClose }: BookingModalProps) 
             <div className="bg-[#f8f5f7] rounded-2xl p-4 my-5">
               <div className="flex justify-between py-1.5 text-[14px] text-black">
                 <span className="inline-flex items-center gap-2"><FiCalendar className="h-4 w-4 text-[#8b0c2e]" />{date} ({getDayName(date)})</span>
-                <span className="inline-flex items-center gap-2"><FiClock className="h-4 w-4 text-[#8b0c2e]" />{time}</span>
+                <span className="inline-flex items-center gap-2"><FiClock className="h-4 w-4 text-[#8b0c2e]" />{selectedTime}</span>
               </div>
               <div className="flex justify-between py-1.5 text-[14px] text-[#555]">
                 <span>Consultation Fee</span>
