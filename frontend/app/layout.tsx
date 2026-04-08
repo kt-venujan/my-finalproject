@@ -1,20 +1,10 @@
 import { ReactNode } from "react";
-import { AuthProvider } from "@/context/AuthContext";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import "./global.css";
+import AppChrome from "@/components/AppChrome";
 
 import { Poppins, Sora, Playfair_Display } from "next/font/google";
 
-import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-import StarCursor from "@/components/StarCursor";
-import GlobalAuth from "@/components/GlobalAuth";
-import NavigationLoader from "@/components/NavigationLoader";
-import ScrollReveal from "@/components/ScrollReveal";
-import FloatingAIAssistant from "@/components/FloatingAIAssistant";
-import PageTransition from "@/components/PageTransition";
 
 /* BODY FONT */
 const poppins = Poppins({
@@ -52,45 +42,7 @@ export default function RootLayout({
       <body
         className={`${poppins.variable} ${sora.variable} ${playfair.variable}`}
       >
-        <AuthProvider>
-
-          {/*  PREMIUM CURSOR */}
-          <StarCursor />
-
-          {/* GLOBAL AUTH MODAL */}
-          <GlobalAuth />
-
-          {/*  NAVBAR */}
-          <Navbar />
-
-          {/* ROUTE TRANSITION LOADER */}
-          <NavigationLoader />
-
-          {/* GLOBAL FLOATING AI CHATBOT */}
-          <FloatingAIAssistant />
-
-          {/*  PAGE CONTENT */}
-          <PageTransition>{children}</PageTransition>
-
-          {/* GLOBAL SCROLL ANIMATIONS */}
-          <ScrollReveal />
-
-          {/* FOOTER */}
-          <Footer />
-
-          {/*  TOASTIFY (FINAL FIXED VERSION) */}
-          <ToastContainer
-            position="top-center"   //  better than right
-            autoClose={2000}
-            hideProgressBar={false}
-            newestOnTop
-            closeOnClick
-            pauseOnHover
-            draggable
-            theme="dark"            //  IMPORTANT (matches your UI)
-          />
-
-        </AuthProvider>
+        <AppChrome>{children}</AppChrome>
       </body>
     </html>
   );

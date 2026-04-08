@@ -5,7 +5,7 @@
 .adm-cert-header p { color: #888; font-size: 14px; }
 .adm-title { display: flex; align-items: center; gap: 10px; }
 .adm-title-icon { width: 20px; height: 20px; color: #8b0c2e; }
-.adm-cert-counts { color: #ff4d6d; font-weight: 600; }
+.adm-cert-counts { color: #8b0c2e; font-weight: 600; }
 
 .adm-cert-tabs { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
 .adm-cert-tab {
@@ -43,16 +43,16 @@
 .adm-btn-icon { width: 14px; height: 14px; }
 .adm-cert-view-btn, .adm-cert-approve-btn, .adm-cert-reject-btn { display: inline-flex; align-items: center; gap: 6px; }
 .adm-cert-view-btn {
-  padding: 8px 16px; border: 1px solid #3b82f6; border-radius: 8px;
-  color: #3b82f6; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s;
+  padding: 8px 16px; border: 1px solid #8b0c2e; border-radius: 8px;
+  color: #8b0c2e; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s;
 }
-.adm-cert-view-btn:hover { background: rgba(59,130,246,0.08); }
+.adm-cert-view-btn:hover { background: rgba(139,12,46,0.08); }
 .adm-cert-no-doc { color: #aaa; font-size: 13px; font-style: italic; }
 .adm-cert-approve-btn {
   padding: 8px 18px; border: none; border-radius: 8px;
-  background: #16a34a; color: #fff; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s;
+  background: #8b0c2e; color: #fff; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s;
 }
-.adm-cert-approve-btn:hover { background: #15803d; }
+.adm-cert-approve-btn:hover { background: #a1133d; }
 .adm-cert-approve-btn:disabled { opacity: 0.6; }
 .adm-cert-reject-btn {
   padding: 8px 18px; border: 1px solid #dc2626; border-radius: 8px;

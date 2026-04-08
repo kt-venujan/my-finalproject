@@ -1003,8 +1003,8 @@ export default function UserDashboard() {
                 onClick={() => setProfilePanel("delete")}
                 className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
                   profilePanel === "delete"
-                    ? "border-[#b91c1c] bg-[#b91c1c] text-white"
-                    : "border-[#f1c9cf] bg-[#fff6f7] text-[#b91c1c] hover:bg-[#ffeef0]"
+                    ? "border-[#8b0c2e] bg-[#8b0c2e] text-white"
+                    : "border-[#efc8d4] bg-white text-[#8b0c2e] hover:bg-[#fff4f7]"
                 }`}
               >
                 <span className="inline-flex items-center gap-2">
@@ -1154,7 +1154,7 @@ export default function UserDashboard() {
                     className="ud-new-booking-btn"
                     type="submit"
                     disabled={deletingAccount}
-                    style={{ background: "#b91c1c" }}
+                    style={{ background: "#8b0c2e" }}
                   >
                     {deletingAccount ? "Deleting..." : "Delete Profile"}
                   </button>

@@ -208,6 +208,132 @@ export default function AIDietAssistantPage() {
     };
   };
 
+  const validateInputForQuestion = (question: Question, value: string) => {
+    if (question.type !== "input") {
+      return { valid: true, normalizedValue: value };
+    }
+
+    if (question.key === "age") {
+      if (!/^\d+$/.test(value)) {
+        return {
+          valid: false,
+          error:
+            "Please enter your age as numbers only (example: 26).",
+        };
+      }
+
+      const age = Number(value);
+      if (age < 5 || age > 120) {
+        return {
+          valid: false,
+          error: "Please enter a valid age between 5 and 120.",
+        };
+      }
+
+      return { valid: true, normalizedValue: String(age) };
+    }
+
+    if (question.key === "height") {
+      if (!/^\d+$/.test(value)) {
+        return {
+          valid: false,
+          error:
+            "Please enter your height in cm using numbers only (example: 170).",
+        };
+      }
+
+      const height = Number(value);
+      if (height < 80 || height > 250) {
+        return {
+          valid: false,
+          error: "Please enter a valid height between 80 and 250 cm.",
+        };
+      }
+
+      return { valid: true, normalizedValue: String(height) };
+    }
+
+    if (question.key === "weight") {
+      if (!/^\d+(\.\d{1,2})?$/.test(value)) {
+        return {
+          valid: false,
+          error:
+            "Please enter your weight in kg as a number (example: 68 or 68.5).",
+        };
+      }
+
+      const weight = Number(value);
+      if (weight < 20 || weight > 350) {
+        return {
+          valid: false,
+          error: "Please enter a valid weight between 20 and 350 kg.",
+        };
+      }
+
+      return { valid: true, normalizedValue: String(weight) };
+    }
+
+    if (question.key === "wakeUpTime" || question.key === "sleepTime") {
+      const time24 = /^([01]?\d|2[0-3])(:[0-5]\d)?$/;
+      const time12 = /^(0?[1-9]|1[0-2])(:[0-5]\d)?\s?(am|pm)$/i;
+
+      if (!time24.test(value) && !time12.test(value)) {
+        return {
+          valid: false,
+          error:
+            "Please enter a valid time (example: 06:30 or 6:30 am).",
+        };
+      }
+
+      return { valid: true, normalizedValue: value };
+    }
+
+    if (question.key === "allergyDetails") {
+      if (/^(no|none|n\/a)$/i.test(value)) {
+        return {
+          valid: false,
+          error:
+            "You selected Yes for allergies. Please enter the actual allergy details.",
+        };
+      }
+
+      if (!/[a-zA-Z]/.test(value)) {
+        return {
+          valid: false,
+          error:
+            "Please enter allergy details in words, not only numbers.",
+        };
+      }
+
+      if (value.length < 2) {
+        return {
+          valid: false,
+          error: "Please provide allergy details before continuing.",
+        };
+      }
+
+      return { valid: true, normalizedValue: value };
+    }
+
+    if (question.key === "healthConditions" || question.key === "dislikedFoods") {
+      if (/^(no|none|n\/a)$/i.test(value)) {
+        return { valid: true, normalizedValue: "No" };
+      }
+
+      if (!/[a-zA-Z]/.test(value)) {
+        return {
+          valid: false,
+          error:
+            "Please enter your response in words (example: mushroom), or type No.",
+        };
+      }
+
+      return { valid: true, normalizedValue: value };
+    }
+
+    return { valid: true, normalizedValue: value };
+  };
+
   const generateDietPlan = async () => {
     try {
       setLoading(true);
@@ -325,9 +451,17 @@ ${
     const trimmed = value.trim();
     if (!trimmed || !current || loading || completed) return;
 
-    pushUserMessage(trimmed);
+    const validation = validateInputForQuestion(current, trimmed);
+    if (!validation.valid) {
+      pushAiMessage(validation.error || "Please enter a valid response.");
+      return;
+    }
 
-    const updatedForm = { ...form, [current.key]: trimmed };
+    const normalizedValue = validation.normalizedValue;
+
+    pushUserMessage(normalizedValue);
+
+    const updatedForm = { ...form, [current.key]: normalizedValue };
     setForm(updatedForm);
     setInput("");
 
@@ -336,7 +470,7 @@ ${
     }
 
     if (current.key === "hasAllergies") {
-      if (trimmed === "Yes") {
+      if (normalizedValue === "Yes") {
         const updatedQuestions = [
           ...questions.slice(0, step + 1),
           {
@@ -501,6 +635,10 @@ ${
 
                   <Link href="/pricing" className="after-plan-btn secondary">
                     See Pricing Plans
+                  </Link>
+
+                  <Link href="/kitchen" className="after-plan-btn secondary">
+                    Visit Kitchen Site
                   </Link>
                 </div>
 
