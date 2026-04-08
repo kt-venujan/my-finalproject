@@ -26,6 +26,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/axios";
 import { resolveBackendAssetUrl } from "@/lib/assetUrl";
+import ImageCropModal from "@/components/community/ImageCropModal";
 
 type CommunityAuthor = {
   id: string;
@@ -100,6 +101,11 @@ export default function CommunityPage() {
   const [postText, setPostText] = useState("");
   const [postImageFile, setPostImageFile] = useState<File | null>(null);
   const [postImagePreview, setPostImagePreview] = useState("");
+  const [postCropSource, setPostCropSource] = useState("");
+  const [pendingPostImageMeta, setPendingPostImageMeta] = useState<{
+    name: string;
+    type: string;
+  } | null>(null);
 
   const userAvatar = useMemo(() => resolveBackendAssetUrl(user?.avatar), [user?.avatar]);
 
@@ -174,16 +180,49 @@ export default function CommunityPage() {
     [postImagePreview]
   );
 
+  useEffect(
+    () => () => {
+      if (postCropSource.startsWith("blob:")) {
+        URL.revokeObjectURL(postCropSource);
+      }
+    },
+    [postCropSource]
+  );
+
   const handlePostImageSelect = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] || null;
-    setPostImageFile(file);
+    event.target.value = "";
 
     if (!file) {
+      setPostImageFile(null);
       setPostImagePreview("");
+      setPostCropSource("");
+      setPendingPostImageMeta(null);
       return;
     }
 
-    setPostImagePreview(URL.createObjectURL(file));
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file.");
+      return;
+    }
+
+    setPendingPostImageMeta({
+      name: file.name,
+      type: file.type || "image/jpeg",
+    });
+    setPostCropSource(URL.createObjectURL(file));
+  };
+
+  const handlePostCropCancel = () => {
+    setPostCropSource("");
+    setPendingPostImageMeta(null);
+  };
+
+  const handlePostCropApply = (file: File, previewUrl: string) => {
+    setPostImageFile(file);
+    setPostImagePreview(previewUrl);
+    setPostCropSource("");
+    setPendingPostImageMeta(null);
   };
 
   const handleTopicClick = (topic: string) => {
@@ -293,8 +332,9 @@ export default function CommunityPage() {
   const myPostsCount = posts.filter((post) => String(post.author.id) === String(user.id)).length;
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_20%_8%,#ffffff_0%,#f3f4f6_50%,#e5e7eb_100%)] px-3 py-6 text-zinc-900 sm:px-5 lg:px-6">
-      <div className="mx-auto max-w-[1360px]">
+    <>
+      <main className="min-h-screen bg-[radial-gradient(circle_at_20%_8%,#ffffff_0%,#f3f4f6_50%,#e5e7eb_100%)] px-3 py-6 text-zinc-900 sm:px-5 lg:px-6">
+        <div className="mx-auto max-w-[1360px]">
         <section className="sticky top-2 z-20 rounded-2xl border border-white/80 bg-white/55 px-4 py-3 shadow-[0_16px_45px_rgba(15,23,42,0.12)] backdrop-blur-2xl sm:px-6">
           <div className="flex flex-wrap items-center gap-3">
             <Link
@@ -561,6 +601,18 @@ export default function CommunityPage() {
           </aside>
         </div>
       </div>
-    </main>
+      </main>
+
+      <ImageCropModal
+        isOpen={!!postCropSource}
+        imageSrc={postCropSource}
+        title="Crop Post Image"
+        aspect={4 / 3}
+        fileName={pendingPostImageMeta?.name || "community-post"}
+        fileType={pendingPostImageMeta?.type || "image/jpeg"}
+        onCancel={handlePostCropCancel}
+        onApply={handlePostCropApply}
+      />
+    </>
   );
 }

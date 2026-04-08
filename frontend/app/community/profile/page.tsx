@@ -19,6 +19,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/axios";
 import { resolveBackendAssetUrl } from "@/lib/assetUrl";
+import ImageCropModal from "@/components/community/ImageCropModal";
 
 type CommunityAuthor = {
   id: string;
@@ -111,6 +112,11 @@ export default function CommunityProfilePage() {
   const [profileForm, setProfileForm] = useState<ProfileForm>(emptyProfileForm);
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [coverImagePreview, setCoverImagePreview] = useState("");
+  const [coverCropSource, setCoverCropSource] = useState("");
+  const [pendingCoverImageMeta, setPendingCoverImageMeta] = useState<{
+    name: string;
+    type: string;
+  } | null>(null);
 
   const userAvatar = useMemo(() => resolveBackendAssetUrl(user?.avatar), [user?.avatar]);
 
@@ -187,17 +193,49 @@ export default function CommunityProfilePage() {
     [coverImagePreview]
   );
 
+  useEffect(
+    () => () => {
+      if (coverCropSource.startsWith("blob:")) {
+        URL.revokeObjectURL(coverCropSource);
+      }
+    },
+    [coverCropSource]
+  );
+
   const handleCoverImageSelect = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] || null;
-    setCoverImageFile(file);
+    event.target.value = "";
 
     if (!file) {
+      setCoverImageFile(null);
       setCoverImagePreview(profile?.coverImage ? resolveBackendAssetUrl(profile.coverImage) : "");
+      setCoverCropSource("");
+      setPendingCoverImageMeta(null);
       return;
     }
 
-    const nextPreview = URL.createObjectURL(file);
-    setCoverImagePreview(nextPreview);
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file.");
+      return;
+    }
+
+    setPendingCoverImageMeta({
+      name: file.name,
+      type: file.type || "image/jpeg",
+    });
+    setCoverCropSource(URL.createObjectURL(file));
+  };
+
+  const handleCoverCropCancel = () => {
+    setCoverCropSource("");
+    setPendingCoverImageMeta(null);
+  };
+
+  const handleCoverCropApply = (file: File, previewUrl: string) => {
+    setCoverImageFile(file);
+    setCoverImagePreview(previewUrl);
+    setCoverCropSource("");
+    setPendingCoverImageMeta(null);
   };
 
   const saveSettings = async (event: FormEvent) => {
@@ -281,8 +319,9 @@ export default function CommunityProfilePage() {
   const displayName = profileForm.displayName || user.username;
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_20%_8%,#ffffff_0%,#f3f4f6_50%,#e5e7eb_100%)] px-4 py-8 text-zinc-900 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl space-y-6">
+    <>
+      <main className="min-h-screen bg-[radial-gradient(circle_at_20%_8%,#ffffff_0%,#f3f4f6_50%,#e5e7eb_100%)] px-4 py-8 text-zinc-900 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl space-y-6">
         <Link
           href="/community"
           className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/70 px-4 py-2 text-sm text-zinc-800 transition hover:bg-white"
@@ -536,7 +575,19 @@ export default function CommunityProfilePage() {
             })
           )}
         </section>
-      </div>
-    </main>
+        </div>
+      </main>
+
+      <ImageCropModal
+        isOpen={!!coverCropSource}
+        imageSrc={coverCropSource}
+        title="Crop Cover Image"
+        aspect={16 / 5}
+        fileName={pendingCoverImageMeta?.name || "community-cover"}
+        fileType={pendingCoverImageMeta?.type || "image/jpeg"}
+        onCancel={handleCoverCropCancel}
+        onApply={handleCoverCropApply}
+      />
+    </>
   );
 }
