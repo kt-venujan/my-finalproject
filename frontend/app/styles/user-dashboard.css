@@ -692,3 +692,137 @@
     font-size: 24px;
   }
 }
+
+/* ===== LIGHT THEME OVERRIDE ===== */
+.ud-wrapper {
+  --ud-bg: #f3f4f6;
+  --ud-surface: #ffffff;
+  --ud-surface-2: #f8fafc;
+  --ud-border: #e5e7eb;
+  --ud-border-soft: #d1d5db;
+  --ud-text: #111827;
+  --ud-text-muted: #4b5563;
+  --ud-accent: #8b0c2e;
+  --ud-accent-soft: #8b0c2e;
+  --ud-accent-strong: #8b0c2e;
+  background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
+  color: var(--ud-text);
+}
+
+.ud-sidebar,
+.ud-upcoming,
+.ud-stat,
+.ud-booking-card,
+.ud-kitchen-card,
+.ud-empty,
+.ud-tip-card,
+.ud-card-item,
+.ud-profile-card,
+.ud-help-modal,
+.rm-modal {
+  background: #ffffff;
+  border-color: var(--ud-border);
+  color: var(--ud-text);
+}
+
+.ud-sidebar {
+  border-right: 1px solid var(--ud-border);
+  border-bottom: 1px solid var(--ud-border);
+}
+
+.ud-home-link,
+.ud-topbar-notify,
+.ud-quick-btn,
+.ud-input,
+.ud-ghost-btn,
+.profile-file-picker-btn,
+.profile-remove-btn,
+.rm-close,
+.rm-comment {
+  background: #f8fafc;
+  border-color: var(--ud-border-soft);
+  color: #1f2937;
+}
+
+.ud-nav-item,
+.ud-mini-links a,
+.ud-mini-copy,
+.ud-booking-info p,
+.ud-booking-mini p,
+.ud-profile-help,
+.ud-tip-card p,
+.ud-card-exp,
+.rm-modal p {
+  color: var(--ud-text-muted);
+}
+
+.ud-nav-item:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.ud-nav-item.active {
+  background: rgba(139, 12, 46, 0.1);
+  color: #8b0c2e;
+  border-right: 3px solid #8b0c2e;
+}
+
+.ud-topbar-search {
+  background: #ffffff;
+  border-color: var(--ud-border-soft);
+}
+
+.ud-topbar-search input {
+  color: #111827;
+}
+
+.ud-topbar-search input::placeholder {
+  color: #6b7280;
+}
+
+.ud-stat-icon,
+.ud-tip-icon {
+  background: rgba(139, 12, 46, 0.1);
+  color: #8b0c2e;
+}
+
+.ud-action-btn.call,
+.ud-action-btn.chat,
+.ud-action-btn.review,
+.ud-action-btn.pay,
+.ud-help-trigger,
+.ud-help-whatsapp,
+.ud-new-booking-btn,
+.ud-empty button,
+.rm-submit {
+  background: #8b0c2e;
+  border-color: #8b0c2e;
+  color: #ffffff;
+}
+
+.ud-help-trigger:hover,
+.ud-help-whatsapp:hover,
+.ud-new-booking-btn:hover,
+.rm-submit:hover {
+  filter: brightness(1.06);
+}
+
+.ud-booking-mini {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.ud-help-overlay,
+.rm-overlay {
+  background: rgba(17, 24, 39, 0.38);
+}
+
+.ud-help-details {
+  background: #f9fafb;
+  border-color: var(--ud-border);
+}
+
+.profile-remove-btn.active {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #b91c1c;
+}

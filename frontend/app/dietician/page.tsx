@@ -203,6 +203,12 @@ export default function DieticianPage() {
               Generate AI Diet Plan
             </Link>
             <Link
+              href="/kitchen"
+              className="inline-flex items-center justify-center rounded-xl border border-[#ffb9cb]/35 bg-[#23141a] px-4 py-2.5 text-sm font-semibold text-[#ffe4ec] transition hover:border-[#ffb9cb]/60"
+            >
+              Visit Kitchen Site
+            </Link>
+            <Link
               href="/pricing"
               className="inline-flex items-center justify-center rounded-xl border border-[#ffb9cb]/35 bg-[#1d1216] px-4 py-2.5 text-sm font-semibold text-[#ffe4ec] transition hover:border-[#ffb9cb]/60"
             >

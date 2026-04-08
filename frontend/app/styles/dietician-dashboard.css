@@ -638,3 +638,123 @@
     font-size: 24px;
   }
 }
+
+/* ===== LIGHT THEME OVERRIDE ===== */
+.dd-wrapper {
+  --dd-bg: #f3f4f6;
+  --dd-surface: #ffffff;
+  --dd-surface-2: #f8fafc;
+  --dd-border: #e5e7eb;
+  --dd-border-soft: #d1d5db;
+  --dd-text: #111827;
+  --dd-text-muted: #4b5563;
+  --dd-accent: #8b0c2e;
+  --dd-accent-soft: #8b0c2e;
+  --dd-accent-strong: #8b0c2e;
+  background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
+  color: var(--dd-text);
+}
+
+.dd-sidebar,
+.dd-stat-card,
+.dd-cert-banner,
+.dd-recent,
+.dd-booking-card,
+.dd-empty,
+.dd-verify-status,
+.dd-profile-form,
+.dd-settings-card,
+.dd-notify-item,
+.dd-help-modal {
+  background: #ffffff;
+  border-color: var(--dd-border);
+  color: var(--dd-text);
+}
+
+.dd-sidebar {
+  border-right: 1px solid var(--dd-border);
+}
+
+.dd-nav-item,
+.dd-mini-links a,
+.dd-mini-copy,
+.dd-page-header p,
+.dd-booking-details p,
+.dd-recent-time,
+.dd-settings-help,
+.dd-notify-time,
+.dd-help-text {
+  color: var(--dd-text-muted);
+}
+
+.dd-back-home-btn,
+.dd-topbar-search,
+.dd-topbar-notify,
+.dd-settings-input,
+.dd-settings-otp-btn,
+.dd-upload-zone,
+.profile-file-picker-btn,
+.profile-remove-btn,
+.dd-help-close {
+  background: #f8fafc;
+  border-color: var(--dd-border-soft);
+  color: #1f2937;
+}
+
+.dd-topbar-search input {
+  color: #111827;
+}
+
+.dd-topbar-search input::placeholder {
+  color: #6b7280;
+}
+
+.dd-nav-item:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.dd-nav-item.active {
+  background: rgba(139, 12, 46, 0.1);
+  color: #8b0c2e;
+  border-right: 3px solid #8b0c2e;
+}
+
+.dd-stat-icon,
+.dd-recent-avatar,
+.dd-booking-avatar,
+.dd-account-avatar.placeholder {
+  background: rgba(139, 12, 46, 0.12);
+  color: #8b0c2e;
+}
+
+.dd-approve-btn,
+.dd-submit-btn,
+.dd-help-trigger,
+.dd-help-whatsapp {
+  background: #8b0c2e;
+  border-color: #8b0c2e;
+  color: #ffffff;
+}
+
+.dd-action-btn.call,
+.dd-action-btn.chat {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  color: #1f2937;
+}
+
+.dd-recent-item,
+.dd-table-row,
+.dd-notify-item {
+  border-bottom-color: #e5e7eb;
+}
+
+.dd-help-overlay {
+  background: rgba(17, 24, 39, 0.38);
+}
+
+.dd-help-details {
+  background: #f9fafb;
+  border-color: var(--dd-border);
+}

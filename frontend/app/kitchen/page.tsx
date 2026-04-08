@@ -400,7 +400,7 @@ export default function KitchenPage() {
     isClient && cartModalOpen
       ? createPortal(
           <div
-            className="modal-overlay"
+            className="modal-overlay kitchen-modal-overlay"
             onClick={() => setCartModalOpen(false)}
           >
             <div className="cart-modal" onClick={(e) => e.stopPropagation()}>
@@ -516,7 +516,7 @@ export default function KitchenPage() {
   const foodsModalNode =
     isClient && foodsModalOpen
       ? createPortal(
-          <div className="modal-overlay" onClick={closeFoodsModal}>
+          <div className="modal-overlay kitchen-modal-overlay" onClick={closeFoodsModal}>
             <div className="foods-modal" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <div>
@@ -584,7 +584,7 @@ export default function KitchenPage() {
   const bundleModalNode =
     isClient && bundleModalOpen && selectedBundle
       ? createPortal(
-          <div className="modal-overlay" onClick={() => setBundleModalOpen(false)}>
+          <div className="modal-overlay kitchen-modal-overlay" onClick={() => setBundleModalOpen(false)}>
             <div className="foods-modal" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <div>
@@ -854,7 +854,13 @@ export default function KitchenPage() {
 
           <div className="category-grid-v2">
             {categories.map((category) => (
-              <div key={category._id} className="category-card-v2">
+              <button
+                key={category._id}
+                type="button"
+                className="category-card-v2"
+                onClick={() => openFoodsModal(category)}
+                aria-label={`Open ${category.name} foods`}
+              >
                 <div className="category-card-v2__top">
                   <span className="category-card-v2__icon">
                     <FiGrid />
@@ -863,14 +869,7 @@ export default function KitchenPage() {
                 </div>
 
                 <p>Open this category and view more foods.</p>
-
-                <button
-                  className="category-card-v2__btn"
-                  onClick={() => openFoodsModal(category)}
-                >
-                  View More Foods
-                </button>
-              </div>
+              </button>
             ))}
           </div>
         </section>
@@ -906,7 +905,16 @@ export default function KitchenPage() {
                       {offers.map((offer) => (
                         <article
                           key={offer._id}
-                          className="rounded-2xl border border-white/10 bg-[#250914]/90 p-5 shadow-[0_16px_30px_rgba(0,0,0,0.2)]"
+                          className="cursor-pointer rounded-2xl border border-white/10 bg-[#250914]/90 p-5 shadow-[0_16px_30px_rgba(0,0,0,0.2)] transition hover:border-[#a90f3e]/60"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => openBundleModal(offer)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              openBundleModal(offer);
+                            }
+                          }}
                         >
                           <div className="mb-2 flex items-center justify-between gap-3">
                             <h3 className="min-w-0 text-3xl font-semibold leading-tight text-white break-words">
@@ -921,13 +929,6 @@ export default function KitchenPage() {
                             {offer.description || "Build your custom meal mix."}
                           </p>
                           <p className="mt-2 text-sm text-white/75">{offer.items.length} foods included</p>
-
-                          <button
-                            className="bundle-offer-action-btn"
-                            onClick={() => openBundleModal(offer)}
-                          >
-                            Customize Bundle
-                          </button>
                         </article>
                       ))}
                     </div>

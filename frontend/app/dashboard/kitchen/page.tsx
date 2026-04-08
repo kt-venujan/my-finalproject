@@ -299,20 +299,20 @@ export default function KitchenDashboardPage() {
   }, [orders]);
 
   return (
-    <div className="min-h-screen bg-[#12020a] text-[#ffe8ee]">
+    <div className="min-h-screen bg-[#f3f4f6] text-[#111827]">
       <div className="mx-auto grid min-h-screen max-w-[1400px] grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="border-r border-[#ff7a95]/20 bg-[#1c0510] p-5 lg:p-6">
+        <aside className="border-r border-gray-200 bg-white p-5 lg:p-6">
           <button
             type="button"
             onClick={() => router.push("/")}
-            className="mb-5 inline-flex items-center gap-2 rounded-lg border border-[#ff7a95]/25 px-3 py-2 text-sm text-[#ffd2de] hover:bg-[#2a0816]"
+            className="mb-5 inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
           >
             <FiArrowLeft />
             Home
           </button>
 
           <h1 className="text-2xl font-bold tracking-tight">Kitchen Staff</h1>
-          <p className="mt-1 text-sm text-[#ffc3d3]/75">Order Operations Dashboard</p>
+          <p className="mt-1 text-sm text-gray-500">Order Operations Dashboard</p>
 
           <nav className="mt-6 space-y-2">
             {[
@@ -336,7 +336,7 @@ export default function KitchenDashboardPage() {
                 className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition ${
                   active === item.id
                     ? "bg-[#8b0c2e] text-white"
-                    : "bg-[#240814] text-[#ffd6e0] hover:bg-[#2f0c1a]"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
                 {item.icon}
@@ -345,9 +345,9 @@ export default function KitchenDashboardPage() {
             ))}
           </nav>
 
-          <div className="mt-8 rounded-xl border border-[#ff7a95]/20 bg-[#240814] p-4">
+          <div className="mt-8 rounded-xl border border-gray-200 bg-gray-50 p-4">
             <p className="text-sm font-semibold">{user?.username || "Kitchen Staff"}</p>
-            <p className="text-xs text-[#ffc3d3]/70">Kitchen Team</p>
+            <p className="text-xs text-gray-500">Kitchen Team</p>
             <button
               type="button"
               onClick={logout}
@@ -362,31 +362,31 @@ export default function KitchenDashboardPage() {
         <main className="p-5 lg:p-8">
           {active === "dashboard" && (
             <section>
-              <h2 className="text-3xl font-bold text-white">Kitchen Overview</h2>
-              <p className="mt-1 text-sm text-[#ffd1dd]/80">
+              <h2 className="text-3xl font-bold text-[#111827]">Kitchen Overview</h2>
+              <p className="mt-1 text-sm text-gray-500">
                 Manage order progress from processing to ready-to-deliver.
               </p>
 
               <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-                <div className="rounded-2xl border border-[#ff7a95]/25 bg-[#220713] p-4">
-                  <p className="text-xs uppercase tracking-wide text-[#ffb3c6]">Total Orders</p>
-                  <p className="mt-2 text-3xl font-bold text-white">{stats.total}</p>
+                <div className="rounded-2xl border border-gray-200 bg-white p-4">
+                  <p className="text-xs uppercase tracking-wide text-gray-500">Total Orders</p>
+                  <p className="mt-2 text-3xl font-bold text-[#111827]">{stats.total}</p>
                 </div>
-                <div className="rounded-2xl border border-[#ff7a95]/25 bg-[#220713] p-4">
-                  <p className="text-xs uppercase tracking-wide text-[#ffb3c6]">Processing</p>
-                  <p className="mt-2 text-3xl font-bold text-white">{stats.processing}</p>
+                <div className="rounded-2xl border border-gray-200 bg-white p-4">
+                  <p className="text-xs uppercase tracking-wide text-gray-500">Processing</p>
+                  <p className="mt-2 text-3xl font-bold text-[#111827]">{stats.processing}</p>
                 </div>
-                <div className="rounded-2xl border border-[#ff7a95]/25 bg-[#220713] p-4">
-                  <p className="text-xs uppercase tracking-wide text-[#ffb3c6]">Cooking</p>
-                  <p className="mt-2 text-3xl font-bold text-white">{stats.cooking}</p>
+                <div className="rounded-2xl border border-gray-200 bg-white p-4">
+                  <p className="text-xs uppercase tracking-wide text-gray-500">Cooking</p>
+                  <p className="mt-2 text-3xl font-bold text-[#111827]">{stats.cooking}</p>
                 </div>
-                <div className="rounded-2xl border border-[#ff7a95]/25 bg-[#220713] p-4">
-                  <p className="text-xs uppercase tracking-wide text-[#ffb3c6]">Packed</p>
-                  <p className="mt-2 text-3xl font-bold text-white">{stats.packed}</p>
+                <div className="rounded-2xl border border-gray-200 bg-white p-4">
+                  <p className="text-xs uppercase tracking-wide text-gray-500">Packed</p>
+                  <p className="mt-2 text-3xl font-bold text-[#111827]">{stats.packed}</p>
                 </div>
-                <div className="rounded-2xl border border-[#ff7a95]/25 bg-[#220713] p-4">
-                  <p className="text-xs uppercase tracking-wide text-[#ffb3c6]">Ready To Deliver</p>
-                  <p className="mt-2 text-3xl font-bold text-white">{stats.ready}</p>
+                <div className="rounded-2xl border border-gray-200 bg-white p-4">
+                  <p className="text-xs uppercase tracking-wide text-gray-500">Ready To Deliver</p>
+                  <p className="mt-2 text-3xl font-bold text-[#111827]">{stats.ready}</p>
                 </div>
               </div>
             </section>
@@ -394,17 +394,17 @@ export default function KitchenDashboardPage() {
 
           {active === "orders" && (
             <section>
-              <h2 className="text-3xl font-bold text-white">Kitchen Orders</h2>
-              <p className="mt-1 text-sm text-[#ffd1dd]/80">
+              <h2 className="text-3xl font-bold text-[#111827]">Kitchen Orders</h2>
+              <p className="mt-1 text-sm text-gray-500">
                 Update statuses: Processing, Cooking, Packed, Ready To Deliver.
               </p>
 
               {loading ? (
-                <div className="mt-6 rounded-2xl border border-[#ff7a95]/20 bg-[#220713] p-6">
+                <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-6">
                   Loading orders...
                 </div>
               ) : orders.length === 0 ? (
-                <div className="mt-6 rounded-2xl border border-[#ff7a95]/20 bg-[#220713] p-6">
+                <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-6">
                   No kitchen orders available.
                 </div>
               ) : (
@@ -412,18 +412,18 @@ export default function KitchenDashboardPage() {
                   {orders.map((order) => (
                     <article
                       key={order._id}
-                      className="rounded-2xl border border-[#ff7a95]/20 bg-[#220713] p-5"
+                      className="rounded-2xl border border-gray-200 bg-white p-5"
                     >
                       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <div className="space-y-2">
-                          <p className="text-lg font-semibold text-white">
+                          <p className="text-lg font-semibold text-[#111827]">
                             {order.user?.username || "Unknown User"}
                           </p>
-                          <p className="text-sm text-[#ffd1dd]/75">{order.user?.email || "-"}</p>
-                          <p className="text-sm text-[#ffd1dd]/75">
+                          <p className="text-sm text-gray-500">{order.user?.email || "-"}</p>
+                          <p className="text-sm text-gray-500">
                             {new Date(order.createdAt).toLocaleString()} · Rs. {Number(order.subtotal || 0).toLocaleString()}
                           </p>
-                          <p className="text-sm text-[#ffd1dd]/85">
+                          <p className="text-sm text-gray-600">
                             {order.items
                               .slice(0, 3)
                               .map((item) => `${item.name} x${item.quantity}`)
@@ -433,7 +433,7 @@ export default function KitchenDashboardPage() {
                         </div>
 
                         <div className="flex flex-col items-start gap-3 lg:items-end">
-                          <div className="inline-flex items-center gap-2 rounded-full border border-[#ff7a95]/25 px-3 py-1 text-xs text-[#ffd9e2]">
+                          <div className="inline-flex items-center gap-2 rounded-full border border-gray-300 px-3 py-1 text-xs text-gray-600">
                             <FiCheckCircle />
                             {order.paymentMethod === "card" ? "Card" : "Cash"} / {order.paymentStatus}
                           </div>
@@ -444,7 +444,7 @@ export default function KitchenDashboardPage() {
                             onChange={(e) =>
                               updateOrderStatus(order._id, e.target.value as KitchenOrderStatus)
                             }
-                            className="rounded-lg border border-[#ff7a95]/35 bg-[#1b0510] px-3 py-2 text-sm text-white outline-none"
+                            className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none"
                           >
                             {statusOptions.map((status) => (
                               <option key={status} value={status}>
@@ -463,8 +463,8 @@ export default function KitchenDashboardPage() {
 
           {active === "profile" && (
             <section>
-              <h2 className="text-3xl font-bold text-white">My Profile</h2>
-              <p className="mt-1 text-sm text-[#ffd1dd]/80">Manage account settings securely.</p>
+              <h2 className="text-3xl font-bold text-[#111827]">My Profile</h2>
+              <p className="mt-1 text-sm text-gray-500">Manage account settings securely.</p>
 
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
@@ -473,7 +473,7 @@ export default function KitchenDashboardPage() {
                   className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
                     profilePanel === "account"
                       ? "border-[#8b0c2e] bg-[#8b0c2e] text-white"
-                      : "border-[#ff7a95]/35 bg-[#220713] text-[#ffd7e1] hover:bg-[#2f0c1a]"
+                      : "border-gray-300 bg-white text-[#8b0c2e] hover:bg-gray-100"
                   }`}
                 >
                   Account Profile
@@ -484,7 +484,7 @@ export default function KitchenDashboardPage() {
                   className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
                     profilePanel === "security"
                       ? "border-[#8b0c2e] bg-[#8b0c2e] text-white"
-                      : "border-[#ff7a95]/35 bg-[#220713] text-[#ffd7e1] hover:bg-[#2f0c1a]"
+                      : "border-gray-300 bg-white text-[#8b0c2e] hover:bg-gray-100"
                   }`}
                 >
                   <span className="inline-flex items-center gap-2">
@@ -497,8 +497,8 @@ export default function KitchenDashboardPage() {
                   onClick={() => setProfilePanel("delete")}
                   className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
                     profilePanel === "delete"
-                      ? "border-[#b91c1c] bg-[#b91c1c] text-white"
-                      : "border-[#f87171]/40 bg-[#3a0a12] text-[#fecaca] hover:bg-[#4b0d17]"
+                      ? "border-[#8b0c2e] bg-[#8b0c2e] text-white"
+                      : "border-gray-300 bg-white text-[#8b0c2e] hover:bg-gray-100"
                   }`}
                 >
                   <span className="inline-flex items-center gap-2">
@@ -512,20 +512,20 @@ export default function KitchenDashboardPage() {
                 {profilePanel === "account" && (
                   <form
                     onSubmit={saveProfile}
-                    className="rounded-2xl border border-[#ff7a95]/20 bg-[#220713] p-5"
+                    className="rounded-2xl border border-gray-200 bg-white p-5"
                   >
-                    <h3 className="text-lg font-semibold text-white">Account Details</h3>
+                    <h3 className="text-lg font-semibold text-[#111827]">Account Details</h3>
 
                     <div className="mt-4 flex items-center gap-4">
                       {profileAvatarPreview ? (
                         <img
                           src={profileAvatarPreview}
                           alt={profileName || "Kitchen Staff"}
-                          className="h-16 w-16 rounded-full border border-[#ff7a95]/25 object-cover"
+                          className="h-16 w-16 rounded-full border border-gray-300 object-cover"
                           onError={() => setProfileAvatarPreview("")}
                         />
                       ) : (
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#ff7a95]/25 bg-[#2b0b18] text-xl font-bold text-white">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-gray-300 bg-gray-100 text-xl font-bold text-gray-700">
                           {profileName?.[0]?.toUpperCase() || "K"}
                         </div>
                       )}
@@ -550,29 +550,29 @@ export default function KitchenDashboardPage() {
                             {removeAvatar ? "Undo remove avatar" : "Remove current avatar"}
                           </button>
                           {removeAvatar && (
-                            <p className="mt-2 text-xs text-[#fecaca]">Avatar will be removed when you save profile.</p>
+                            <p className="mt-2 text-xs text-red-600">Avatar will be removed when you save profile.</p>
                           )}
                       </div>
                     </div>
 
                     <input
-                      className="mt-4 w-full rounded-lg border border-[#ff7a95]/30 bg-[#17040c] px-3 py-2 text-white outline-none"
+                      className="mt-4 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-900 outline-none"
                       value={profileName}
                       onChange={(e) => setProfileName(e.target.value)}
                       placeholder="Username"
                       required
                     />
                     <input
-                      className="mt-3 w-full rounded-lg border border-[#ff7a95]/30 bg-[#17040c] px-3 py-2 text-white outline-none opacity-80"
+                      className="mt-3 w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-gray-500 outline-none opacity-80"
                       type="email"
                       value={profileEmail}
                       placeholder="Email"
                       readOnly
                       disabled
                     />
-                    <p className="mt-2 text-xs text-[#ffd7e1]/75">Email is locked and cannot be changed.</p>
+                    <p className="mt-2 text-xs text-gray-500">Email is locked and cannot be changed.</p>
                     <input
-                      className="mt-3 w-full rounded-lg border border-[#ff7a95]/30 bg-[#17040c] px-3 py-2 text-white outline-none"
+                      className="mt-3 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-900 outline-none"
                       value={profilePhone}
                       onChange={(e) => setProfilePhone(e.target.value)}
                       placeholder="Phone"
@@ -591,10 +591,10 @@ export default function KitchenDashboardPage() {
                 {profilePanel === "security" && (
                   <form
                     onSubmit={resetPassword}
-                    className="rounded-2xl border border-[#ff7a95]/20 bg-[#220713] p-5"
+                    className="rounded-2xl border border-gray-200 bg-white p-5"
                   >
-                    <h3 className="text-lg font-semibold text-white">Reset Password (OTP)</h3>
-                    <p className="mt-2 text-sm text-[#ffd7e1]/80">
+                    <h3 className="text-lg font-semibold text-[#111827]">Reset Password (OTP)</h3>
+                    <p className="mt-2 text-sm text-gray-500">
                       Send OTP to your registered email and reset your password securely.
                     </p>
 
@@ -602,20 +602,20 @@ export default function KitchenDashboardPage() {
                       type="button"
                       onClick={sendResetOtp}
                       disabled={sendingOtp}
-                      className="mt-4 rounded-lg border border-[#ff7a95]/35 bg-[#17040c] px-4 py-2 text-sm font-semibold text-[#ffd7e1] hover:bg-[#220713] disabled:opacity-60"
+                      className="mt-4 rounded-lg border border-gray-300 bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200 disabled:opacity-60"
                     >
                       {sendingOtp ? "Sending OTP..." : "Send OTP"}
                     </button>
 
                     <input
-                      className="mt-4 w-full rounded-lg border border-[#ff7a95]/30 bg-[#17040c] px-3 py-2 text-white outline-none"
+                      className="mt-4 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-900 outline-none"
                       value={resetOtp}
                       onChange={(e) => setResetOtp(e.target.value)}
                       placeholder="Enter OTP"
                       required
                     />
                     <input
-                      className="mt-3 w-full rounded-lg border border-[#ff7a95]/30 bg-[#17040c] px-3 py-2 text-white outline-none"
+                      className="mt-3 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-900 outline-none"
                       type="password"
                       minLength={6}
                       value={resetNewPassword}
@@ -637,10 +637,10 @@ export default function KitchenDashboardPage() {
                 {profilePanel === "delete" && (
                   <form
                     onSubmit={deleteAccount}
-                    className="rounded-2xl border border-[#f87171]/30 bg-[#3a0a12] p-5"
+                    className="rounded-2xl border border-red-200 bg-red-50 p-5"
                   >
-                    <h3 className="text-lg font-semibold text-[#fecaca]">Delete Profile</h3>
-                    <p className="mt-2 text-sm text-[#fecaca]/90">
+                    <h3 className="text-lg font-semibold text-[#b91c1c]">Delete Profile</h3>
+                    <p className="mt-2 text-sm text-[#b91c1c]/90">
                       This action permanently deletes your account and cannot be undone.
                     </p>
 
@@ -648,13 +648,13 @@ export default function KitchenDashboardPage() {
                       type="button"
                       onClick={sendDeleteOtp}
                       disabled={deleteOtpSending}
-                      className="mt-4 rounded-lg border border-[#fca5a5]/40 bg-[#2f0810] px-4 py-2 text-sm font-semibold text-[#fecaca] hover:bg-[#3f0b14] disabled:opacity-60"
+                      className="mt-4 rounded-lg border border-gray-300 bg-gray-100 px-4 py-2 text-sm font-semibold text-[#8b0c2e] hover:bg-gray-200 disabled:opacity-60"
                     >
                       {deleteOtpSending ? "Sending OTP..." : "Send Delete OTP"}
                     </button>
 
                     <input
-                      className="mt-4 w-full rounded-lg border border-[#fca5a5]/40 bg-[#2f0810] px-3 py-2 text-white outline-none"
+                      className="mt-4 w-full rounded-lg border border-red-300 bg-white px-3 py-2 text-gray-900 outline-none"
                       value={deleteOtp}
                       onChange={(e) => setDeleteOtp(e.target.value)}
                       placeholder="Enter delete OTP"
@@ -664,7 +664,7 @@ export default function KitchenDashboardPage() {
                     <button
                       type="submit"
                       disabled={deletingAccount}
-                      className="mt-4 rounded-lg bg-[#b91c1c] px-4 py-2 text-sm font-semibold text-white hover:bg-[#991b1b] disabled:opacity-60"
+                      className="mt-4 rounded-lg bg-[#8b0c2e] px-4 py-2 text-sm font-semibold text-white hover:bg-[#a2133d] disabled:opacity-60"
                     >
                       {deletingAccount ? "Deleting..." : "Delete Profile"}
                     </button>

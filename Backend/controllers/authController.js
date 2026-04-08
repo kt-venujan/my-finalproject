@@ -11,6 +11,9 @@ import Appointment from "../models/Appointment.js";
 import Chat from "../models/Chat.js";
 import Review from "../models/Review.js";
 import AiChatSession from "../models/AiChatSession.js";
+import CommunityPost from "../models/CommunityPost.js";
+import CommunityProfile from "../models/CommunityProfile.js";
+import CommunityConnection from "../models/CommunityConnection.js";
 
 const ALLOWED_ROLES = ["user", "dietician", "kitchen", "admin"];
 const OTP_EXPIRES_MS = 10 * 60 * 1000;
@@ -322,6 +325,11 @@ export const deleteAccountWithOtp = async (req, res) => {
       KitchenRequest.deleteMany({ user: userId }),
       Appointment.deleteMany({ $or: [{ user: userId }, { dietician: userId }] }),
       AiChatSession.deleteMany({ user: userId }),
+      CommunityPost.deleteMany({ author: userId }),
+      CommunityProfile.deleteMany({ user: userId }),
+      CommunityConnection.deleteMany({
+        $or: [{ requester: userId }, { target: userId }],
+      }),
       User.findByIdAndDelete(userId),
     ]);
 

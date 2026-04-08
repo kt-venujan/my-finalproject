@@ -214,6 +214,7 @@ export default function Navbar() {
         {/* NAV LINKS */}
         <nav className="navbar-links">
           <Link href="/">Home</Link>
+          <Link href="/community">Community</Link>
 
           {/* SERVICES DROPDOWN */}
           <div

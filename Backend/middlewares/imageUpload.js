@@ -42,3 +42,4 @@ const createImageUploader = (uploadPath) => {
 export const foodUpload = createImageUploader("uploads/foods");
 export const categoryUpload = createImageUploader("uploads/categories");
 export const avatarUpload = createImageUploader("uploads/avatars");
+export const communityUpload = createImageUploader("uploads/community");

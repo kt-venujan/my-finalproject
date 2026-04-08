@@ -931,13 +931,13 @@ export default function DieticianDashboard() {
             </div>
 
             {isVerificationLocked && (
-              <div className="rounded-2xl border border-[#322430] bg-[#1a1a24] p-5 text-sm text-[#cdbfc7]">
-                <p className="font-semibold text-[#ffe2ea]">
+              <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-600">
+                <p className="font-semibold text-[#111827]">
                   {certificateStatus === "approved"
                     ? "Your certificate is approved. Profile and verification edits are now locked in this section."
                     : "Your certificate is under review. Profile and verification edits are hidden until admin completes verification."}
                 </p>
-                <p className="mt-2 text-[#b9a6af]">
+                <p className="mt-2 text-gray-500">
                   {certificateStatus === "approved"
                     ? "If you need to change certificate details later, contact support."
                     : "You can track status here and re-upload only if verification fails."}
@@ -946,11 +946,11 @@ export default function DieticianDashboard() {
             )}
 
             {isVerificationRejected && !showRetryVerificationForm && (
-              <div className="rounded-2xl border border-[#6c2338] bg-[#2a121b] p-5 text-sm text-[#f8d6df]">
+              <div className="rounded-2xl border border-gray-200 bg-[#f9fafb] p-5 text-sm text-gray-700">
                 <p className="font-semibold">Verification failed. You can now update your profile details and re-upload a new certificate.</p>
                 <button
                   type="button"
-                  className="mt-4 inline-flex items-center gap-2 rounded-xl border border-[#ff9eb5]/40 bg-[#8b0c2e] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#a1133a]"
+                  className="mt-4 inline-flex items-center gap-2 rounded-xl border border-[#8b0c2e] bg-[#8b0c2e] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#a1133a]"
                   onClick={() => setShowRetryVerificationForm(true)}
                 >
                   <FiUpload />
@@ -1131,8 +1131,8 @@ export default function DieticianDashboard() {
                 onClick={() => setSettingsPanel("delete")}
                 className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
                   settingsPanel === "delete"
-                    ? "border-[#b91c1c] bg-[#b91c1c] text-white"
-                    : "border-[#f4c9d0] bg-[#fff5f6] text-[#b91c1c] hover:bg-[#ffecef]"
+                    ? "border-[#8b0c2e] bg-[#8b0c2e] text-white"
+                    : "border-[#f0d3dd] bg-white text-[#8b0c2e] hover:bg-[#fff3f7]"
                 }`}
               >
                 <span className="inline-flex items-center gap-2">
@@ -1280,7 +1280,7 @@ export default function DieticianDashboard() {
                     className="dd-submit-btn"
                     type="submit"
                     disabled={deletingAccount}
-                    style={{ background: "#b91c1c" }}
+                    style={{ background: "#8b0c2e" }}
                   >
                     {deletingAccount ? "Deleting..." : "Delete Profile"}
                   </button>

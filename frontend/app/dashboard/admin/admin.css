@@ -768,3 +768,129 @@
     padding: 11px 10px;
   }
 }
+
+/* ===== LIGHT THEME OVERRIDE ===== */
+.adm-layout-shell {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.adm-main-shell {
+  background: #f8fafc;
+}
+
+.adm-sidebar,
+.adm-section,
+.adm-panel,
+.adm-stat-card,
+.adm-note-card,
+.adm-bundle-card,
+.adm-food-card,
+.adm-modal {
+  background: #ffffff;
+  border-color: #e5e7eb;
+  color: #111827;
+}
+
+.adm-sidebar {
+  border-right: 1px solid #e5e7eb;
+}
+
+.adm-home-link,
+.adm-topbar-notify,
+.adm-topbar-search,
+.adm-input,
+.adm-select,
+.adm-tab,
+.adm-btn.ghost,
+.adm-modal-close,
+.adm-logout-btn {
+  background: #f8fafc;
+  border-color: #d1d5db;
+  color: #1f2937;
+}
+
+.adm-topbar-search input {
+  color: #111827;
+}
+
+.adm-topbar-search input::placeholder,
+.adm-page-head p,
+.adm-stat-label,
+.adm-stat-card span,
+.adm-note-card p,
+.adm-bundle-card p,
+.adm-food-card p,
+.adm-food-card span,
+.adm-empty,
+.adm-sidebar-user,
+.adm-sidebar-copy,
+.adm-sidebar-links a,
+.adm-menu-title {
+  color: #4b5563;
+}
+
+.adm-nav-link {
+  color: #374151;
+}
+
+.adm-nav-list li:hover {
+  background: rgba(139, 12, 46, 0.08);
+}
+
+.adm-nav-link:hover,
+.adm-nav-link:hover .adm-nav-icon {
+  color: #8b0c2e;
+}
+
+.adm-home-link:hover,
+.adm-sidebar-links a:hover {
+  color: #8b0c2e;
+}
+
+.adm-nav-list li.active {
+  background: rgba(139, 12, 46, 0.1);
+}
+
+.adm-nav-list li.active .adm-nav-link,
+.adm-nav-list li.active .adm-nav-icon {
+  color: #8b0c2e;
+}
+
+.adm-stat-icon,
+.adm-user-avatar {
+  background: rgba(139, 12, 46, 0.12);
+  color: #8b0c2e;
+}
+
+.adm-btn.primary {
+  background: #8b0c2e;
+  color: #ffffff;
+}
+
+.adm-btn.primary:hover {
+  filter: brightness(1.06);
+}
+
+.adm-table-wrap,
+.adm-table th,
+.adm-table td,
+.adm-bundle-item,
+.adm-empty {
+  border-color: #e5e7eb;
+}
+
+.adm-table th {
+  background: #f9fafb;
+  color: #6b7280;
+}
+
+.adm-tab.active {
+  border-color: #8b0c2e;
+  background: rgba(139, 12, 46, 0.1);
+  color: #8b0c2e;
+}
+
+.adm-modal-overlay {
+  background: rgba(17, 24, 39, 0.42);
+}

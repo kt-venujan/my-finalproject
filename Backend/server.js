@@ -27,6 +27,7 @@ import chatRoutes from "./routes/chatRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import bundleOfferRoutes from "./routes/bundleOfferRoutes.js";
+import communityRoutes from "./routes/communityRoutes.js";
 import { startBookingReminderService } from "./services/bookingReminderService.js";
 
 
@@ -96,6 +97,7 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/bundle-offers", bundleOfferRoutes);
+app.use("/api/community", communityRoutes);
 
 // server
 const PORT = process.env.PORT || 5000;
