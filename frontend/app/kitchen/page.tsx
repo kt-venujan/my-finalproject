@@ -6,6 +6,7 @@ import { FiGrid, FiShoppingCart } from "react-icons/fi";
 import { usePathname, useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import api from "@/lib/axios";
+import { resolveBackendAssetUrl } from "@/lib/assetUrl";
 
 type PlanType = "weekly" | "monthly";
 type SizeType = "small" | "medium" | "large";
@@ -364,8 +365,7 @@ export default function KitchenPage() {
 
   const getImageUrl = (path?: string) => {
     if (!path) return "/hero-food.jpg";
-    if (path.startsWith("http")) return path;
-    return `http://localhost:5000${path}`;
+    return resolveBackendAssetUrl(path) || "/hero-food.jpg";
   };
 
   const totalCartCount = useMemo(

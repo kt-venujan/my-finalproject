@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import api from "@/lib/axios";
 
 /* ---------------- EXISTING DATA ---------------- */
 const floatingBadges = [
@@ -19,6 +19,10 @@ type Question = {
   type: "input" | "options" | "multi-options";
   options?: string[];
 };
+
+type QuestionValidationResult =
+  | { valid: true; normalizedValue: string }
+  | { valid: false; error: string };
 
 const baseQuestions: Question[] = [
   { key: "age", label: "What is your age?", type: "input" },
@@ -208,7 +212,10 @@ export default function AIDietAssistantPage() {
     };
   };
 
-  const validateInputForQuestion = (question: Question, value: string) => {
+  const validateInputForQuestion = (
+    question: Question,
+    value: string
+  ): QuestionValidationResult => {
     if (question.type !== "input") {
       return { valid: true, normalizedValue: value };
     }
@@ -349,8 +356,8 @@ export default function AIDietAssistantPage() {
         formData.append("allergyReport", allergyReport);
       }
 
-      const res = await axios.post(
-        "http://localhost:5000/api/ai/generate-diet-plan",
+      const res = await api.post(
+        "/ai/generate-diet-plan",
         formData,
         {
           headers: {
@@ -462,7 +469,7 @@ ${
     pushUserMessage(normalizedValue);
 
     const updatedForm = { ...form, [current.key]: normalizedValue };
-    setForm(updatedForm);
+    setForm(updatedForm as Record<string, string>);
     setInput("");
 
     if (current.key === "likefoods") {

@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import "./dashboard.css";
 import {
@@ -35,8 +35,8 @@ export default function DashboardPage() {
       try {
         const token = localStorage.getItem("token");
 
-        const res = await axios.get(
-          "http://localhost:5000/api/appointments/my",
+        const res = await api.get(
+          "/appointments/my",
           {
             headers: {
               Authorization: `Bearer ${token}`,
