@@ -466,7 +466,7 @@ ${
 
     const normalizedValue = validation.normalizedValue;
 
-    pushUserMessage(normalizedValue);
+    pushUserMessage(normalizedValue || "");
 
     const updatedForm = { ...form, [current.key]: normalizedValue };
     setForm(updatedForm as Record<string, string>);

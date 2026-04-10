@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { useAuth } from "@/context/AuthContext";
 
@@ -15,7 +15,6 @@ const getPostAuthRedirectPath = (role?: string) => {
 
 export default function GoogleAuthCallbackPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const hasProcessed = useRef(false);
   const { refreshMe, setAuthUser } = useAuth();
 
@@ -23,7 +22,7 @@ export default function GoogleAuthCallbackPage() {
     if (hasProcessed.current) return;
     hasProcessed.current = true;
 
-    const token = searchParams.get("token");
+    const token = new URLSearchParams(window.location.search).get("token");
 
     if (!token) {
       toast.error("Google sign-in failed");
@@ -53,7 +52,7 @@ export default function GoogleAuthCallbackPage() {
     };
 
     void completeAuth();
-  }, [refreshMe, router, searchParams, setAuthUser]);
+  }, [refreshMe, router, setAuthUser]);
 
   return (
     <div className="auth-page">

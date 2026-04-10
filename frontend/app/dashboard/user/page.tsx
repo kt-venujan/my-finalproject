@@ -566,7 +566,7 @@ export default function UserDashboard() {
             >
               <span className="ud-nav-icon-wrap">{item.icon}</span>
               <span>{item.label}</span>
-              {item.badge != null && item.badge > 0 && (
+              {"badge" in item && item.badge != null && item.badge > 0 && (
                 <span className="ud-badge">{item.badge}</span>
               )}
             </li>
