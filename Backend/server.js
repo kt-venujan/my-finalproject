@@ -30,6 +30,29 @@ import bundleOfferRoutes from "./routes/bundleOfferRoutes.js";
 import communityRoutes from "./routes/communityRoutes.js";
 import { startBookingReminderService } from "./services/bookingReminderService.js";
 
+const normalizeOrigin = (value) => {
+  if (!value) return null;
+
+  try {
+    return new URL(String(value)).origin;
+  } catch {
+    return null;
+  }
+};
+
+const getAllowedOrigins = () => {
+  const defaultOrigins = ["http://localhost:3000", "http://localhost:3001"];
+  const configuredOrigins = String(process.env.CORS_ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((origin) => normalizeOrigin(origin.trim()))
+    .filter(Boolean);
+
+  const frontendOrigin = normalizeOrigin(process.env.FRONTEND_URL);
+
+  return new Set([...defaultOrigins, frontendOrigin, ...configuredOrigins].filter(Boolean));
+};
+
+const allowedOrigins = getAllowedOrigins();
 
 
 
@@ -56,8 +79,9 @@ app.use(
         return;
       }
 
-      const isLocalhost = /^http:\/\/localhost:\d+$/.test(origin);
-      if (isLocalhost) {
+      const normalizedOrigin = normalizeOrigin(origin);
+
+      if (normalizedOrigin && allowedOrigins.has(normalizedOrigin)) {
         callback(null, true);
         return;
       }

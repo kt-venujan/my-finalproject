@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { AxiosError } from "axios";
 import api from "@/lib/axios";
 import { useAuth } from "@/context/AuthContext";
+import { resolveBackendAssetUrl } from "@/lib/assetUrl";
 import { toast } from "react-toastify";
 import { FiCoffee, FiEdit2, FiPlus, FiTag, FiX } from "react-icons/fi";
 
@@ -178,8 +179,7 @@ export default function FoodPage() {
 
   const resolveImage = (path?: string) => {
     if (!path) return "";
-    if (path.startsWith("http")) return path;
-    return `http://localhost:5000${path}`;
+    return resolveBackendAssetUrl(path);
   };
 
   const openCategoryModal = (selected: Category) => {

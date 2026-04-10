@@ -64,6 +64,7 @@ export default function AuthCard() {
 
   const googleAuthUrl =
     process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
+  const googleCallbackUrl = `${googleAuthUrl.replace(/\/+$/, "")}/auth/google/callback`;
 
   const getApiErrorMessage = (error: unknown, fallback: string) => {
     const axiosError = error as AxiosError<{ message?: string }>;
@@ -85,7 +86,7 @@ export default function AuthCard() {
     setShowResetFlow(false);
 
     let message =
-      "Google sign-in failed. Add this redirect URI in Google Cloud: http://localhost:5000/api/auth/google/callback";
+      `Google sign-in failed. Add this redirect URI in Google Cloud: ${googleCallbackUrl}`;
     let toastMessage = "Google sign-in failed";
 
     if (oauthReason === "invalid_client_secret" || oauthReason === "invalid_client") {
@@ -94,7 +95,7 @@ export default function AuthCard() {
       toastMessage = "Google sign-in failed (invalid client secret)";
     } else if (oauthReason === "redirect_uri_mismatch") {
       message =
-        "Redirect URI mismatch. Add this exact URI in Google Cloud: http://localhost:5000/api/auth/google/callback";
+        `Redirect URI mismatch. Add this exact URI in Google Cloud: ${googleCallbackUrl}`;
       toastMessage = "Google sign-in failed (redirect URI mismatch)";
     } else if (oauthReason === "oauth_denied") {
       message = "Google sign-in was canceled. Please try again.";
@@ -103,7 +104,7 @@ export default function AuthCard() {
 
     setErrorMessage(message);
     toast.error(toastMessage);
-  }, [oauthReason, oauthStatus]);
+  }, [googleCallbackUrl, oauthReason, oauthStatus]);
 
   const openResetFlow = (prefillEmail = "") => {
     setShowResetFlow(true);

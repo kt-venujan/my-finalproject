@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import api from "@/lib/axios";
 
 export default function AdminMessages(){
 
@@ -9,9 +10,8 @@ const [messages,setMessages] = useState<any[]>([]);
 
 useEffect(()=>{
 
-fetch("http://localhost:5000/api/contact/all")
-.then(res=>res.json())
-.then(data=>setMessages(data));
+api.get("/contact/all")
+.then((res)=>setMessages(res.data || []));
 
 },[]);
 
