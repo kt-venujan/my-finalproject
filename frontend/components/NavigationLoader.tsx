@@ -1,19 +1,15 @@
 "use client";
 
 import { useMemo } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 const LOADER_TEXT = "DIETARA";
 const LOADER_TAGLINE = "Fueling Your Next Step";
 
 export default function NavigationLoader() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
-  const routeKey = useMemo(
-    () => `${pathname}?${searchParams.toString()}`,
-    [pathname, searchParams]
-  );
+  const routeKey = useMemo(() => pathname || "", [pathname]);
 
   return (
     <div

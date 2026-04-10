@@ -6,6 +6,8 @@ import { Loader2 } from "lucide-react";
 import { cropImageToFile } from "@/lib/imageCrop";
 import "react-easy-crop/react-easy-crop.css";
 
+const EasyCropper = Cropper as unknown as React.ComponentType<any>;
+
 type ImageCropModalProps = {
   isOpen: boolean;
   imageSrc: string;
@@ -88,7 +90,7 @@ export default function ImageCropModal({
         </div>
 
         <div className="relative h-[340px] overflow-hidden rounded-xl border border-white/10 bg-black sm:h-[420px]">
-          <Cropper
+          <EasyCropper
             image={imageSrc}
             crop={crop}
             zoom={zoom}

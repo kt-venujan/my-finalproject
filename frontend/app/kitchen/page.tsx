@@ -20,6 +20,7 @@ interface Category {
 interface Food {
   _id: string;
   name: string;
+  category?: string;
   image?: string;
   calories?: number;
   price?: number;
